@@ -1228,7 +1228,7 @@ static void ApplyFilterInputDevices()
 			if (eax == 0) return;
 
 			uint32_t deviceIndex = *reinterpret_cast<uint32_t*>(eax);
-			uint32_t deviceType = *reinterpret_cast<uint32_t*>(eax + 0x4);
+			uint32_t& deviceType = *reinterpret_cast<uint32_t*>(eax + 0x4);
 
 			// Allow mouse, keyboard, and all XInput controllers (slots 0-3)
 			bool isAllowed = (deviceType == 2) || // Mouse
