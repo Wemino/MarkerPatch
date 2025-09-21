@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\dllmain.cpp" />
+    <ClCompile Include="..\src\safetyhook\safetyhook.cpp">
+      <Filter>safetyhook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\safetyhook\Zydis.c">
+      <Filter>safetyhook</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\dllmain.hpp" />
+    <ClInclude Include="..\src\helper.hpp" />
+    <ClInclude Include="..\src\safetyhook\safetyhook.hpp">
+      <Filter>safetyhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\safetyhook\Zydis.h">
+      <Filter>safetyhook</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MarkerPatch.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="safetyhook">
+      <UniqueIdentifier>{58520e7c-d054-4043-8b6d-4e9b767f7491}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
