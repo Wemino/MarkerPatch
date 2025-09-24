@@ -172,9 +172,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\include\safetyhook\safetyhook.cpp" />
+    <ClCompile Include="..\include\safetyhook\Zydis.c" />
     <ClCompile Include="..\src\dllmain.cpp" />
-    <ClCompile Include="..\src\safetyhook\safetyhook.cpp" />
-    <ClCompile Include="..\src\safetyhook\Zydis.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini">
@@ -183,10 +183,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\safetyhook\safetyhook.hpp" />
+    <ClInclude Include="..\include\safetyhook\Zydis.h" />
     <ClInclude Include="..\src\dllmain.hpp" />
     <ClInclude Include="..\src\helper.hpp" />
-    <ClInclude Include="..\src\safetyhook\safetyhook.hpp" />
-    <ClInclude Include="..\src\safetyhook\Zydis.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
