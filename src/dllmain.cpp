@@ -23,6 +23,8 @@ struct GlobalState
 	// Input configuration
 	float mouseSens = 0.0f;
 	bool isControllerActive = false;
+	bool isXInverted = false;
+	bool isYInverted = false;
 
 	// Raw input state
 	std::atomic<LONG> rawMouseDeltaX{ 0 };
@@ -519,6 +521,8 @@ safetyhook::InlineHook hkGetRawInputData;
 static int __stdcall ApplyControlConfiguration_Hook(int a1)
 {
 	// Get the current mouse sensitivity
+	g_State.isXInverted = *(BYTE*)(a1);
+	g_State.isYInverted = *(BYTE*)(a1 + 1);
 	g_State.mouseSens = *(float*)(a1 + 12);
 	return ApplyControlConfiguration.call<int>(a1);
 }
@@ -563,7 +567,7 @@ static int __fastcall UpdateCameraTracking_Hook(int thisp, float a2)
 
 static int __fastcall UpdateZeroGravityCamera_Hook(int thisp, float frametime)
 {
-	if (g_State.isControllerActive) 
+	if (g_State.isControllerActive)
 	{
 		return UpdateZeroGravityCamera.unsafe_fastcall<int>(thisp, frametime);
 	}
@@ -575,9 +579,14 @@ static int __fastcall UpdateZeroGravityCamera_Hook(int thisp, float frametime)
 	LONG rawX = g_State.rawMouseDeltaX.exchange(0);
 	LONG rawY = g_State.rawMouseDeltaY.exchange(0);
 
-	// Scale and accumulate
 	float deltaX, deltaY;
 	ScaleRawInput(static_cast<float>(rawX), static_cast<float>(rawY), 625.0f, deltaX, deltaY);
+
+	// Apply invert controls
+	if (g_State.isXInverted)
+		deltaX = -deltaX;
+	if (g_State.isYInverted)
+		deltaY = -deltaY;
 
 	g_State.zeroGravityAccumX += deltaX;
 	g_State.zeroGravityAccumY += deltaY;
@@ -620,7 +629,7 @@ static void __fastcall UpdatePlayerCamera_Hook(int thisp, float a2)
 
 static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64 a2, unsigned int a3, int a4)
 {
-	if (g_State.isControllerActive) 
+	if (g_State.isControllerActive)
 	{
 		return ApplyCameraRotation.unsafe_thiscall<int>(thisp, a2, a3, a4);
 	}
@@ -633,22 +642,24 @@ static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64
 	{
 		LONG rawX = g_State.rawMouseDeltaX.exchange(0);
 		LONG rawY = g_State.rawMouseDeltaY.exchange(0);
-
 		float horizontalDelta, verticalDelta;
 		ScaleRawInput(static_cast<float>(rawX), static_cast<float>(rawY), 625.0f, horizontalDelta, verticalDelta);
 
+		if (g_State.isXInverted)
+			horizontalDelta = -horizontalDelta;
+		if (g_State.isYInverted)
+			verticalDelta = -verticalDelta;
+
 		float currentPitch = *(float*)thisp;
 		float newPitch = currentPitch + verticalDelta;
-
-		if (newPitch > PITCH_LIMIT_NORMAL) 
+		if (newPitch > PITCH_LIMIT_NORMAL)
 		{
 			verticalDelta = PITCH_LIMIT_NORMAL - currentPitch;
 		}
-		else if (newPitch < -PITCH_LIMIT_NORMAL) 
+		else if (newPitch < -PITCH_LIMIT_NORMAL)
 		{
 			verticalDelta = -PITCH_LIMIT_NORMAL - currentPitch;
 		}
-
 		return ApplyCameraRotation.unsafe_thiscall<int>(thisp, PackAngles(verticalDelta, horizontalDelta), a3, a4);
 	}
 
@@ -657,22 +668,24 @@ static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64
 	{
 		g_State.storedAimX = g_State.rawMouseDeltaX.exchange(0);
 		g_State.storedAimY = g_State.rawMouseDeltaY.exchange(0);
-
 		float horizontalDelta, verticalDelta;
 		ScaleRawInput(static_cast<float>(g_State.storedAimX), static_cast<float>(g_State.storedAimY), 750.0f, horizontalDelta, verticalDelta);
 
+		if (g_State.isXInverted)
+			horizontalDelta = -horizontalDelta;
+		if (g_State.isYInverted)
+			verticalDelta = -verticalDelta;
+
 		float currentPitch = *(float*)thisp;
 		float newPitch = currentPitch + verticalDelta;
-
-		if (newPitch > PITCH_LIMIT_NORMAL) 
+		if (newPitch > PITCH_LIMIT_NORMAL)
 		{
 			verticalDelta = PITCH_LIMIT_NORMAL - currentPitch;
 		}
-		else if (newPitch < PITCH_LIMIT_AIM_DOWN) 
+		else if (newPitch < PITCH_LIMIT_AIM_DOWN)
 		{
 			verticalDelta = PITCH_LIMIT_AIM_DOWN - currentPitch;
 		}
-
 		g_State.aimingPassCount--;
 		return ApplyCameraRotation.unsafe_thiscall<int>(thisp, PackAngles(verticalDelta, horizontalDelta), a3, a4);
 	}
@@ -683,18 +696,19 @@ static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64
 		float horizontalDelta, verticalDelta;
 		ScaleRawInput(0.0f, static_cast<float>(g_State.storedAimY), 750.0f, horizontalDelta, verticalDelta);
 
+		if (g_State.isYInverted)
+			verticalDelta = -verticalDelta;
+
 		float currentPitch = *(float*)thisp;
 		float newPitch = currentPitch + verticalDelta;
-
-		if (newPitch > PITCH_LIMIT_NORMAL) 
+		if (newPitch > PITCH_LIMIT_NORMAL)
 		{
 			verticalDelta = PITCH_LIMIT_NORMAL - currentPitch;
 		}
-		else if (newPitch < PITCH_LIMIT_AIM_DOWN) 
+		else if (newPitch < PITCH_LIMIT_AIM_DOWN)
 		{
 			verticalDelta = PITCH_LIMIT_AIM_DOWN - currentPitch;
 		}
-
 		g_State.aimingPassCount--;
 		return ApplyCameraRotation.unsafe_thiscall<int>(thisp, PackAngles(verticalDelta, 0.0f), a3, a4);
 	}
