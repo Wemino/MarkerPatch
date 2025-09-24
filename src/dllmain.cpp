@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <dinput.h>
 
+#include <stacktrace>
+
 #include "ini.hpp"
 #include "dllmain.hpp"
 #include "helper.hpp"
@@ -194,6 +196,21 @@ static inline void ScaleRawInput(float rawX, float rawY, float divisor, float& o
 {
 	outX = (rawX * g_State.mouseSens) / -divisor;
 	outY = (rawY * g_State.mouseSens) / divisor;
+}
+
+static bool IsUALPresent()
+{
+	for (const auto& entry : std::stacktrace::current()) 
+	{
+		HMODULE hModule = NULL;
+		if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)entry.native_handle(), &hModule)) 
+		{
+			if (GetProcAddress(hModule, "IsUltimateASILoader") != NULL)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 #pragma endregion
@@ -1350,7 +1367,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 			// Prevents DLL from receiving thread notifications
 			DisableThreadLibraryCalls(hModule);
 
-			SystemHelper::LoadProxyLibrary();
+			// Skip wrapper initialization when loaded as .asi
+			if (!IsUALPresent())
+			{
+				SystemHelper::LoadProxyLibrary();
+			}
+
 			regOpenKeyHook = HookHelper::CreateHookAPI(L"advapi32.dll", "RegOpenKeyExW", &RegOpenKeyExW_Hook);
 			break;
 		}
