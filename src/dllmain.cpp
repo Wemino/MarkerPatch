@@ -1338,7 +1338,7 @@ static LSTATUS WINAPI RegOpenKeyExW_Hook(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOp
 		Init();
 	}
 
-	return regOpenKeyHook.call<LSTATUS>(hKey, lpSubKey, ulOptions, samDesired, phkResult);
+	return regOpenKeyHook.stdcall<LSTATUS>(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
