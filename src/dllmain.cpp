@@ -1,5 +1,6 @@
 ﻿#define MINI_CASE_SENSITIVE
 #define _USE_MATH_DEFINES
+#define NOMINMAX
 
 #include <Windows.h>
 #include <dinput.h>
@@ -61,6 +62,8 @@ struct GameAddresses
 
 // Memory addresses
 GameAddresses g_Addresses;
+
+static constexpr float TARGET_FRAME_TIME = 1.0f / 30.0f;
 
 // =============================
 // Ini Variables
@@ -235,7 +238,7 @@ static void __cdecl BuildContactConstraintJacobian_Hook(__m128* a1, float* a2, b
 	float backup_deltaTime = a2[3];
 	float backup_friction = a2[9];
 
-	float timeScale = (1.0f / 30.0f) / backup_deltaTime;
+	float timeScale = TARGET_FRAME_TIME / backup_deltaTime;
 	a2[3] = backup_deltaTime / timeScale;
 	a2[9] = backup_friction / timeScale;
 
@@ -263,7 +266,7 @@ static void __cdecl Build1DAngularConstraintJacobian_Hook(__m128* a1, float* con
 
 static int __fastcall InitializePhysicsSolverParameters_Hook(float* thisp, int, float* a2, float* a3)
 {
-	g_State.frameTimeScale = (1.0f / 30.0f) / a3[2];
+	g_State.frameTimeScale = TARGET_FRAME_TIME / a3[2];
 	return InitializePhysicsSolverParameters.unsafe_thiscall<int>(thisp, a2, a3);
 }
 
@@ -524,6 +527,7 @@ static int __stdcall ApplyControlConfiguration_Hook(int a1)
 	g_State.isXInverted = *(BYTE*)(a1);
 	g_State.isYInverted = *(BYTE*)(a1 + 1);
 	g_State.mouseSens = *(float*)(a1 + 12);
+	if (g_State.mouseSens == 0.0f) g_State.mouseSens = 0.005f; // we still want to use the mouse
 	return ApplyControlConfiguration.call<int>(a1);
 }
 
@@ -556,12 +560,10 @@ static void __fastcall UpdateMenuCursor_Hook(int thisp, int, float a2)
 
 static int __fastcall UpdateCameraTracking_Hook(int thisp, float a2)
 {
-	if (!g_State.isControllerActive) 
+	if (!g_State.isControllerActive)
 	{
-		// Framerate independant sensitivity
-		a2 = 1.0f;
+		a2 = TARGET_FRAME_TIME;
 	}
-
 	return UpdateCameraTracking.unsafe_fastcall<int>(thisp, a2);
 }
 
@@ -571,9 +573,6 @@ static int __fastcall UpdateZeroGravityCamera_Hook(int thisp, float frametime)
 	{
 		return UpdateZeroGravityCamera.unsafe_fastcall<int>(thisp, frametime);
 	}
-
-	// Framerate independant sensitivity
-	frametime = 0.033f;
 
 	// Get raw input deltas
 	LONG rawX = g_State.rawMouseDeltaX.exchange(0);
@@ -588,19 +587,14 @@ static int __fastcall UpdateZeroGravityCamera_Hook(int thisp, float frametime)
 	if (g_State.isYInverted)
 		deltaY = -deltaY;
 
-	g_State.zeroGravityAccumX += deltaX;
-	g_State.zeroGravityAccumY += deltaY;
+	// Convert to angular velocity (radians per second)
+	const float SENSITIVITY = 20.0f;
 
-	// Apply decay
-	const float DECAY_FACTOR = 0.95f;
-	g_State.zeroGravityAccumX *= DECAY_FACTOR;
-	g_State.zeroGravityAccumY *= DECAY_FACTOR;
+	// Update velocities
+	*(float*)(thisp + 124) = deltaX * SENSITIVITY;
+	*(float*)(thisp + 128) = deltaY * SENSITIVITY;
 
-	// Write to game memory
-	*(float*)(thisp + 124) = g_State.zeroGravityAccumX;
-	*(float*)(thisp + 128) = g_State.zeroGravityAccumY;
-
-	return UpdateZeroGravityCamera.unsafe_fastcall<int>(thisp, frametime);
+	return UpdateZeroGravityCamera.unsafe_fastcall<int>(thisp, TARGET_FRAME_TIME);
 }
 
 static int __fastcall UpdateCameraPosition_Hook(int thisp, float a2)
@@ -1208,7 +1202,7 @@ static void ApplyRawMouseInput()
 	DWORD addr_ApplyControlConfiguration = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 08 0F B6 06 50 E8", "ApplyControlConfiguration");
 	DWORD addr_UpdateMenuCursor = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 64 53 56 8B F1 F7 46 20 00 00 01 00", "UpdateMenuCursor");
 	DWORD addr_UpdateCameraTracking = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 F3 0F 10 45 08 F3 0F 59 05 ?? ?? ?? ?? 81 EC A4 01 00 00", "UpdateCameraTracking");
-	DWORD addr_UpdateZeroGravityCamera_Hook = ScanModuleSignature(g_State.GameModule, "83 EC 14 53 8B D9 80 BB 94 01 00 00 00", "UpdateZeroGravityCamera_Hook");
+	DWORD addr_UpdateZeroGravityCamera = ScanModuleSignature(g_State.GameModule, "83 EC 14 53 8B D9 80 BB 94 01 00 00 00", "UpdateZeroGravityCamera_Hook");
 	DWORD addr_UpdateCameraPosition = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 F3 0F 10 45 08 D9 45 08", "UpdateCameraPosition");
 	DWORD addr_UpdateAimingCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 64 01 00 00 A1 ?? ?? ?? ?? D9 45 0C 53 8B D9", "UpdateAimingCamera");
 	DWORD addr_UpdatePlayerCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 34 01 00 00 53 8B D9 8B 43 74", "UpdatePlayerCamera");
@@ -1217,7 +1211,7 @@ static void ApplyRawMouseInput()
 	if (addr_ApplyControlConfiguration == 0 ||
 		addr_UpdateMenuCursor == 0 ||
 		addr_UpdateCameraTracking == 0 ||
-		addr_UpdateZeroGravityCamera_Hook == 0 ||
+		addr_UpdateZeroGravityCamera == 0 ||
 		addr_UpdateCameraPosition == 0 ||
 		addr_UpdateAimingCamera == 0 ||
 		addr_UpdatePlayerCamera == 0 ||
@@ -1228,7 +1222,7 @@ static void ApplyRawMouseInput()
 	ApplyControlConfiguration = HookHelper::CreateHook((void*)addr_ApplyControlConfiguration, &ApplyControlConfiguration_Hook);
 	UpdateMenuCursor = HookHelper::CreateHook((void*)addr_UpdateMenuCursor, &UpdateMenuCursor_Hook);
 	UpdateCameraTracking = HookHelper::CreateHook((void*)addr_UpdateCameraTracking, &UpdateCameraTracking_Hook);
-	UpdateZeroGravityCamera = HookHelper::CreateHook((void*)addr_UpdateZeroGravityCamera_Hook, &UpdateZeroGravityCamera_Hook);
+	UpdateZeroGravityCamera = HookHelper::CreateHook((void*)addr_UpdateZeroGravityCamera, &UpdateZeroGravityCamera_Hook);
 	UpdateCameraPosition = HookHelper::CreateHook((void*)addr_UpdateCameraPosition, &UpdateCameraPosition_Hook);
 	UpdateAimingCamera = HookHelper::CreateHook((void*)addr_UpdateAimingCamera, &UpdateAimingCamera_Hook);
 	UpdatePlayerCamera = HookHelper::CreateHook((void*)addr_UpdatePlayerCamera, &UpdatePlayerCamera_Hook);
