@@ -1,6 +1,5 @@
 ﻿#define MINI_CASE_SENSITIVE
 #define _USE_MATH_DEFINES
-#define NOMINMAX
 
 #include <Windows.h>
 #include <dinput.h>
@@ -46,6 +45,7 @@ struct GlobalState
 
 	// Misc
 	bool isLoadingShopItems = false;
+	float frameTime = 0;
 };
 
 // Global instance
@@ -80,6 +80,7 @@ bool FixSaveStringHandling = false;
 // General
 bool DisableOnlineFeatures = false;
 bool IncreasedEntityPersistence = false;
+int IncreasedEntityPersistenceBodies = 0;
 bool SkipIntro = false;
 
 // Display
@@ -119,6 +120,7 @@ static void ReadConfig()
 	// General
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
 	IncreasedEntityPersistence = IniHelper::ReadInteger("General", "IncreasedEntityPersistence", 1) == 1;
+	IncreasedEntityPersistenceBodies = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceBodies", 20);
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
 
 	// Display
@@ -151,6 +153,7 @@ static void ReadConfig()
 	}
 
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
+	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 50);
 }
 
 #pragma region Helper
@@ -266,6 +269,7 @@ static void __cdecl Build1DAngularConstraintJacobian_Hook(__m128* a1, float* con
 
 static int __fastcall InitializePhysicsSolverParameters_Hook(float* thisp, int, float* a2, float* a3)
 {
+	g_State.frameTime = a3[2];
 	g_State.frameTimeScale = TARGET_FRAME_TIME / a3[2];
 	return InitializePhysicsSolverParameters.unsafe_thiscall<int>(thisp, a2, a3);
 }
@@ -450,7 +454,7 @@ static int __fastcall ResizeEntityBuffer_hook(char* thisp, int, int bufferType, 
 
 	if (bufferType == 0) // bodies
 	{
-		newLimit = 20;
+		newLimit = IncreasedEntityPersistenceBodies;
 	}
 
 	return ResizeEntityBuffer.thiscall<int>(thisp, bufferType, newLimit);
@@ -1131,9 +1135,17 @@ static void ApplyIncreasedEntityPersistence()
 	if (!IncreasedEntityPersistence) return;
 
 	DWORD addr_ResizeEntityBuffer = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 EC 14 55 56 8D 04 40 8D 2C C1 57", "ResizeEntityBuffer");
+	DWORD addr_ResizeEntityBuffer_Init1 = ScanModuleSignature(g_State.GameModule, "05 00 00 00 C6 46 14 01 8D 77 28", "ResizeEntityBuffer_Init1");
+	DWORD addr_ResizeEntityBuffer_Init2 = ScanModuleSignature(g_State.GameModule, "05 8B CE 89 1E 89 5E 04", "ResizeEntityBuffer_Init2");
 
-	if (addr_ResizeEntityBuffer == 0) return;
+	if (addr_ResizeEntityBuffer == 0 ||
+		addr_ResizeEntityBuffer_Init1 == 0 ||
+		addr_ResizeEntityBuffer_Init2 == 0) {
+		return;
+	}
 
+	MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init1, IncreasedEntityPersistenceBodies);
+	MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init2, IncreasedEntityPersistenceBodies);
 	ResizeEntityBuffer = HookHelper::CreateHook((void*)addr_ResizeEntityBuffer, &ResizeEntityBuffer_hook);
 }
 
