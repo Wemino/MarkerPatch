@@ -29,14 +29,12 @@ struct GlobalState
 	// Raw input state
 	std::atomic<LONG> rawMouseDeltaX{ 0 };
 	std::atomic<LONG> rawMouseDeltaY{ 0 };
+	LONG frameRawX = 0;
+	LONG frameRawY = 0;
 
 	// Camera state
 	bool isInNormalCamera = false;
 	int aimingPassCount = 0;
-	LONG storedAimX = 0;
-	LONG storedAimY = 0;
-	float zeroGravityAccumX = 0.0f;
-	float zeroGravityAccumY = 0.0f;
 
 	// Physics
 	float frameTimeScale = 0;
@@ -295,6 +293,12 @@ static int __cdecl MainLoop_Hook()
 	if (g_State.deathFrameCount != 0)
 	{
 		g_State.deathFrameCount--;
+	}
+
+	if (RawMouseInput)
+	{
+		g_State.frameRawX = g_State.rawMouseDeltaX.exchange(0);
+		g_State.frameRawY = g_State.rawMouseDeltaY.exchange(0);
 	}
 
 	return MainLoop.unsafe_call<int>();
@@ -580,16 +584,12 @@ static int __stdcall ApplyControlConfiguration_Hook(int a1)
 
 static void __fastcall UpdateMenuCursor_Hook(int thisp, int, float a2)
 {
-	// Get raw input deltas
-	LONG rawX = g_State.rawMouseDeltaX.exchange(0);
-	LONG rawY = g_State.rawMouseDeltaY.exchange(0);
-
 	// Get input manager instance
 	int inputManager = *(int*)g_Addresses.InputManagerPtr;
 
 	// Calculate cursor movement delta for X and Y axes
-	float menuDeltaX = static_cast<float>(rawX) * g_State.mouseSens * 1.6f;
-	float menuDeltaY = static_cast<float>(rawY) * g_State.mouseSens * 1.6f;
+	float menuDeltaX = static_cast<float>(g_State.frameRawX) * g_State.mouseSens * 1.6f;
+	float menuDeltaY = static_cast<float>(g_State.frameRawY) * g_State.mouseSens * 1.6f;
 
 	// Write the calculated cursor movement deltas
 	*(float*)(inputManager + 1348) = menuDeltaX;
@@ -621,12 +621,8 @@ static int __fastcall UpdateZeroGravityCamera_Hook(int thisp, float frametime)
 		return UpdateZeroGravityCamera.unsafe_fastcall<int>(thisp, frametime);
 	}
 
-	// Get raw input deltas
-	LONG rawX = g_State.rawMouseDeltaX.exchange(0);
-	LONG rawY = g_State.rawMouseDeltaY.exchange(0);
-
 	float deltaX, deltaY;
-	ScaleRawInput(static_cast<float>(rawX), static_cast<float>(rawY), 625.0f, deltaX, deltaY);
+	ScaleRawInput(static_cast<float>(g_State.frameRawX), static_cast<float>(g_State.frameRawY), 625.0f, deltaX, deltaY);
 
 	// Apply invert controls
 	if (g_State.isXInverted)
@@ -681,10 +677,8 @@ static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64
 	// Normal camera movement
 	if (g_State.isInNormalCamera)
 	{
-		LONG rawX = g_State.rawMouseDeltaX.exchange(0);
-		LONG rawY = g_State.rawMouseDeltaY.exchange(0);
 		float horizontalDelta, verticalDelta;
-		ScaleRawInput(static_cast<float>(rawX), static_cast<float>(rawY), 625.0f, horizontalDelta, verticalDelta);
+		ScaleRawInput(static_cast<float>(g_State.frameRawX), static_cast<float>(g_State.frameRawY), 625.0f, horizontalDelta, verticalDelta);
 
 		if (g_State.isXInverted)
 			horizontalDelta = -horizontalDelta;
@@ -707,10 +701,8 @@ static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64
 	// Aiming - first pass
 	if (g_State.aimingPassCount == 2)
 	{
-		g_State.storedAimX = g_State.rawMouseDeltaX.exchange(0);
-		g_State.storedAimY = g_State.rawMouseDeltaY.exchange(0);
 		float horizontalDelta, verticalDelta;
-		ScaleRawInput(static_cast<float>(g_State.storedAimX), static_cast<float>(g_State.storedAimY), 750.0f, horizontalDelta, verticalDelta);
+		ScaleRawInput(static_cast<float>(g_State.frameRawX), static_cast<float>(g_State.frameRawY), 750.0f, horizontalDelta, verticalDelta);
 
 		if (g_State.isXInverted)
 			horizontalDelta = -horizontalDelta;
@@ -735,7 +727,7 @@ static int __fastcall ApplyCameraRotation_Hook(int* thisp, int, unsigned __int64
 	if (g_State.aimingPassCount == 1)
 	{
 		float horizontalDelta, verticalDelta;
-		ScaleRawInput(0.0f, static_cast<float>(g_State.storedAimY), 750.0f, horizontalDelta, verticalDelta);
+		ScaleRawInput(0.0f, static_cast<float>(g_State.frameRawY), 750.0f, horizontalDelta, verticalDelta);
 
 		if (g_State.isYInverted)
 			verticalDelta = -verticalDelta;
@@ -971,7 +963,6 @@ static void ApplyHavokPhysicsFix()
 	DWORD addr_Build1DAngularConstraintJacobian = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 14 8B 45 08 53 8B 5D 10", "Build1DAngularConstraintJacobian");
 	DWORD addr_InitializePhysicsSolverParameters = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 D9 80 0C 01 00 00 D9 19", "InitializePhysicsSolverParameters");
 	DWORD addr_ProcessEntityDeath = ScanModuleSignature(g_State.GameModule, "53 56 8B F1 8B 4C 24 18 8B C1 32 DB 83 E8 16 0F 84 17 01 00 00", "ProcessEntityDeath");
-	DWORD addr_MainLoop = ScanModuleSignature(g_State.GameModule, "83 EC 20 56 57 8B 3D ?? ?? ?? ?? 6A 03 33 F6 56", "MainLoop");
 	DWORD addr_physicsImpulseDamper = ScanModuleSignature(g_State.GameModule, "0F C6 D1 AA 0F C6 DB FF F3 0F 58 D4 0F 28 C8 0F C6 C8 FF F3 0F 5C CA F3 0F 59 CB 0F 28 E1", "physicsImpulseDamper");
 	DWORD addr_constraintErrorScaler = ScanModuleSignature(g_State.GameModule, "0F 28 16 0F 59 CA 0F 58 C3 0F 58 C1 8D 4A 10 0F 28 C8 0F C6 C8 55 F3 0F 58 C8 83 C2 20 0F C6 C0 AA F3 0F 58 C1 0F C6 D2 FF F3 0F 5C D0 F3 0F 11 94 24 30 02 00 00", "constraintErrorScaler");
 	DWORD addr_constraintMassCapture = ScanModuleSignature(g_State.GameModule, "D9 44 24 10 DE FA D9 C9 D9 58 0C D9 44 24 68", "constraintMassCapture");
@@ -981,7 +972,6 @@ static void ApplyHavokPhysicsFix()
 		addr_Build1DAngularConstraintJacobian == 0 ||
 		addr_InitializePhysicsSolverParameters == 0 ||
 		addr_ProcessEntityDeath == 0 ||
-		addr_MainLoop == 0 ||
 		addr_physicsImpulseDamper == 0 ||
 		addr_constraintErrorScaler == 0 ||
 		addr_constraintMassCapture == 0) {
@@ -993,7 +983,6 @@ static void ApplyHavokPhysicsFix()
 	Build1DAngularConstraintJacobian = HookHelper::CreateHook((void*)addr_Build1DAngularConstraintJacobian, &Build1DAngularConstraintJacobian_Hook);
 	InitializePhysicsSolverParameters = HookHelper::CreateHook((void*)addr_InitializePhysicsSolverParameters, &InitializePhysicsSolverParameters_Hook);
 	ProcessEntityDeath = HookHelper::CreateHook((void*)addr_ProcessEntityDeath, &ProcessEntityDeath_Hook);
-	MainLoop = HookHelper::CreateHook((void*)addr_MainLoop, &MainLoop_Hook);
 
 	static SafetyHookMid physicsImpulseDamper{};
 	physicsImpulseDamper = safetyhook::create_mid(addr_physicsImpulseDamper,
@@ -1386,6 +1375,17 @@ static void ApplyForceDLCUnlock()
 	g_Addresses.ItemCheckAddress = addr_AddShopItem + 0x175;
 }
 
+static void ApplyMainLoopHook()
+{
+	if (!HavokPhysicsFix && !RawMouseInput) return;
+
+	DWORD addr_MainLoop = ScanModuleSignature(g_State.GameModule, "83 EC 20 56 57 8B 3D ?? ?? ?? ?? 6A 03 33 F6 56", "MainLoop");
+
+	if (addr_MainLoop == 0) return;
+
+	MainLoop = HookHelper::CreateHook((void*)addr_MainLoop, &MainLoop_Hook);
+}
+
 static void Init()
 {
 	ReadConfig();
@@ -1419,6 +1419,9 @@ static void Init()
 	ApplyShopOpenCheck();
 	ApplyBlockDLCUnlock();
 	ApplyForceDLCUnlock();
+
+	// Misc
+	ApplyMainLoopHook();
 }
 
 #pragma endregion
