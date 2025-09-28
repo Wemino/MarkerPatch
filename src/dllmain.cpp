@@ -455,7 +455,7 @@ static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
 		*fireDelayPtr = originalDelay * scalingFactor;
 	}
 
-	bool result = CheckFireCooldown.thiscall<bool>(thisp);
+	bool result = CheckFireCooldown.unsafe_thiscall<bool>(thisp);
 	*fireDelayPtr = originalDelay;
 	return result;
 }
