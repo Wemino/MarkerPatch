@@ -579,7 +579,7 @@ static int __stdcall ApplyControlConfiguration_Hook(int a1)
 	g_State.isYInverted = *(BYTE*)(a1 + 1);
 	g_State.mouseSens = *(float*)(a1 + 12);
 	if (g_State.mouseSens == 0.0f) g_State.mouseSens = 0.005f; // we still want to use the mouse
-	return ApplyControlConfiguration.call<int>(a1);
+	return ApplyControlConfiguration.stdcall<int>(a1);
 }
 
 static void __fastcall UpdateMenuCursor_Hook(int thisp, int, float a2)
