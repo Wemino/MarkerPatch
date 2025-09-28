@@ -58,6 +58,7 @@ struct GameAddresses
 	DWORD NgGamePlusPtr = 0;
 	DWORD LoadedSaveMemoryPtr = 0;
 	DWORD TargetFrameTimeMsPtr = 0;
+	DWORD EngineFrameTimePtr = 0;
 };
 
 // Memory addresses
@@ -76,6 +77,7 @@ bool VSyncRefreshRateFix = false;
 bool FixDifficultyRewards = false;
 bool FixSuitIDConflicts = false;
 bool FixSaveStringHandling = false;
+bool FixAutomaticWeaponFireRate = false;
 
 // General
 bool DisableOnlineFeatures = false;
@@ -117,6 +119,7 @@ static void ReadConfig()
 	FixDifficultyRewards = IniHelper::ReadInteger("Fixes", "FixDifficultyRewards", 1) == 1;
 	FixSuitIDConflicts = IniHelper::ReadInteger("Fixes", "FixSuitIDConflicts", 1) == 1;
 	FixSaveStringHandling = IniHelper::ReadInteger("Fixes", "FixSaveStringHandling", 1) == 1;
+	FixAutomaticWeaponFireRate = IniHelper::ReadInteger("Fixes", "FixAutomaticWeaponFireRate", 1) == 1;
 
 	// General
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
@@ -425,6 +428,39 @@ static errno_t __cdecl CopyStringFromSave_Hook(wchar_t* Destination, wchar_t* So
 }
 
 // =========================
+// FixAutomaticWeaponFireRate
+// =========================
+
+safetyhook::InlineHook CheckFireCooldown;
+safetyhook::InlineHook UpdateEngineTimer;
+
+static int __fastcall UpdateEngineTimer_Hook(DWORD* thisp, int, DWORD* a2)
+{
+	int result = UpdateEngineTimer.unsafe_thiscall<int>(thisp, a2);
+	g_State.frameTime = *(float*)0x204D3FC;
+	return result;
+}
+
+static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
+{
+	float* fireDelayPtr = (float*)(thisp + 800);
+	float originalDelay = *fireDelayPtr;
+
+	// Only apply scaling for automatic weapons
+	if (originalDelay <= 0.1f)
+	{
+		float timeDelta = TARGET_FRAME_TIME - g_State.frameTime;
+		float coefficient = 10.0f;
+		float scalingFactor = 1.0f + coefficient * timeDelta;
+		*fireDelayPtr = originalDelay * scalingFactor;
+	}
+
+	bool result = CheckFireCooldown.thiscall<bool>(thisp);
+	*fireDelayPtr = originalDelay;
+	return result;
+}
+
+// =========================
 // DisableOnlineFeatures
 // =========================
 
@@ -459,6 +495,7 @@ static int __fastcall ResizeEntityBuffer_hook(char* thisp, int, int bufferType, 
 		newLimit = IncreasedEntityPersistenceBodies;
 	}
 
+	if (bufferType == 1) // limbs
 	{
 		newLimit = IncreasedEntityPersistenceLimbs;
 	}
@@ -1117,6 +1154,23 @@ static void ApplyFixSaveStringHandling()
 	CopyStringFromSave = HookHelper::CreateHook((void*)addr_CopyStringFromSave, &CopyStringFromSave_Hook);
 }
 
+static void ApplyFixAutomaticWeaponFireRate()
+{
+	if (!FixAutomaticWeaponFireRate) return;
+
+	DWORD addr_UpdateEngineTimer = ScanModuleSignature(g_State.GameModule, "83 EC 10 55 56 57 8B F1 E8", "UpdateEngineTimer");
+	DWORD addr_CheckFireCooldown = ScanModuleSignature(g_State.GameModule, "51 8B 81 18 03 00 00 D9 05", "CheckFireCooldown");
+
+	if (addr_UpdateEngineTimer == 0 ||
+		addr_CheckFireCooldown == 0) {
+		return;
+	}
+
+	UpdateEngineTimer = HookHelper::CreateHook((void*)addr_UpdateEngineTimer, &UpdateEngineTimer_Hook);
+	CheckFireCooldown = HookHelper::CreateHook((void*)addr_CheckFireCooldown, &CheckFireCooldown_Hook);
+	g_Addresses.EngineFrameTimePtr = MemoryHelper::ReadMemory<int>(addr_UpdateEngineTimer + 0x265);
+}
+
 static void ApplyDisableOnlineFeatures()
 {
 	if (!DisableOnlineFeatures) return;
@@ -1343,6 +1397,7 @@ static void Init()
 	ApplyFixDifficultyRewards();
 	ApplyFixSuitIDConflicts();
 	ApplyFixSaveStringHandling();
+	ApplyFixAutomaticWeaponFireRate();
 
 	// General
 	ApplyDisableOnlineFeatures();
