@@ -82,6 +82,7 @@ bool DisableOnlineFeatures = false;
 bool IncreasedEntityPersistence = false;
 int IncreasedEntityPersistenceBodies = 0;
 int IncreasedEntityPersistenceLimbs = 0;
+bool IncreasedDecalPersistence = false;
 bool SkipIntro = false;
 
 // Display
@@ -124,6 +125,7 @@ static void ReadConfig()
 	IncreasedEntityPersistence = IniHelper::ReadInteger("General", "IncreasedEntityPersistence", 1) == 1;
 	IncreasedEntityPersistenceBodies = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceBodies", 25);
 	IncreasedEntityPersistenceLimbs = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceLimbs", 96);
+	IncreasedDecalPersistence = IniHelper::ReadInteger("General", "IncreasedDecalPersistence", 1) == 1;
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
 
 	// Display
@@ -1199,6 +1201,17 @@ static void ApplyIncreasedEntityPersistence()
 	ResizeEntityBuffer = HookHelper::CreateHook((void*)addr_ResizeEntityBuffer, &ResizeEntityBuffer_Hook);
 }
 
+static void ApplyIncreasedDecalPersistence()
+{
+	if (!IncreasedDecalPersistence) return;
+
+	DWORD addr_DecalVertexBuffer = ScanModuleSignature(g_State.GameModule, "51 6A 10 68 00 53 07 00", "DecalVertexBuffer");
+
+	if (addr_DecalVertexBuffer == 0) return;
+
+	MemoryHelper::WriteMemory<int>(addr_DecalVertexBuffer + 0x4, 1200000);
+}
+
 static void ApplySkipIntro()
 {
 	if (!SkipIntro) return;
@@ -1402,6 +1415,7 @@ static void Init()
 	// General
 	ApplyDisableOnlineFeatures();
 	ApplyIncreasedEntityPersistence();
+	ApplyIncreasedDecalPersistence();
 	ApplySkipIntro();
 
 	// Display
