@@ -122,8 +122,8 @@ static void ReadConfig()
 	// General
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
 	IncreasedEntityPersistence = IniHelper::ReadInteger("General", "IncreasedEntityPersistence", 1) == 1;
-	IncreasedEntityPersistenceBodies = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceBodies", 20);
-	IncreasedEntityPersistenceLimbs = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceLimbs", 20);
+	IncreasedEntityPersistenceBodies = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceBodies", 25);
+	IncreasedEntityPersistenceLimbs = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceLimbs", 96);
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
 
 	// Display
@@ -156,8 +156,8 @@ static void ReadConfig()
 	}
 
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
-	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 39);
-	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 127);
+	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 35);
+	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 120);
 }
 
 #pragma region Helper
@@ -486,7 +486,7 @@ static int __cdecl DisplayUIPopup_Hook(const char* Src, int a2)
 
 safetyhook::InlineHook ResizeEntityBuffer;
 
-static int __fastcall ResizeEntityBuffer_hook(char* thisp, int, int bufferType, int newLimit)
+static int __fastcall ResizeEntityBuffer_Hook(char* thisp, int, int bufferType, int newLimit)
 {
 	// The game want to clean up the array
 	if (newLimit == 0)
@@ -1196,7 +1196,7 @@ static void ApplyIncreasedEntityPersistence()
 
 	MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x86, IncreasedEntityPersistenceLimbs);
 	MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x91, IncreasedEntityPersistenceLimbs);
-	ResizeEntityBuffer = HookHelper::CreateHook((void*)addr_ResizeEntityBuffer, &ResizeEntityBuffer_hook);
+	ResizeEntityBuffer = HookHelper::CreateHook((void*)addr_ResizeEntityBuffer, &ResizeEntityBuffer_Hook);
 }
 
 static void ApplySkipIntro()
