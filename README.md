@@ -49,6 +49,10 @@ Corrects the VSync implementation to use the refresh rate selected in the game's
   </table>
 </div>
 
+## Automatic Weapon Fire Rate Fix
+
+Stabilizes the fire rate of automatic weapons across all framerates. The game's weapon cooldown system checks more frequently at higher framerates, causing automatic weapons like the Pulse Rifle and Flamethrower to fire progressively faster as FPS increases.
+
 ## Save System Fixes
 
 ### Difficulty Reward Tracking
@@ -148,7 +152,7 @@ Prevents connection attempts to EA servers at startup and prevents error message
 
 ## Entity Persistence
 
-Increases the maximum number of bodies that can remain in the environment. The game normally keeps only a limited number of corpses and removes the oldest ones as new enemies are killed, likely a limitation designed for consoles. This patch raises that limit, preventing the immersion-breaking effect of bodies disappearing during combat and giving you adequate time to loot corpses before they're removed.
+Increases the maximum number of bodies, limbs, and decals that can remain in the environment. The game normally keeps only a limited number of corpses and removes the oldest ones as new enemies are killed, likely a limitation designed for consoles. This patch raises that limit, preventing the immersion-breaking effect of bodies disappearing during combat and giving you adequate time to loot corpses before they're removed.
 <div align="center">
   <table>
     <tr>
