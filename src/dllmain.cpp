@@ -340,11 +340,11 @@ static bool __fastcall LoadGame_Hook(DWORD* thisPtr, int, int a2, DWORD* a3, int
 		{
 			// write the update flag
 			int ng_plus_diff = MemoryHelper::ReadMemory<int>(MemoryHelper::ReadMemory<DWORD>(g_Addresses.NgGamePlusPtr) + 0x978);
-			MemoryHelper::WriteMemory(g_Addresses.LoadedSaveMemoryPtr, ng_plus_diff);
-			MemoryHelper::WriteMemory(g_Addresses.LoadedSaveMemoryPtr + 0x4, ng_plus_diff);
+			MemoryHelper::WriteMemory(g_Addresses.LoadedSaveMemoryPtr, ng_plus_diff, false);
+			MemoryHelper::WriteMemory(g_Addresses.LoadedSaveMemoryPtr + 0x4, ng_plus_diff, false);
 		}
 		// write the lowest difficulty flag from the save file (or not initialized, used to check for achievements)
-		MemoryHelper::WriteMemory(g_Addresses.LoadedSaveMemoryPtr + 0x4, a3[14]);
+		MemoryHelper::WriteMemory(g_Addresses.LoadedSaveMemoryPtr + 0x4, a3[14], false);
 	}
 
 	return LoadGame.thiscall<bool>(thisPtr, a2, a3, a4, a5);
@@ -443,7 +443,7 @@ safetyhook::InlineHook UpdateEngineTimer;
 static int __fastcall UpdateEngineTimer_Hook(DWORD* thisp, int, DWORD* a2)
 {
 	int result = UpdateEngineTimer.unsafe_thiscall<int>(thisp, a2);
-	g_State.frameTime = *(float*)0x204D3FC;
+	g_State.frameTime = MemoryHelper::ReadMemory<float>(g_Addresses.EngineFrameTimePtr);
 	return result;
 }
 
