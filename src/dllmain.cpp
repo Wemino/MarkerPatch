@@ -86,6 +86,7 @@ int IncreasedEntityPersistenceBodies = 0;
 int IncreasedEntityPersistenceLimbs = 0;
 bool IncreasedDecalPersistence = false;
 bool SkipIntro = false;
+bool CheckLAAPatch = false;
 
 // Display
 bool AutoResolution = false;
@@ -129,6 +130,7 @@ static void ReadConfig()
 	IncreasedEntityPersistenceLimbs = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceLimbs", 96);
 	IncreasedDecalPersistence = IniHelper::ReadInteger("General", "IncreasedDecalPersistence", 1) == 1;
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
+	CheckLAAPatch = IniHelper::ReadInteger("General", "CheckLAAPatch", 0) == 1;
 
 	// Display
 	AutoResolution = IniHelper::ReadInteger("Display", "AutoResolution", 1) == 1;
@@ -1452,6 +1454,11 @@ static void Init()
 
 	// Misc
 	ApplyMainLoopHook();
+
+	if (CheckLAAPatch)
+	{
+		SystemHelper::PerformLAAPatch(GetModuleHandleA(NULL));
+	}
 }
 
 #pragma endregion
