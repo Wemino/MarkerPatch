@@ -496,12 +496,12 @@ static int __fastcall ResizeEntityBuffer_Hook(char* thisp, int, int bufferType, 
 		return ResizeEntityBuffer.thiscall<int>(thisp, bufferType, newLimit);
 	}
 
-	if (bufferType == 0) // bodies
+	if (bufferType == 0 && IncreasedEntityPersistenceBodies != 0) // bodies
 	{
 		newLimit = IncreasedEntityPersistenceBodies;
 	}
 
-	if (bufferType == 1) // limbs
+	if (bufferType == 1 && IncreasedEntityPersistenceLimbs != 0) // limbs
 	{
 		newLimit = IncreasedEntityPersistenceLimbs;
 	}
@@ -1193,11 +1193,18 @@ static void ApplyIncreasedEntityPersistence()
 		return;
 	}
 
-	MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x34, IncreasedEntityPersistenceBodies);
-	MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x7A, IncreasedEntityPersistenceBodies);
+	if (IncreasedEntityPersistenceBodies != 0)
+	{
+		MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x34, IncreasedEntityPersistenceBodies);
+		MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x7A, IncreasedEntityPersistenceBodies);
+	}
 
-	MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x86, IncreasedEntityPersistenceLimbs);
-	MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x91, IncreasedEntityPersistenceLimbs);
+	if (IncreasedEntityPersistenceLimbs != 0)
+	{
+		MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x86, IncreasedEntityPersistenceLimbs);
+		MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x91, IncreasedEntityPersistenceLimbs);
+	}
+
 	ResizeEntityBuffer = HookHelper::CreateHook((void*)addr_ResizeEntityBuffer, &ResizeEntityBuffer_Hook);
 }
 
