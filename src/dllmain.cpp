@@ -163,7 +163,7 @@ static void ReadConfig()
 
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
 	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 35);
-	IncreasedEntityPersistenceLimbs = std::clamp(IncreasedEntityPersistenceBodies, 0, 120);
+	IncreasedEntityPersistenceLimbs = std::clamp(IncreasedEntityPersistenceLimbs, 0, 120);
 }
 
 #pragma region Helper
