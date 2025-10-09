@@ -307,7 +307,7 @@ static int __cdecl MainLoop_Hook()
 		g_State.frameRawY = g_State.rawMouseDeltaY.exchange(0);
 	}
 
-	return MainLoop.unsafe_call<int>();
+	return MainLoop.unsafe_ccall<int>();
 }
 
 // =========================
@@ -320,13 +320,13 @@ safetyhook::InlineHook UpdateDisplaySettings;
 static __int16 __cdecl SetHz_Hook(__int16 hz)
 {
 	MemoryHelper::WriteMemory<float>(g_Addresses.TargetFrameTimeMsPtr, CalculateFpsConstant(hz));
-	return SetHz.call<__int16>(hz);
+	return SetHz.ccall<__int16>(hz);
 }
 
 static __int16 __cdecl UpdateDisplaySettings_Hook(__int16 a1, __int16 a2, __int16 hz, char a4, char a5)
 {
 	MemoryHelper::WriteMemory<float>(g_Addresses.TargetFrameTimeMsPtr, CalculateFpsConstant(hz));
-	return UpdateDisplaySettings.call<__int16>(a1, a2, hz, a4, a5);
+	return UpdateDisplaySettings.ccall<__int16>(a1, a2, hz, a4, a5);
 }
 
 // =========================
@@ -407,34 +407,36 @@ static int __fastcall LoadSaveFileList_Hook(int thisPtr, int, const wchar_t* Sou
 
 static errno_t __cdecl CopyStringFromSave_Hook(wchar_t* Destination, wchar_t* Source)
 {
-	if (Source)
+	if (!Source)
 	{
-		size_t sourceLen = 0;
-
-		// Scan string length with safety limit
-		while (sourceLen < 0x800 && Source[sourceLen] != L'\0')
+		// NULL source
+		if (Destination)
 		{
-			sourceLen++;
+			memset(Destination, 0, 0x80);
 		}
 
-		// Truncate if too long
-		if (sourceLen >= 0x80)
-		{
-			for (size_t i = 0; i < 0x7F; i++)
-			{
-				Destination[i] = Source[i];
-			}
+		return -1;
+	}
 
-			Destination[0x7F] = L'\0';
+	if (!Destination)
+	{
+		return -1;
+	}
+
+	size_t i;
+	for (i = 0; i < 0x7F; i++)
+	{
+		if (Source[i] == L'\0')
+		{
+			Destination[i] = L'\0';
 			return 0;
 		}
 
-		return CopyStringFromSave.call<errno_t>(Destination, Source);
+		Destination[i] = Source[i];
 	}
 
-	// NULL source
-	memset(Destination, 0, 0x80 * sizeof(wchar_t));
-	return -1;
+	Destination[0x7F] = L'\0';
+	return 0;
 }
 
 // =========================
@@ -483,7 +485,7 @@ static int __cdecl DisplayUIPopup_Hook(const char* Src, int a2)
 		return 0;
 	}
 
-	return DisplayUIPopup.call<int>(Src, a2);
+	return DisplayUIPopup.ccall<int>(Src, a2);
 }
 
 // ==========================
@@ -561,7 +563,7 @@ static int __cdecl GetConfigInt_Hook(const char* Src, int ArgList)
 		ArgList = g_State.screenHeight;
 	}
 
-	return GetConfigInt.call<int>(Src, ArgList);
+	return GetConfigInt.ccall<int>(Src, ArgList);
 }
 
 // =====================
@@ -1279,11 +1281,18 @@ static void ApplyFontScaling()
 	if (!FontScaling) return;
 
 	DWORD addr_FontScaling = ScanModuleSignature(g_State.GameModule, "0F 2F C1 76 03 0F 28 C1 F3 0F 10 5E 18", "FontScaling");
+	DWORD addr_FontScaling2 = ScanModuleSignature(g_State.GameModule, "76 03 0F 28 C2 0F B7 0D", "FontScaling2");
 
-	if (addr_FontScaling == 0) return;
+	if (addr_FontScaling == 0 ||
+		addr_FontScaling2 == 0) {
+		return;
+	}
 
 	MemoryHelper::MakeNOP(addr_FontScaling, 8);
 	MemoryHelper::MakeNOP(addr_FontScaling + 0x35, 5);
+
+	MemoryHelper::MakeNOP(addr_FontScaling2, 5);
+	MemoryHelper::MakeNOP(addr_FontScaling2 + 0x2F, 5);
 
 	if (FontScalingFactor == 1.0f) return;
 
@@ -1344,7 +1353,7 @@ static void ApplyFilterInputDevices()
 {
 	if (!BlockDirectInputDevices) return;
 
-	DWORD addr_IsXInputDevice = ScanModuleSignature(g_State.GameModule, "81 EC 84 00 00 00 53 56  57 33 DB 6A 4C", "IsXInputDevice");
+	DWORD addr_IsXInputDevice = ScanModuleSignature(g_State.GameModule, "81 EC 84 00 00 00 53 56 57 33 DB 6A 4C", "IsXInputDevice");
 	DWORD addr_InitializeInputDevice = ScanModuleSignature(g_State.GameModule, "85 C0 0F 84 6F 01 00 00 8B 40 04 85 C0", "InputDeviceTypeFilter");
 
 	if (addr_IsXInputDevice == 0 ||
