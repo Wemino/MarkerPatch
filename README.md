@@ -15,16 +15,16 @@ A patch that fixes various issues and limitations in the PC port of Dead Space 2
 > Extract the contents of the zip file into the game's folder, in the same directory as the `deadspace2.exe` file.
 
 > [!WARNING]
-If the game doesn't start on Windows after installing the patch, try updating the latest Microsoft Visual C++ Redistributable (x86).  
+If the game doesn't start on Windows after installing the patch, try updating to the latest Microsoft Visual C++ Redistributable (x86).  
 You can download it here: https://aka.ms/vs/17/release/vc_redist.x86.exe
 
 ### Steam Deck/Linux Specific Instructions (Windows users can skip this)
 
-> [!WARNING]
-> To launch the game on Steam Deck or Linux, set the game's compatibility tool to Proton Experimental in the Steam properties.
->
-> **Note**: DXVK limits the framerate to 60 FPS by default. To increase this limit, add the following to your launch options (example for 120 FPS):  
-> `DXVK_CONFIG="d3d9.maxFrameRate = 120" %command%`
+DXVK limits the framerate to 60 FPS by default. To increase this limit, add the following to your launch options (example for 120 FPS):  
+`DXVK_CONFIG="d3d9.maxFrameRate = 120" %command%`
+
+> [!TIP]
+> Locked out of the Steam version by the DRM activation limit? [XTEAther](https://github.com/Wemino/XTEAther) can help restore access to your own copy.
 
 # Features
 
