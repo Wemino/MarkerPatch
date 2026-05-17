@@ -37,8 +37,8 @@ struct GlobalState
 	LONG frameRawY = 0;
 
 	// Physics
-	float frameTimeScale = 0;
-	float constraintMass = 0;
+	float frameTimeScale = 0.0f;
+	float constraintMass = 0.0f;
 	int deathFrameCount = 0;
 
 	// Scripted aiming scene context
@@ -50,8 +50,10 @@ struct GlobalState
 
 	// Misc
 	bool isLoadingShopItems = false;
-	float frameTime = 0;
 	bool forceCurrentItem = false;
+	int16_t currentHeight = 0;
+	float resolutionScale = 0.0f;
+	float frameTime = 0.0f;
 };
 
 // Global instance
@@ -91,6 +93,8 @@ bool FixDifficultyRewards = false;
 bool FixSuitIDConflicts = false;
 bool FixSaveStringHandling = false;
 bool FixAutomaticWeaponFireRate = false;
+bool FixBlurResolution = false;
+bool FixShadowBlur = false;
 
 // General
 bool DisableOnlineFeatures = false;
@@ -142,6 +146,8 @@ static void ReadConfig()
 	FixSuitIDConflicts = IniHelper::ReadInteger("Fixes", "FixSuitIDConflicts", 1) == 1;
 	FixSaveStringHandling = IniHelper::ReadInteger("Fixes", "FixSaveStringHandling", 1) == 1;
 	FixAutomaticWeaponFireRate = IniHelper::ReadInteger("Fixes", "FixAutomaticWeaponFireRate", 1) == 1;
+	FixBlurResolution = IniHelper::ReadInteger("Fixes", "FixBlurResolution", 1) == 1;
+	FixShadowBlur = IniHelper::ReadInteger("Fixes", "FixShadowBlur", 1) == 1;
 
 	// General
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
@@ -348,18 +354,11 @@ static int __cdecl MainLoop_Hook()
 // =========================
 
 safetyhook::InlineHook SetHz;
-safetyhook::InlineHook UpdateDisplaySettings;
 
 static __int16 __cdecl SetHz_Hook(__int16 hz)
 {
 	MemoryHelper::WriteMemory<float>(g_Addresses.TargetFrameTimeMsPtr, CalculateFpsConstant(hz));
 	return SetHz.ccall<__int16>(hz);
-}
-
-static __int16 __cdecl UpdateDisplaySettings_Hook(__int16 a1, __int16 a2, __int16 hz, char a4, char a5)
-{
-	MemoryHelper::WriteMemory<float>(g_Addresses.TargetFrameTimeMsPtr, CalculateFpsConstant(hz));
-	return UpdateDisplaySettings.ccall<__int16>(a1, a2, hz, a4, a5);
 }
 
 // =========================
@@ -498,6 +497,38 @@ static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
 	bool result = CheckFireCooldown.unsafe_thiscall<bool>(thisp);
 	*fireDelayPtr = originalDelay;
 	return result;
+}
+
+// =========================
+// FixBlurResolution
+// =========================
+
+safetyhook::InlineHook RenderBokehBlur;
+
+static int __cdecl RenderBokehBlur_Hook(int a1, int a2, float cocRadius, float a4, char a5, int a6, int a7, float a8, float a9)
+{
+	if (g_State.currentHeight > 720)
+	{
+		cocRadius *= g_State.resolutionScale;
+	}
+
+	return RenderBokehBlur.unsafe_ccall<int>(a1, a2, cocRadius, a4, a5, a6, a7, a8, a9);
+}
+
+// =========================
+// FixShadowBlur
+// =========================
+
+safetyhook::InlineHook IterativeShadowBlur;
+
+static int __cdecl IterativeShadowBlur_Hook(unsigned int a1, float a2, float a3, float a4, float a5, int passCount, char a7)
+{
+	if (g_State.currentHeight > 720)
+	{
+		passCount = static_cast<int>(static_cast<float>(passCount) * g_State.resolutionScale * g_State.resolutionScale);
+	}
+
+	return IterativeShadowBlur.unsafe_ccall<int>(a1, a2, a3, a4, a5, passCount, a7);
 }
 
 // =========================
@@ -891,7 +922,6 @@ static int __fastcall ApplyAimWithMomentum(int* thisp, int, unsigned __int64 a2,
 	return OriginalApplyCameraRotation(thisp, PackAngles(pitchDelta, yawDelta), rollBits, a4);
 }
 
-
 static int __fastcall ApplyBoundedAim(int* thisp, int, unsigned __int64 a2, unsigned int a3, int a4)
 {
 	int* outer = g_State.boundedAimOuter;
@@ -952,7 +982,6 @@ static int __fastcall ApplyBoundedAim(int* thisp, int, unsigned __int64 a2, unsi
 
 	return OriginalApplyCameraRotation(thisp, PackAngles(newPitch, newYaw), a3, a4);
 }
-
 
 static int __fastcall ApplyConeAim(int* thisp, int, unsigned __int64 a2, unsigned int a3, int a4)
 {
@@ -1320,6 +1349,33 @@ static int __fastcall AddShopItem_Hook(int thisPtr, int, DWORD* a2)
 	return AddShopItem.thiscall<int>(thisPtr, a2);
 }
 
+// ==================
+// Resolution Util
+// ==================
+
+safetyhook::InlineHook SetResolution;
+safetyhook::InlineHook UpdateDisplaySettings;
+
+static __int16 __cdecl SetResolution_Hook(__int16 width, __int16 height)
+{
+	g_State.currentHeight = height;
+	g_State.resolutionScale = static_cast<float>(height) / 720.0f;
+	return SetResolution.ccall<__int16>(width, height);
+}
+
+static __int16 __cdecl UpdateDisplaySettings_Hook(__int16 width, __int16 height, __int16 hz, char a4, char a5)
+{
+	g_State.currentHeight = height;
+	g_State.resolutionScale = static_cast<float>(height) / 720.0f;
+
+	if (VSyncRefreshRateFix)
+	{
+		MemoryHelper::WriteMemory<float>(g_Addresses.TargetFrameTimeMsPtr, CalculateFpsConstant(hz));
+	}
+
+	return UpdateDisplaySettings.ccall<__int16>(width, height, hz, a4, a5);
+}
+
 #pragma endregion
 
 #pragma region Patch Init
@@ -1453,17 +1509,14 @@ static void ApplyVSyncRefreshRateFix()
 	if (!VSyncRefreshRateFix) return;
 
 	DWORD addr_SetHz = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 A3 ?? ?? ?? ?? C3 CC CC CC CC 66 A1", "SetHz");
-	DWORD addr_UpdateDisplaySettings = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 B2 01 66 39 05", "UpdateDisplaySettings");
 	DWORD addr_fpsLimiter = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F8 83 EC 20 53 33 DB 56 38", "fpsLimiter");
 
 	if (addr_SetHz == 0 ||
-		addr_UpdateDisplaySettings == 0 ||
 		addr_fpsLimiter == 0) {
 		return;
 	}
 
 	SetHz = HookHelper::CreateHook((void*)addr_SetHz, &SetHz_Hook);
-	UpdateDisplaySettings = HookHelper::CreateHook((void*)addr_UpdateDisplaySettings, &UpdateDisplaySettings_Hook);
 	g_Addresses.TargetFrameTimeMsPtr = MemoryHelper::ReadMemory<int>(addr_fpsLimiter + 0x37);
 }
 
@@ -1528,6 +1581,28 @@ static void ApplyFixAutomaticWeaponFireRate()
 	UpdateEngineTimer = HookHelper::CreateHook((void*)addr_UpdateEngineTimer, &UpdateEngineTimer_Hook);
 	CheckFireCooldown = HookHelper::CreateHook((void*)addr_CheckFireCooldown, &CheckFireCooldown_Hook);
 	g_Addresses.EngineFrameTimePtr = MemoryHelper::ReadMemory<int>(addr_UpdateEngineTimer + 0x265);
+}
+
+static void ApplyFixBlurResolution()
+{
+	if (!FixBlurResolution) return;
+
+	DWORD addr_BlurResolution = ScanModuleSignature(g_State.GameModule, "51 E8 ?? ?? ?? FF 50 8D 4C 24 04 E8", "BlurResolution");
+
+	if (addr_BlurResolution == 0) return;
+
+	RenderBokehBlur = HookHelper::CreateHook((void*)(addr_BlurResolution), &RenderBokehBlur_Hook);
+}
+
+static void ApplyFixShadowBlur()
+{
+	if (!FixShadowBlur) return;
+
+	DWORD addr_ShadowBlur = ScanModuleSignature(g_State.GameModule, "83 EC 44 53 56 57 83 F8 07 73 0A B8 07 00 00 00 A3", "ShadowBlur");
+
+	if (addr_ShadowBlur == 0) return;
+
+	IterativeShadowBlur = HookHelper::CreateHook((void*)(addr_ShadowBlur - 0xB), &IterativeShadowBlur_Hook);
 }
 
 static void ApplyDisableOnlineFeatures()
@@ -1831,6 +1906,22 @@ static void ApplyMainLoopHook()
 	MainLoop = HookHelper::CreateHook((void*)addr_MainLoop, &MainLoop_Hook);
 }
 
+static void ApplyResolutionHook()
+{
+	if (!FixBlurResolution && !FixShadowBlur && !VSyncRefreshRateFix) return;
+
+	DWORD addr_UpdateDisplaySettings = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 B2 01 66 39 05", "UpdateDisplaySettings");
+	DWORD addr_SetResolution = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 66 A3", "SetResolution");
+
+	if (addr_UpdateDisplaySettings == 0 ||
+		addr_SetResolution == 0) {
+		return;
+	}
+
+	UpdateDisplaySettings = HookHelper::CreateHook((void*)addr_UpdateDisplaySettings, &UpdateDisplaySettings_Hook);
+	SetResolution = HookHelper::CreateHook((void*)addr_SetResolution, &SetResolution_Hook);
+}
+
 static void Init()
 {
 	ReadConfig();
@@ -1848,6 +1939,8 @@ static void Init()
 	ApplyFixSuitIDConflicts();
 	ApplyFixSaveStringHandling();
 	ApplyFixAutomaticWeaponFireRate();
+	ApplyFixBlurResolution();
+	ApplyFixShadowBlur();
 
 	// General
 	ApplyDisableOnlineFeatures();
@@ -1872,6 +1965,7 @@ static void Init()
 
 	// Misc
 	ApplyMainLoopHook();
+	ApplyResolutionHook();
 }
 
 #pragma endregion
