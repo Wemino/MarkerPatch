@@ -72,6 +72,7 @@ Resolves item database conflicts where certain DLC suits incorrectly share IDs w
 These conflicts would cause one suit to overwrite the other in your inventory, making purchased items disappear.
 
 ### String Buffer Overflow Prevention
+
 Prevents crashes that can rarely occur when the game enumerates save files. This happens in two scenarios: when checking for Dead Space 1 saves to grant the DLC bonus for owning the first game, and when listing your Dead Space 2 save files in the load menu. Though these crashes are uncommon, they can be frustrating when they do occur.
 
 ## Subtitle Font Scaling
@@ -87,6 +88,50 @@ For those who prefer different subtitle sizes, `FontScalingFactor` in `MarkerPat
       <td width="50%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/scaling_on.png"></td>
     </tr>
     <tr>
+      <td align="center">4K Vanilla</td>
+      <td align="center">4K MarkerPatch</td>
+    </tr>
+  </table>
+</div>
+
+## Soft Shadow Blur Fix
+
+Restores soft shadow blur intensity at high resolutions. The game applies a fixed number of blur passes to shadows, calibrated for 720p, causing shadows to appear sharp and pixelated at higher resolutions where the same blur covers a smaller portion of the screen. This fix adjusts the blur pass count so shadow edges remain smooth across all resolutions.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="33%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/shadowblur_720p_vanilla.jpg"></td>
+      <td width="33%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/shadowblur_4k_vanilla.jpg"></td>
+      <td width="33%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/shadowblur_4k_fix.jpg"></td>
+    </tr>
+    <tr>
+      <td align="center">720p Vanilla</td>
+      <td align="center">4K Vanilla</td>
+      <td align="center">4K MarkerPatch</td>
+    </tr>
+  </table>
+</div>
+
+## Dynamic Shadow Resolution
+
+Allows increasing the resolution of dynamic shadows when Shadow Quality is set to Very High in-game.
+
+Set `DynamicShadowResolution` higher than 1920 in `MarkerPatch.ini` to enable the override. Higher values improve shadow detail but increase GPU usage.
+
+## Depth of Field Blur Fix
+
+Restores depth of field blur intensity at high resolutions. The game's DOF effect uses a blur radius designed for 720p, causing the effect to appear progressively weaker at higher resolutions and almost vanishing at 4K. This fix scales the blur radius with the screen resolution so the depth of field looks consistent across all resolutions.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="33%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/dofblur_720p_vanilla.jpg"></td>
+      <td width="33%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/dofblur_4k_vanilla.jpg"></td>
+      <td width="33%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/dofblur_4k_fix.jpg"></td>
+    </tr>
+    <tr>
+      <td align="center">720p Vanilla</td>
       <td align="center">4K Vanilla</td>
       <td align="center">4K MarkerPatch</td>
     </tr>
