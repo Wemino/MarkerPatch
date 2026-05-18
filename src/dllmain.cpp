@@ -124,6 +124,7 @@ bool InvertABXYButtons = false;
 // Graphics
 int MaxAnisotropy = 0;
 bool ForceTrilinearFiltering = false;
+int DynamicShadowResolution = 0;
 
 // DLC
 bool EnableHazardPack = false;
@@ -177,6 +178,7 @@ static void ReadConfig()
 	// Graphics
 	MaxAnisotropy = IniHelper::ReadInteger("Graphics", "MaxAnisotropy", 16);
 	ForceTrilinearFiltering = IniHelper::ReadInteger("Graphics", "ForceTrilinearFiltering", 1) == 1;
+	DynamicShadowResolution = IniHelper::ReadInteger("Graphics", "DynamicShadowResolution", 1920);
 
 	// DLC
 	EnableHazardPack = IniHelper::ReadInteger("DLC", "EnableHazardPack", 0) == 1;
@@ -198,9 +200,11 @@ static void ReadConfig()
 
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
 
+	// Set a maximum so that the game doesn't crash
 	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 35);
 	IncreasedEntityPersistenceLimbs = std::clamp(IncreasedEntityPersistenceLimbs, 0, 120);
 
+	// Init SDL variables
 	ControllerHelper::SetGyroEnabled(GyroEnabled);
 	ControllerHelper::SetGyroSensitivity(GyroSensitivity);
 	ControllerHelper::SetGyroSmoothing(GyroSmoothing);
@@ -1192,6 +1196,22 @@ static int __cdecl InitTextureSampler_Hook(int a1, int a2)
 	return result;
 }
 
+// =========================
+// DynamicShadowResolution
+// =========================
+
+static safetyhook::InlineHook SetDynamicShadowMapResolution;
+
+static unsigned int __cdecl SetDynamicShadowMapResolution_Hook(int shadowRes)
+{
+	if (shadowRes == 1920)
+	{
+		shadowRes = DynamicShadowResolution;
+	}
+
+	return SetDynamicShadowMapResolution.ccall<unsigned int>(shadowRes);
+}
+
 // ==============
 // DLC
 // ==============
@@ -1864,6 +1884,17 @@ static void ApplyTextureFiltering()
 	InitTextureSampler = HookHelper::CreateHook((void*)addr_InitTextureSampler, &InitTextureSampler_Hook);
 }
 
+static void ApplyDynamicShadowResolution()
+{
+	if (DynamicShadowResolution <= 1920) return;
+
+	DWORD addr_ShadowRes = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 E0 E0 83 EC 0C 3B 05", "ShadowRes");
+
+	if (addr_ShadowRes == 0) return;
+
+	SetDynamicShadowMapResolution = HookHelper::CreateHook((void*)addr_ShadowRes, &SetDynamicShadowMapResolution_Hook);
+}
+
 static void ApplyShopHooks()
 {
 	bool needBlock = !EnableHazardPack || !EnableMartialLawPack || !EnableSupernovaPack;
@@ -1959,6 +1990,7 @@ static void Init()
 
 	// Graphics
 	ApplyTextureFiltering();
+	ApplyDynamicShadowResolution();
 
 	// DLC
 	ApplyShopHooks();
