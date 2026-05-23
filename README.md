@@ -138,6 +138,23 @@ Restores depth of field blur intensity at high resolutions. The game's DOF effec
   </table>
 </div>
 
+## Flare Occlusion Artifact Fix
+
+Fixes blocky tile-pattern artifacts in lighting and shadow areas that occur on NVIDIA GPUs when flares are enabled while a holographic HUD is present.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%"><img style="width:100%" src="assets/flarefix_off.png"></td>
+      <td width="50%"><img style="width:100%" src="assets/flarefix_on.png"></td>
+    </tr>
+    <tr>
+      <td align="center">Vanilla</td>
+      <td align="center">MarkerPatch</td>
+    </tr>
+  </table>
+</div>
+
 ## Raw Mouse Input
 
 Implements proper raw mouse input to fix sensitivity issues. This works similarly to the existing "Dead Space 2 Mouse Fix" mod with several improvements:

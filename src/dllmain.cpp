@@ -3,6 +3,7 @@
 #define NOMINMAX
 
 #include <Windows.h>
+#include <d3d9.h>
 
 #include <stacktrace>
 
@@ -48,6 +49,16 @@ struct GlobalState
 	uintptr_t coneAimData = 0;
 	int* oscillatingAimOuter = nullptr;
 
+	// Flare fix
+	IDirect3DDevice9* device = nullptr;
+	bool inFlareDraw = false;
+	IDirect3DBaseTexture9* sourceTex = nullptr;
+	IDirect3DSurface9* sourceSurf = nullptr;
+	IDirect3DTexture9* proxyTex = nullptr;
+	IDirect3DSurface9* proxySurf = nullptr;
+	bool resourcesValid = false;
+	bool snapshotValid = false;
+
 	// Misc
 	bool isLoadingShopItems = false;
 	bool forceCurrentItem = false;
@@ -61,6 +72,7 @@ GlobalState g_State;
 
 struct GameAddresses
 {
+	DWORD DevicePtr = 0;
 	DWORD InputManagerPtr = 0;
 	DWORD NgGamePlusPtr = 0;
 	DWORD LoadedSaveMemoryPtr = 0;
@@ -95,6 +107,7 @@ bool FixSaveStringHandling = false;
 bool FixAutomaticWeaponFireRate = false;
 bool FixBlurResolution = false;
 bool FixShadowBlur = false;
+bool FixFlareArtifacts = false;
 
 // General
 bool DisableOnlineFeatures = false;
@@ -149,6 +162,7 @@ static void ReadConfig()
 	FixAutomaticWeaponFireRate = IniHelper::ReadInteger("Fixes", "FixAutomaticWeaponFireRate", 1) == 1;
 	FixBlurResolution = IniHelper::ReadInteger("Fixes", "FixBlurResolution", 1) == 1;
 	FixShadowBlur = IniHelper::ReadInteger("Fixes", "FixShadowBlur", 1) == 1;
+	FixFlareArtifacts = IniHelper::ReadInteger("Fixes", "FixFlareArtifacts", 1) == 1;
 
 	// General
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
@@ -257,6 +271,89 @@ static inline void ScaleRawInput(float rawX, float rawY, float divisor, float& o
 static inline bool MatchId(const DWORD* item, DWORD d0, DWORD d1, DWORD d2, DWORD d3)
 {
 	return item[0] == d0 && item[1] == d1 && item[2] == d2 && item[3] == d3;
+}
+
+static IDirect3DDevice9* GetD3D9Device()
+{
+	if (g_State.device) return g_State.device;
+	IDirect3DDevice9* dev = nullptr;
+
+	__try
+	{
+		dev = *reinterpret_cast<IDirect3DDevice9**>(g_Addresses.DevicePtr);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		return nullptr;
+	}
+
+	g_State.device = dev;
+	return dev;
+}
+
+static void ReleaseFlareFixResources()
+{
+	if (g_State.sourceSurf)
+	{
+		g_State.sourceSurf->Release();
+		g_State.sourceSurf = nullptr;
+	}
+
+	if (g_State.proxySurf)
+	{
+		g_State.proxySurf->Release();
+		g_State.proxySurf = nullptr;
+	}
+
+	if (g_State.proxyTex)
+	{
+		g_State.proxyTex->Release();
+		g_State.proxyTex = nullptr;
+	}
+
+	if (g_State.sourceTex)
+	{
+		g_State.sourceTex->Release();
+		g_State.sourceTex = nullptr;
+	}
+
+	g_State.resourcesValid = false;
+	g_State.snapshotValid = false;
+}
+
+static bool TrackSourceTexture(IDirect3DBaseTexture9* src)
+{
+	IDirect3DDevice9* dev = GetD3D9Device();
+	if (!src || !dev) return false;
+	if (src->GetType() != D3DRTYPE_TEXTURE) return false;
+	if (g_State.resourcesValid && g_State.sourceTex == src) return true;
+
+	IDirect3DTexture9* src2d = static_cast<IDirect3DTexture9*>(src);
+	D3DSURFACE_DESC desc{};
+	if (FAILED(src2d->GetLevelDesc(0, &desc))) return false;
+
+	ReleaseFlareFixResources();
+
+	HRESULT hr = dev->CreateTexture(desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &g_State.proxyTex, nullptr);
+	if (FAILED(hr)) return false;
+
+	hr = g_State.proxyTex->GetSurfaceLevel(0, &g_State.proxySurf);
+	if (FAILED(hr))
+	{
+		ReleaseFlareFixResources(); return false;
+	}
+
+	hr = src2d->GetSurfaceLevel(0, &g_State.sourceSurf);
+	if (FAILED(hr))
+	{
+		ReleaseFlareFixResources(); return false;
+	}
+
+	src->AddRef();
+	g_State.sourceTex = src;
+	g_State.resourcesValid = true;
+	g_State.snapshotValid = false;
+	return true;
 }
 
 static bool IsUALPresent()
@@ -533,6 +630,43 @@ static int __cdecl IterativeShadowBlur_Hook(unsigned int a1, float a2, float a3,
 	}
 
 	return IterativeShadowBlur.unsafe_ccall<int>(a1, a2, a3, a4, a5, passCount, a7);
+}
+
+// =========================
+// FixFlareArtifacts
+// =========================
+
+static safetyhook::InlineHook RenderFlare;
+static uintptr_t RenderFlare_Trampoline = 0;
+
+__declspec(naked) static int __cdecl RenderFlare_Hook(DWORD* pFlare, int textureId, float posX, float posY, float sizeX, float sizeY, float rotation, float alpha, float colorReg, int renderPass, bool isScreenSpace)
+{
+	__asm
+	{
+		mov byte ptr[g_State.inFlareDraw], 1
+
+		// Forward stack args, offset stays 0x28 as ESP drops
+		push dword ptr[esp + 0x28] // isScreenSpace
+		push dword ptr[esp + 0x28] // renderPass
+		push dword ptr[esp + 0x28] // colorReg
+		push dword ptr[esp + 0x28] // alpha
+		push dword ptr[esp + 0x28] // rotation
+		push dword ptr[esp + 0x28] // sizeY
+		push dword ptr[esp + 0x28] // sizeX
+		push dword ptr[esp + 0x28] // posY
+		push dword ptr[esp + 0x28] // posX
+		push dword ptr[esp + 0x28] // textureId
+
+		// Call original function
+		mov edx, [RenderFlare_Trampoline]
+		call edx
+
+		// Balance stack
+		add esp, 0x28
+
+		mov byte ptr[g_State.inFlareDraw], 0
+		ret
+	}
 }
 
 // =========================
@@ -1625,6 +1759,94 @@ static void ApplyFixShadowBlur()
 	IterativeShadowBlur = HookHelper::CreateHook((void*)(addr_ShadowBlur - 0xB), &IterativeShadowBlur_Hook);
 }
 
+static void ApplyFixFlareArtifacts()
+{
+	if (!FixFlareArtifacts) return;
+
+	DWORD addr_RenderFlare = ScanModuleSignature(g_State.GameModule, "56 8B F0 8B 06 57 BF 01 00 00 00 23 C7", "RenderFlare");
+	DWORD addr_FlareSnapshot = ScanModuleSignature(g_State.GameModule, "83 C0 28 88 4E 1E 2B D5 8B 36 3B D3 0F 85", "FlareSnapshot");
+	DWORD addr_FlareTextureSubst = ScanModuleSignature(g_State.GameModule, "8B 10 51 6A 04 53 50 8B 82 14 01 00 00 FF D0", "FlareTextureSubst");
+	DWORD addr_ResetSite1Pre = ScanModuleSignature(g_State.GameModule, "8B 42 40 FF D0 83 3D", "ResetSite1Pre");
+	DWORD addr_ResetSite2Pre = ScanModuleSignature(g_State.GameModule, "8B 08 8B 51 40 83 C4 04 68", "ResetSite2Pre");
+	DWORD addr_DeviceCleanupPre = ScanModuleSignature(g_State.GameModule, "85 C0 74 12 8B 08 8B 51 08 50 FF D2 C7 05 ?? ?? ?? ?? ?? ?? ?? ?? E9", "DeviceCleanupPre");
+
+	if (addr_RenderFlare == 0 ||
+		addr_FlareSnapshot == 0 ||
+		addr_FlareTextureSubst == 0 ||
+		addr_ResetSite1Pre == 0 ||
+		addr_ResetSite2Pre == 0 ||
+		addr_DeviceCleanupPre == 0) {
+		return;
+	}
+
+	g_Addresses.DevicePtr = MemoryHelper::ReadMemory<int>(addr_ResetSite2Pre - 0x4);
+
+	RenderFlare = HookHelper::CreateHook((void*)addr_RenderFlare, &RenderFlare_Hook);
+	RenderFlare_Trampoline = RenderFlare.trampoline().address();
+
+	static SafetyHookMid FlareSnapshot{};
+	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareSnapshot + 0x2B),
+		[](safetyhook::Context&)
+		{
+			if (!g_State.resourcesValid) return;
+
+			IDirect3DDevice9* dev = GetD3D9Device();
+			if (!dev) return;
+			HRESULT hr = dev->StretchRect(g_State.sourceSurf, nullptr, g_State.proxySurf, nullptr, D3DTEXF_NONE);
+			g_State.snapshotValid = SUCCEEDED(hr);
+		}
+	);
+
+	static SafetyHookMid FlareTextureSubst{};
+	FlareTextureSubst = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareTextureSubst + 0x1B),
+		[](safetyhook::Context& ctx)
+		{
+			if (ctx.ebx != 258) return;
+			if (!g_State.inFlareDraw) return;
+
+			IDirect3DBaseTexture9* tex = reinterpret_cast<IDirect3DBaseTexture9*>(ctx.ecx);
+			if (!tex) return;
+
+			if (!g_State.resourcesValid || g_State.sourceTex != tex)
+			{
+				TrackSourceTexture(tex);
+			}
+
+			if (!g_State.snapshotValid) return;
+			if (g_State.sourceTex != tex) return;
+
+			ctx.ecx = reinterpret_cast<uintptr_t>(g_State.proxyTex);
+		}
+	);
+
+	static SafetyHookMid ResetSite1Pre{};
+	ResetSite1Pre = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite1Pre),
+		[](safetyhook::Context&)
+		{
+			ReleaseFlareFixResources();
+			g_State.device = nullptr;
+		}
+	);
+
+	static SafetyHookMid ResetSite2Pre{};
+	ResetSite2Pre = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite2Pre - 0x5),
+		[](safetyhook::Context&)
+		{
+			ReleaseFlareFixResources();
+			g_State.device = nullptr;
+		}
+	);
+
+	static SafetyHookMid DeviceCleanupPre{};
+	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(addr_DeviceCleanupPre - 0x3B),
+		[](safetyhook::Context&)
+		{
+			ReleaseFlareFixResources();
+			g_State.device = nullptr;
+		}
+	);
+}
+
 static void ApplyDisableOnlineFeatures()
 {
 	if (!DisableOnlineFeatures) return;
@@ -1972,6 +2194,7 @@ static void Init()
 	ApplyFixAutomaticWeaponFireRate();
 	ApplyFixBlurResolution();
 	ApplyFixShadowBlur();
+	ApplyFixFlareArtifacts();
 
 	// General
 	ApplyDisableOnlineFeatures();
