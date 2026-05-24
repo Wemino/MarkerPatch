@@ -53,7 +53,6 @@ struct GlobalState
 	IDirect3DDevice9* device = nullptr;
 	bool inFlareDraw = false;
 	IDirect3DBaseTexture9* sourceTex = nullptr;
-	IDirect3DSurface9* sourceSurf = nullptr;
 	IDirect3DTexture9* proxyTex = nullptr;
 	IDirect3DSurface9* proxySurf = nullptr;
 	bool resourcesValid = false;
@@ -293,12 +292,6 @@ static IDirect3DDevice9* GetD3D9Device()
 
 static void ReleaseFlareFixResources()
 {
-	if (g_State.sourceSurf)
-	{
-		g_State.sourceSurf->Release();
-		g_State.sourceSurf = nullptr;
-	}
-
 	if (g_State.proxySurf)
 	{
 		g_State.proxySurf->Release();
@@ -311,11 +304,7 @@ static void ReleaseFlareFixResources()
 		g_State.proxyTex = nullptr;
 	}
 
-	if (g_State.sourceTex)
-	{
-		g_State.sourceTex->Release();
-		g_State.sourceTex = nullptr;
-	}
+	g_State.sourceTex = nullptr;
 
 	g_State.resourcesValid = false;
 	g_State.snapshotValid = false;
@@ -343,13 +332,6 @@ static bool TrackSourceTexture(IDirect3DBaseTexture9* src)
 		ReleaseFlareFixResources(); return false;
 	}
 
-	hr = src2d->GetSurfaceLevel(0, &g_State.sourceSurf);
-	if (FAILED(hr))
-	{
-		ReleaseFlareFixResources(); return false;
-	}
-
-	src->AddRef();
 	g_State.sourceTex = src;
 	g_State.resourcesValid = true;
 	g_State.snapshotValid = false;
@@ -1788,11 +1770,18 @@ static void ApplyFixFlareArtifacts()
 	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareSnapshot + 0x2B),
 		[](safetyhook::Context&)
 		{
-			if (!g_State.resourcesValid) return;
+			if (!g_State.resourcesValid || !g_State.sourceTex || !g_State.proxySurf) return;
 
 			IDirect3DDevice9* dev = GetD3D9Device();
 			if (!dev) return;
-			HRESULT hr = dev->StretchRect(g_State.sourceSurf, nullptr, g_State.proxySurf, nullptr, D3DTEXF_NONE);
+
+			IDirect3DTexture9* src2d = static_cast<IDirect3DTexture9*>(g_State.sourceTex);
+			IDirect3DSurface9* srcSurf = nullptr;
+			if (FAILED(src2d->GetSurfaceLevel(0, &srcSurf)) || !srcSurf) return;
+
+			HRESULT hr = dev->StretchRect(srcSurf, nullptr, g_State.proxySurf, nullptr, D3DTEXF_NONE);
+			srcSurf->Release();
+
 			g_State.snapshotValid = SUCCEEDED(hr);
 		}
 	);
