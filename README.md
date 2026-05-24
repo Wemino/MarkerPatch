@@ -145,8 +145,8 @@ Fixes blocky tile-pattern artifacts in lighting and shadow areas that occur on N
 <div align="center">
   <table>
     <tr>
-      <td width="50%"><img style="width:100%" src="assets/flarefix_off.png"></td>
-      <td width="50%"><img style="width:100%" src="assets/flarefix_on.png"></td>
+      <td width="50%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/flarefix_off.png"></td>
+      <td width="50%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/flarefix_on.png"></td>
     </tr>
     <tr>
       <td align="center">Vanilla</td>
