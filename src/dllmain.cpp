@@ -9,9 +9,12 @@
 
 #include "ini.hpp"
 #include "Controller.hpp"
+#include "LAAPatcher.hpp"
+
 #include "dllmain.hpp"
 #include "helper.hpp"
-#include "LAAPatcher.hpp"
+
+#include "Shaders/GlassReflectionVS.hpp"
 
 #pragma comment(lib, "SDL3-static.lib")
 
@@ -107,6 +110,7 @@ bool FixAutomaticWeaponFireRate = false;
 bool FixBlurResolution = false;
 bool FixShadowBlur = false;
 bool FixFlareArtifacts = false;
+bool FixGlassReflections = false;
 
 // General
 bool DisableOnlineFeatures = false;
@@ -162,6 +166,7 @@ static void ReadConfig()
 	FixBlurResolution = IniHelper::ReadInteger("Fixes", "FixBlurResolution", 1) == 1;
 	FixShadowBlur = IniHelper::ReadInteger("Fixes", "FixShadowBlur", 1) == 1;
 	FixFlareArtifacts = IniHelper::ReadInteger("Fixes", "FixFlareArtifacts", 1) == 1;
+	FixGlassReflections = IniHelper::ReadInteger("Fixes", "FixGlassReflections", 1) == 1;
 
 	// General
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
@@ -1836,6 +1841,22 @@ static void ApplyFixFlareArtifacts()
 	);
 }
 
+static void ApplyFixGlassReflections()
+{
+	if (!FixGlassReflections) return;
+
+	DWORD addr_VSTable = ScanModuleSignature(g_State.GameModule, "00 00 0F 80 01 00 00 02 00 08 2F 80 00 00 55 A0", "GlassVSTable");
+
+	if (addr_VSTable == 0) return;
+
+	uint32_t fixedVSPtr = (uint32_t)(uintptr_t)g_GlassReflectionVS;
+
+	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x144, fixedVSPtr);
+	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x148, fixedVSPtr);
+	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x14C, fixedVSPtr);
+	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x154, fixedVSPtr);
+}
+
 static void ApplyDisableOnlineFeatures()
 {
 	if (!DisableOnlineFeatures) return;
@@ -2184,6 +2205,7 @@ static void Init()
 	ApplyFixBlurResolution();
 	ApplyFixShadowBlur();
 	ApplyFixFlareArtifacts();
+	ApplyFixGlassReflections();
 
 	// General
 	ApplyDisableOnlineFeatures();

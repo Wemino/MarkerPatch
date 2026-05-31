@@ -138,6 +138,23 @@ Restores depth of field blur intensity at high resolutions. The game's DOF effec
   </table>
 </div>
 
+## Reflections Fix
+
+Fixes distorted, repeating reflections on reflective surfaces. The PC port declares the vertex normal and tangent data as unsigned values when they should be signed, so the game reconstructs the reflection at skewed angles and layers it across the surface. This corrects the data interpretation so reflections render properly, matching the original console appearance.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/glassreflection_off.png"></td>
+      <td width="50%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/glassreflection_on.png"></td>
+    </tr>
+    <tr>
+      <td align="center">Vanilla</td>
+      <td align="center">MarkerPatch</td>
+    </tr>
+  </table>
+</div>
+
 ## Flare Occlusion Artifact Fix
 
 Fixes blocky tile-pattern artifacts in lighting and shadow areas that occur on NVIDIA GPUs when flares are enabled while a holographic HUD is present.
