@@ -119,6 +119,7 @@ int IncreasedEntityPersistenceBodies = 0;
 int IncreasedEntityPersistenceLimbs = 0;
 bool IncreasedDecalPersistence = false;
 bool SkipIntro = false;
+bool SkipArtificialLoadingDelay = false;
 int CheckLAAPatch = 0;
 
 // Display
@@ -175,6 +176,7 @@ static void ReadConfig()
 	IncreasedEntityPersistenceLimbs = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceLimbs", 96);
 	IncreasedDecalPersistence = IniHelper::ReadInteger("General", "IncreasedDecalPersistence", 1) == 1;
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
+	SkipArtificialLoadingDelay = IniHelper::ReadInteger("General", "SkipArtificialLoadingDelay", 1) == 1;
 	CheckLAAPatch = IniHelper::ReadInteger("General", "CheckLAAPatch", 0);
 
 	// Display
@@ -1946,6 +1948,17 @@ static void ApplySkipIntro()
 	LoadMovie = HookHelper::CreateHook((void*)addr_LoadMovie, &LoadMovie_Hook);
 }
 
+static void ApplySkipArtificialLoadingDelay()
+{
+	if (!SkipArtificialLoadingDelay) return;
+
+	DWORD addr_SkipArtificialLoadingDelay = ScanModuleSignature(g_State.GameModule, "72 29 85 C9 74 E7", "SkipArtificialLoadingDelay");
+
+	if (addr_SkipArtificialLoadingDelay == 0) return;
+
+	MemoryHelper::MakeNOP(addr_SkipArtificialLoadingDelay, 2);
+}
+
 static void ApplyAutoResolution()
 {
 	if (!AutoResolution) return;
@@ -2212,6 +2225,7 @@ static void Init()
 	ApplyIncreasedEntityPersistence();
 	ApplyIncreasedDecalPersistence();
 	ApplySkipIntro();
+	ApplySkipArtificialLoadingDelay();
 
 	// Display
 	ApplyAutoResolution();

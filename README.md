@@ -57,6 +57,10 @@ Corrects the VSync implementation to use the refresh rate selected in the game's
 
 Stabilizes the fire rate of automatic weapons across all framerates. The game's weapon cooldown system checks more frequently at higher framerates, causing automatic weapons like the Pulse Rifle and Flamethrower to fire progressively faster as FPS increases.
 
+## Skip Artificial Loading Delay
+
+Removes the artificial minimum duration applied to loading screens. The game holds each loading screen for at least ten seconds even after the level has finished loading, so faster storage never shortens the wait. This fix lets the loading screen end as soon as the actual loading completes.
+
 ## Save System Fixes
 
 ### Difficulty Reward Tracking
