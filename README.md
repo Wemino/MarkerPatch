@@ -57,6 +57,10 @@ Corrects the VSync implementation to use the refresh rate selected in the game's
 
 Stabilizes the fire rate of automatic weapons across all framerates. The game's weapon cooldown system checks more frequently at higher framerates, causing automatic weapons like the Pulse Rifle and Flamethrower to fire progressively faster as FPS increases.
 
+## Solar Array Elevator Fix
+
+Fixes the Solar Array Elevator's door becoming stuck in Chapter 7 after a checkpoint is reloaded above 30 FPS, which can leave the player unable to progress. At higher framerates the door's position isn't set correctly before the elevator moves, and this fix sets it properly so the elevator works as intended.
+
 ## Skip Artificial Loading Delay
 
 Removes the artificial minimum duration applied to loading screens. The game holds each loading screen for at least ten seconds even after the level has finished loading, so faster storage never shortens the wait. This fix lets the loading screen end as soon as the actual loading completes.

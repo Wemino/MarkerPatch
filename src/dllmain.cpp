@@ -67,6 +67,7 @@ struct GlobalState
 	int16_t currentHeight = 0;
 	float resolutionScale = 0.0f;
 	float frameTime = 0.0f;
+	bool elevatorFixArmed = false;
 };
 
 // Global instance
@@ -107,6 +108,7 @@ bool FixDifficultyRewards = false;
 bool FixSuitIDConflicts = false;
 bool FixSaveStringHandling = false;
 bool FixAutomaticWeaponFireRate = false;
+bool FixSolarArrayElevator = false;
 bool FixBlurResolution = false;
 bool FixShadowBlur = false;
 bool FixFlareArtifacts = false;
@@ -164,6 +166,7 @@ static void ReadConfig()
 	FixSuitIDConflicts = IniHelper::ReadInteger("Fixes", "FixSuitIDConflicts", 1) == 1;
 	FixSaveStringHandling = IniHelper::ReadInteger("Fixes", "FixSaveStringHandling", 1) == 1;
 	FixAutomaticWeaponFireRate = IniHelper::ReadInteger("Fixes", "FixAutomaticWeaponFireRate", 1) == 1;
+	FixSolarArrayElevator = IniHelper::ReadInteger("Fixes", "FixSolarArrayElevator", 1) == 1;
 	FixBlurResolution = IniHelper::ReadInteger("Fixes", "FixBlurResolution", 1) == 1;
 	FixShadowBlur = IniHelper::ReadInteger("Fixes", "FixShadowBlur", 1) == 1;
 	FixFlareArtifacts = IniHelper::ReadInteger("Fixes", "FixFlareArtifacts", 1) == 1;
@@ -587,6 +590,22 @@ static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
 	bool result = CheckFireCooldown.unsafe_thiscall<bool>(thisp);
 	*fireDelayPtr = originalDelay;
 	return result;
+}
+
+// =========================
+// FixSolarArrayElevator
+// =========================
+
+safetyhook::InlineHook Timeline_ScheduleEvent;
+
+static char __fastcall Timeline_ScheduleEvent_Hook(int* thisp, int, DWORD* a2, int a3, float a4, unsigned int a5, int a6)
+{
+	if (a2 && a2[0] == 0x716F8DC9)
+	{
+		g_State.elevatorFixArmed = true;
+	}
+
+	return Timeline_ScheduleEvent.unsafe_thiscall<char>(thisp, a2, a3, a4, a5, a6);
 }
 
 // =========================
@@ -1726,6 +1745,35 @@ static void ApplyFixAutomaticWeaponFireRate()
 	g_Addresses.EngineFrameTimePtr = MemoryHelper::ReadMemory<int>(addr_UpdateEngineTimer + 0x265);
 }
 
+static void ApplyFixSolarArrayElevator()
+{
+	if (!FixSolarArrayElevator) return;
+
+	DWORD addr_Timeline_ScheduleEvent = ScanModuleSignature(g_State.GameModule, "0F 57 C0 83 EC 24 0F 2F 44 24 30", "Timeline_ScheduleEvent");
+	DWORD addr_ElevatorFlushHook = ScanModuleSignature(g_State.GameModule, "85 C0 75 4F E8", "ElevatorFlushHook");
+
+	if (addr_Timeline_ScheduleEvent == 0 ||
+		addr_ElevatorFlushHook == 0) {
+		return;
+	}
+
+	Timeline_ScheduleEvent = HookHelper::CreateHook((void*)addr_Timeline_ScheduleEvent, &Timeline_ScheduleEvent_Hook);
+
+	static SafetyHookMid ElevatorFlushHook{};
+	ElevatorFlushHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_ElevatorFlushHook),
+		[](safetyhook::Context& ctx)
+		{
+			if (!g_State.elevatorFixArmed) return;
+
+			if (MemoryHelper::ReadMemory<uint32_t>(ctx.esi + 0xC) == 0x808075B6)
+			{
+				ctx.ebp = 0x7FFFFFFF;
+				g_State.elevatorFixArmed = false;
+			}
+		}
+	);
+}
+
 static void ApplyFixBlurResolution()
 {
 	if (!FixBlurResolution) return;
@@ -2215,6 +2263,7 @@ static void Init()
 	ApplyFixSuitIDConflicts();
 	ApplyFixSaveStringHandling();
 	ApplyFixAutomaticWeaponFireRate();
+	ApplyFixSolarArrayElevator();
 	ApplyFixBlurResolution();
 	ApplyFixShadowBlur();
 	ApplyFixFlareArtifacts();
