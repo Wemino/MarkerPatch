@@ -721,6 +721,7 @@ static char __fastcall TrophyCountUpdate_Hook(int thisPtr, int, unsigned int* a2
 		AchievementOverlay::UpdateCounterByHash(*a2, *(int*)(thisPtr + 20 + slot * 4));
 	}
 
+	AchievementOverlay::NotifyWeaponKill(*a2);
 	return result;
 }
 
@@ -2187,7 +2188,7 @@ static void ApplyRawMouseInput()
 		addr_UpdatePlayerCamera == 0 ||
 		addr_ApplyCameraRotation == 0 ||
 		addr_UpdateWeaponPoseBlend == 0 ||
-		addr_UpdateAimWithMomentum == 0 || 
+		addr_UpdateAimWithMomentum == 0 ||
 		addr_UpdateBoundedAim == 0 ||
 		addr_UpdateConeAim == 0 ||
 		addr_UpdateOscillatingAim == 0) {
@@ -2417,7 +2418,7 @@ static void ApplyD3D9ApiMidHook()
 			AchievementOverlay::OnPresent();
 		}
 	);
-	
+
 	static SafetyHookMid Present2{};
 	Present2 = safetyhook::create_mid(reinterpret_cast<void*>(addr_Present2),
 		[](safetyhook::Context&)

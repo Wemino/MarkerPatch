@@ -108,6 +108,26 @@ namespace AchievementOverlay
         100, 10, 10, 1, 1, 1, 20, 50, 1, 1, 1, 1, 1, 1, 1, 1, 25, 1
     };
 
+    // "The Sampler Platter": kill a Necromorph with every weapon (single player)
+    struct SamplerWeapon { unsigned int hash; int slot; };
+    inline constexpr SamplerWeapon kSamplerWeapons[] =
+    {
+        { 0xB6BF3CD2, 10 }, // iMsgScoringKill_Plasma_Cutter
+        { 0xF4AFA4B8, 11 }, // iMsgScoringKill_Pulse_Rifle
+        { 0x1B49349F, 12 }, // iMsgScoringKill_Line_Gun
+        { 0xEB6AE46A, 13 }, // iMsgScoringKill_Flamethrower
+        { 0x93ADD678, 14 }, // iMsgScoringKill_Contact_Beam
+        { 0x6CF77F6E, 15 }, // iMsgScoringKill_Ripper
+        { 0x143B7E42, 16 }, // iMsgScoringKill_Force_Gun
+        { 0xDED71AA2, 17 }, // iMsgScoringKill_Javelin_Gun
+        { 0x6821F05F, 18 }, // iMsgScoringKill_Detonator_Gun
+        { 0x536513F8, 20 }, // iMsgScoringKill_Seeker_Rifle
+    };
+    inline constexpr int kSamplerWeaponCount = (int)(sizeof(kSamplerWeapons) / sizeof(kSamplerWeapons[0]));
+    inline constexpr int kSamplerPlatterAchvId = 30;
+
+    inline unsigned int g_samplerMask = 0;
+
     inline int AchievementMax(int index)
     {
         int n = (int)(sizeof(kAchievementMax) / sizeof(kAchievementMax[0]));
@@ -254,7 +274,7 @@ namespace AchievementOverlay
 
     inline bool HasCounter(int achvId)
     {
-        return achvId == 0 || IsSaveCounter(achvId);
+        return achvId == 0 || achvId == kSamplerPlatterAchvId || IsSaveCounter(achvId);
     }
 
     // Save load: set a counter from its buffer slot, does not touch the unlock flag
@@ -266,6 +286,32 @@ namespace AchievementOverlay
         {
             SetAchievementProgress(c.achvId, count);
             found = true;
+        }
+
+        for (int i = 0; i < kSamplerWeaponCount; i++)
+        {
+            if (kSamplerWeapons[i].slot == slot)
+            {
+                unsigned int bit = (1u << i);
+                if (count > 0)
+                {
+                    g_samplerMask |= bit;
+                }
+                else
+                {
+                    g_samplerMask &= ~bit;
+                }
+
+                int distinct = 0;
+                for (int b = 0; b < kSamplerWeaponCount; b++)
+                {
+                    if (g_samplerMask & (1u << b)) distinct++;
+                }
+
+                SetAchievementProgress(kSamplerPlatterAchvId, distinct);
+                found = true;
+                break;
+            }
         }
 
         if (found)
@@ -281,13 +327,45 @@ namespace AchievementOverlay
         for (const CounterMap& c : kCounters)
         if (c.hash == hash)
         {
-           SetAchievementProgress(c.achvId, count);
-           found = true;
+            SetAchievementProgress(c.achvId, count);
+            found = true;
         }
 
         if (found)
         {
             g_progressInitialized = true;
+        }
+    }
+
+    inline void NotifyWeaponKill(unsigned int hash)
+    {
+        for (int i = 0; i < kSamplerWeaponCount; i++)
+        {
+            if (kSamplerWeapons[i].hash != hash)
+            {
+                continue;
+            }
+
+            unsigned int bit = (1u << i);
+            if (g_samplerMask & bit)
+            {
+                return; // already counted this weapon
+            }
+
+            g_samplerMask |= bit;
+
+            int distinct = 0;
+            for (int b = 0; b < kSamplerWeaponCount; b++)
+            {
+                if (g_samplerMask & (1u << b))
+                {
+                    distinct++;
+                }
+            }
+
+            SetAchievementProgress(kSamplerPlatterAchvId, distinct);
+            g_progressInitialized = true;
+            return;
         }
     }
 
@@ -314,6 +392,7 @@ namespace AchievementOverlay
     {
         g_unlocked.assign(g_unlocked.size(), false);
         g_current.assign(g_current.size(), 0);
+        g_samplerMask = 0;
         g_progressInitialized = false;
     }
 
@@ -702,7 +781,7 @@ namespace AchievementOverlay
 
                 char overlay[32];
                 float barFrac;
-                if (!reveal || (IsSaveCounter((int)i) && !g_progressInitialized))
+                if (!reveal || ((IsSaveCounter((int)i) || (int)i == kSamplerPlatterAchvId) && !g_progressInitialized))
                 {
                     // Hidden, or a save counter whose data hasn't loaded yet
                     barFrac = 0.0f;
@@ -947,7 +1026,7 @@ namespace AchievementOverlay
     // Device
     inline bool InstallHooks(IDirect3DDevice9* pDevice)
     {
-        if (g_hooksInstalled || !pDevice) 
+        if (g_hooksInstalled || !pDevice)
             return g_hooksInstalled;
 
         D3DDEVICE_CREATION_PARAMETERS cp{};
@@ -1139,9 +1218,9 @@ namespace AchievementOverlay
         g_inReset = false;
     }
 
-    inline void OnDeviceReset() 
-    { 
-        OnDeviceReset(GetDevice()); 
+    inline void OnDeviceReset()
+    {
+        OnDeviceReset(GetDevice());
     }
 
     inline void Toggle()
