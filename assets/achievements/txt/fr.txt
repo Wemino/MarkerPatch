@@ -1,0 +1,51 @@
+L'Ultime frontière|Gagnez tous les trophées de Dead Space 2.
+Retour aux affaires|Trouvez votre première tenue.
+Déraillé|Survivez à la séquence du train.
+Un petit pas|Traversez la première zone sans gravité.
+Harcèlement|Survivez à votre première rencontre avec les Traqueurs.
+Un peu de répit|Tuez le Tourmenteur.
+Travaux pratiques|Remportez le combat de l'école.
+Quel étage ?|Neutralisez tous les Tripodes de l'ascenseur.
+Désolé, Dave|Venez à bout de l'I.A.
+Énergie solaire|Résolvez l'énigme du Complexe Solaire.
+Nid de frelons|Détruisez le nid de Tripodes.
+Action !|Prenez les restes de Titan au piège grâce à l'Ishimura.
+Se faire le mur|Terminez la séquence de la foreuse.
+L'ultime sacrifice|Détruisez le Monolithe.
+Le fugitif|Échappez-vous des installations de la compagnie.
+Qu'on goûte bien le deuil|Survivez à l'aiguille de la machine.
+Ne faisons plus qu'un|Terminez le jeu dans n'importe quelle difficulté.
+Impossible|Terminez le jeu en mode Fanatique.
+Sans-gêne|Défoncez 10 conteneurs.
+Nettoyeur du vide|Dépressurisez 20 Necromorphs sans vous faire aspirer.
+J'ai dit "on ne bouge plus"|Tuez 25 ennemis rampants par écrasement (mode solo).
+Sers-toi de la Force|Tuez 30 Necromorphs avec des objets contrôlés par télékinésie.
+Nounou|Tuez 30 Bébés sans les faire exploser.
+Arrêt sur carnage|Tuez 50 Necromorphs sous l'effet de la stase (mode solo).
+Premiers soins|Utilisez le soin rapide dix fois (mode solo).
+Démembrement épique|Démembrez 2 500 membres de Necromorphs (mode solo).
+Un peu de tenue|Achetez la tenue avancée.
+Au top|Améliorez votre RIG et module de stase au maximum.
+Ma préférée|Améliorez une arme au maximum.
+Bien équipé|Possédez quatre armes améliorées au maximum simultanément.
+Varier les plaisirs|Tuez un Necromorph avec chaque arme du jeu (mode solo).
+Lightspeed de Milo|Démembrez la statue du "Lightspeed Boy".
+Tous fans de Peng !|Trouvez le trésor Peng.
+Archiviste|Trouvez 100 messages.
+Électricien|Trouvez 10 semi-conducteurs.
+Ingénieur|Trouvez 10 schémas techniques.
+Strike|Tuez six ennemis d'un coup avec le tir alternatif du Trancheur (mode solo).
+Électroconvulsivothérapie|Empalez un ennemi au Lance-javelot et util. son tir alt. pour en électrocuter 3 autres (mode solo).
+Bûcheron|Tuez quatre ennemis avec une même lame de Découpeur.
+Piège|Tuez 20 ennemis avec des mines de détonateur en mode déployé.
+Necro Flambé|Tuez 50 ennemis au lance-flammes.
+Bouh !|Tuez un Traqueur avec le Fusil chercheur en mode zoom.
+Sadique|Renversez un ennemi avec le tir alternatif du Choc Laser puis tuez-le au sol avec le tir principal.
+Dans les airs|Empalez un ennemi et faites-le voler sur 17 mètres (il doit rester contre une surface).
+Auto-flagellation|Accrochez un Tailladeur à une surface en utilisant un bras de Tailladeur.
+Perdu dans l'espace|Empalez un ennemi dans une fenêtre de décompression pour la faire exploser.
+Sans vie|Terminez le jeu en Fou furieux.
+Dégagé derrière les oreilles|Coupez les trois tentacules d'un Rôdeur avec un seul tir principal de Trancheur (mode solo).
+Dompteur|Tuez une Brute sans subir de dégâts.
+Visez les membres !|Démembrez 25 membres de Necromorphs (mode solo).
+Retour à l'envoyeur|Tuez un Antipersonnel en lui renvoyant sa mine.

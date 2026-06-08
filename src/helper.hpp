@@ -1,4 +1,7 @@
-﻿#include "safetyhook/safetyhook.hpp"
+﻿#pragma once
+
+#include "safetyhook/safetyhook.hpp"
+#include "dllmain.hpp"
 
 namespace MemoryHelper
 {

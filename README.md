@@ -83,6 +83,23 @@ These conflicts would cause one suit to overwrite the other in your inventory, m
 
 Prevents crashes that can rarely occur when the game enumerates save files. This happens in two scenarios: when checking for Dead Space 1 saves to grant the DLC bonus for owning the first game, and when listing your Dead Space 2 save files in the load menu. Though these crashes are uncommon, they can be frustrating when they do occur.
 
+## Achievement Support
+
+Adds an in-game achievement overlay that tracks your progress and shows a notification when one is unlocked, using the same achievements as the Xbox 360 and PlayStation 3 versions. Press HOME to open the list at any time.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="100%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/achievements_menu.png"></td>
+    </tr>
+    <tr>
+      <td align="center">Achievement List</td>
+    </tr>
+  </table>
+</div>
+
+> **Note**: Can be disabled by setting `AchievementSupport = 0` in `MarkerPatch.ini` if wanted.
+
 ## Subtitle Font Scaling
 
 Scales subtitle text appropriately for high resolutions. The game was designed with console limitations in mind and intentionally prevents subtitles from scaling beyond 720p resolution, making them tinier at 1080p and above. This fix removes that limitation and allows proper scaling.
@@ -319,5 +336,6 @@ All features can be customized via the `MarkerPatch.ini` file. Each setting incl
 
 - [SDL3](https://www.libsdl.org/) for improved controller support.
 - [safetyhook](https://github.com/cursey/safetyhook) for hooking.  
+- [ImGui](https://github.com/ocornut/imgui) for the achievement window.  
 - [mINI](https://github.com/metayeti/mINI) for INI file handling.  
 - [CRASHARKI](https://github.com/CRASHARKI) for the logo.

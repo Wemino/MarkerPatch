@@ -1,0 +1,51 @@
+The Final Frontier|Earn all Trophies in Dead Space 2
+Patient on the Loose|Get your first Suit
+Derailed|Survive the Train Sequence
+One Small Step|Get through the first Zero-G area
+Clever Girls|Survive your first encounter with Stalkers
+Torment Me No More|Kill the Tormenter
+The Graduate|Win the fight at the School
+Elevator Action|Knock off every Tripod during the Elevator Sequence
+Shut Down|Defeat the AI
+Powered Up|Complete the Solar Array Puzzle
+Hornet's Nest|Destroy the Tripod Nest
+Operation!|Snare the Shard with the Ishimura
+Knock Knock|Complete the Drill Ride
+The Final Sacrifice|Destroy the Marker
+The Fugitive|Escape the Facility
+Cross your Heart, Hope to Die|Survive the Eye Poke Machine
+Made Us Whole|Complete the game on any difficulty setting
+Mission Impossible|Complete the game on Zealot setting
+Romper Stomper|Stomp 10 Containers
+Vacuum Cleaner|Decompress 20 Necromorphs without getting sucked out yourself
+...And Stay Down|Kill 25 crawling enemies with Stomp (single player only)
+Think Fast|Kill 30 Necromorphs with Kinesis objects
+The Nanny|Kill 30 Crawlers without detonating them
+Frozen in Time|Kill 50 Necromorphs while they are in Stasis (single player only)
+First Aid|Use Quick Heal ten times (single player only)
+Epic Dismemberment|Dismember 2,500 Necromorph Limbs (single player only)
+Looking good|Purchase the Advanced Suit
+Fully Outfitted|Upgrade your RIG and Stasis completely
+Picking favorites|Upgrade 1 Weapon completely
+Fully Loaded|Simultaneously have four completely upgraded weapons
+The Sampler Platter|Kill a Necromorph with every Weapon in the game (single player only).
+Lightspeed de Milo|Dismember the Lightspeed Boy Statue
+Collect Peng|Find the Peng treasure
+The Librarian|Collect 100 logs
+The Electrician|Collect 10 Semiconductors
+The Engineer|Collect 10 Schematics
+My Boom Stick|Kill 6 enemies at once with Line Gun's Alt-Fire (single player only)
+Shock Therapy|Impale an enemy with the Javelin Gun and use its Alt-Fire to shock 3 others (single player only)
+Lawnmower Man|Kill 4 enemies with the same Ripper blade
+It's a Trap!|Kill 20 enemies with Detonator Mines in a deployed state
+Necro Flambé|Kill 50 enemies using the Flamethrower
+Peek a Boo!|Kill a Stalker with the Seeker Rifle while in Zoom Mode
+C-Section|Knock down an enemy with Contact Beam Alt-Fire then kill it with Primary Fire before it stands up
+Going for Distance|Impale an enemy and make him fly through the air for 17 meters - it must stick to the surface
+Taste of your own Medicine|TK Impale a live Slasher to a surface using a Slasher's arm - it must stick to the surface
+Skewered in Space|Impale an enemy into a Decompression Window to cause it to blow out
+Hard to the Core|Complete the game on Hard Core setting
+Clean Cut|Sever all three tentacles of a Lurker with one Line Gun Primary Fire shot (single player only)
+Brute Juke|Kill a Brute without taking damage
+Shoot the Limbs!|Dismember 25 Necromorph Limbs (single player only)
+Bouncing Betty|Kill a Cyst by catching its Mine and throwing it back

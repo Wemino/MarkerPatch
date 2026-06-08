@@ -95,10 +95,16 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>$(SolutionDir)src\dinput8.def</ModuleDefinitionFile>
-      <AdditionalDependencies>winmm.lib;imm32.lib;version.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;imm32.lib;version.lib;setupapi.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\include\imgui\imgui.cpp" />
+    <ClCompile Include="..\include\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\include\imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="..\include\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\include\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\include\safetyhook\safetyhook.cpp" />
     <ClCompile Include="..\include\safetyhook\Zydis.c" />
     <ClCompile Include="..\src\dllmain.cpp" />
@@ -110,7 +116,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\AchievementOverlay.hpp" />
     <ClInclude Include="..\include\Controller.hpp" />
+    <ClInclude Include="..\include\imgui\imconfig.h" />
+    <ClInclude Include="..\include\imgui\imgui.h" />
+    <ClInclude Include="..\include\imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="..\include\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="..\include\imgui\imgui_internal.h" />
+    <ClInclude Include="..\include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\include\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\include\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\include\imgui\stb_image.h" />
     <ClInclude Include="..\include\ini.hpp" />
     <ClInclude Include="..\include\LAAPatcher.hpp" />
     <ClInclude Include="..\include\safetyhook\safetyhook.hpp" />

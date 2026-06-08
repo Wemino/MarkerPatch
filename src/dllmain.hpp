@@ -1,4 +1,6 @@
-struct dinput8
+#pragma once
+
+inline struct dinput8
 {
     FARPROC DirectInput8Create;
     FARPROC DllCanUnloadNow;

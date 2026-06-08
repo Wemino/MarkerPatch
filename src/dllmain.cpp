@@ -6,13 +6,14 @@
 #include <d3d9.h>
 
 #include <stacktrace>
-
 #include "ini.hpp"
 #include "Controller.hpp"
 #include "LAAPatcher.hpp"
 
 #include "dllmain.hpp"
 #include "helper.hpp"
+
+#include "AchievementOverlay.hpp"
 
 #include "Shaders/GlassReflectionVS.hpp"
 
@@ -115,6 +116,7 @@ bool FixFlareArtifacts = false;
 bool FixGlassReflections = false;
 
 // General
+bool AchievementSupport = false;
 bool DisableOnlineFeatures = false;
 bool IncreasedEntityPersistence = false;
 int IncreasedEntityPersistenceBodies = 0;
@@ -173,6 +175,7 @@ static void ReadConfig()
 	FixGlassReflections = IniHelper::ReadInteger("Fixes", "FixGlassReflections", 1) == 1;
 
 	// General
+	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
 	IncreasedEntityPersistence = IniHelper::ReadInteger("General", "IncreasedEntityPersistence", 1) == 1;
 	IncreasedEntityPersistenceBodies = IniHelper::ReadInteger("General", "IncreasedEntityPersistenceBodies", 25);
@@ -439,6 +442,11 @@ static int __cdecl MainLoop_Hook()
 		g_State.frameRawY = g_State.rawMouseDeltaY.exchange(0);
 	}
 
+	if (AchievementSupport)
+	{
+		AchievementOverlay::Update(GetD3D9Device());
+	}
+
 	return MainLoop.unsafe_ccall<int>();
 }
 
@@ -675,6 +683,79 @@ __declspec(naked) static int __cdecl RenderFlare_Hook(DWORD* pFlare, int texture
 		mov byte ptr[g_State.inFlareDraw], 0
 		ret
 	}
+}
+
+// =========================
+// AchievementSupport
+// =========================
+
+safetyhook::InlineHook GetGameLanguage;
+safetyhook::InlineHook TrophyCountUpdate;
+safetyhook::InlineHook GiveTrophy;
+safetyhook::InlineHook UpdateObtainedTrophy;
+safetyhook::InlineHook LoadTrophyCounter;
+
+static int __cdecl GetGameLanguage_Hook(char* String2, size_t MaxCount)
+{
+	int result = GetGameLanguage.ccall<int>(String2, MaxCount);
+
+	switch (result)
+	{
+		case 2: AchievementOverlay::SetLanguage("fr"); break;
+		case 3: AchievementOverlay::SetLanguage("de"); break;
+		case 5: AchievementOverlay::SetLanguage("it"); break;
+		case 8: AchievementOverlay::SetLanguage("es"); break;
+		default: AchievementOverlay::SetLanguage("en"); break;
+	}
+
+	return result;
+}
+
+static char __fastcall TrophyCountUpdate_Hook(int thisPtr, int, unsigned int* a2)
+{
+	char result = TrophyCountUpdate.unsafe_thiscall<char>(thisPtr, a2);
+
+	int slot = AchievementOverlay::CounterSlotByHash(*a2);
+	if (slot >= 0)
+	{
+		AchievementOverlay::UpdateCounterByHash(*a2, *(int*)(thisPtr + 20 + slot * 4));
+	}
+
+	return result;
+}
+
+static void __fastcall GiveTrophy_Hook(BYTE* thisPtr, int, unsigned int a2)
+{
+	GiveTrophy.unsafe_thiscall<void>(thisPtr, a2);
+
+	if (AchievementOverlay::NotifyUnlock((int)a2))
+	{
+		*(thisPtr + 24) |= 1;
+		GiveTrophy.unsafe_thiscall<void>(thisPtr, 0);
+	}
+}
+
+static char __fastcall UpdateObtainedTrophy_Hook(char* thisPtr, int, unsigned int a2, char a3, char a4)
+{
+	char result = UpdateObtainedTrophy.unsafe_thiscall<char>(thisPtr, a2, a3, a4);
+	AchievementOverlay::SetAchievementUnlocked((int)a2, a3 != 0);
+	return result;
+}
+
+static char __fastcall LoadTrophyCounter_Hook(int thisPtr, int, int a2, const void* a3, int a4, int a5)
+{
+	char result = LoadTrophyCounter.unsafe_thiscall<char>(thisPtr, a2, a3, a4, a5);
+	if (a3 && a4)
+	{
+		const int* counters = (const int*)a3;
+
+		for (int slot = 0; slot < 38; slot++)
+		{
+			AchievementOverlay::InitCounterBySlot(slot, counters[slot]);
+		}
+	}
+
+	return result;
 }
 
 // =========================
@@ -1259,8 +1340,18 @@ static UINT WINAPI GetRawInputData_Hook(HRAWINPUT hRawInput, UINT uiCommand, LPV
 		RAWINPUT* raw = (RAWINPUT*)pData;
 		if (raw->header.dwType == RIM_TYPEMOUSE)
 		{
-			g_State.rawMouseDeltaX += raw->data.mouse.lLastX;
-			g_State.rawMouseDeltaY += raw->data.mouse.lLastY;
+			if (AchievementOverlay::IsVisible())
+			{
+				// Overlay open: hide movement and clicks from the game
+				raw->data.mouse.lLastX = 0;
+				raw->data.mouse.lLastY = 0;
+				raw->data.mouse.usButtonFlags = 0;
+			}
+			else
+			{
+				g_State.rawMouseDeltaX += raw->data.mouse.lLastX;
+				g_State.rawMouseDeltaY += raw->data.mouse.lLastY;
+			}
 		}
 	}
 
@@ -1289,7 +1380,19 @@ safetyhook::InlineHook XInputSetStateHook;
 static DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
 	if (dwUserIndex != 0) return ERROR_DEVICE_NOT_CONNECTED;
-	return ControllerHelper::PollController(pState, InvertABXYButtons);
+	DWORD result = ControllerHelper::PollController(pState, InvertABXYButtons);
+
+	if (AchievementSupport && pState)
+	{
+		AchievementOverlay::FeedControllerState(*pState, result == ERROR_SUCCESS);
+
+		if (AchievementOverlay::WantCaptureController())
+		{
+			ZeroMemory(&pState->Gamepad, sizeof(XINPUT_GAMEPAD)); // hide input from the game
+		}
+	}
+
+	return result;
 }
 
 static DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
@@ -1803,20 +1906,14 @@ static void ApplyFixFlareArtifacts()
 	DWORD addr_RenderFlare = ScanModuleSignature(g_State.GameModule, "56 8B F0 8B 06 57 BF 01 00 00 00 23 C7", "RenderFlare");
 	DWORD addr_FlareSnapshot = ScanModuleSignature(g_State.GameModule, "83 C0 28 88 4E 1E 2B D5 8B 36 3B D3 0F 85", "FlareSnapshot");
 	DWORD addr_FlareTextureSubst = ScanModuleSignature(g_State.GameModule, "8B 10 51 6A 04 53 50 8B 82 14 01 00 00 FF D0", "FlareTextureSubst");
-	DWORD addr_ResetSite1Pre = ScanModuleSignature(g_State.GameModule, "8B 42 40 FF D0 83 3D", "ResetSite1Pre");
-	DWORD addr_ResetSite2Pre = ScanModuleSignature(g_State.GameModule, "8B 08 8B 51 40 83 C4 04 68", "ResetSite2Pre");
 	DWORD addr_DeviceCleanupPre = ScanModuleSignature(g_State.GameModule, "85 C0 74 12 8B 08 8B 51 08 50 FF D2 C7 05 ?? ?? ?? ?? ?? ?? ?? ?? E9", "DeviceCleanupPre");
 
 	if (addr_RenderFlare == 0 ||
 		addr_FlareSnapshot == 0 ||
 		addr_FlareTextureSubst == 0 ||
-		addr_ResetSite1Pre == 0 ||
-		addr_ResetSite2Pre == 0 ||
 		addr_DeviceCleanupPre == 0) {
 		return;
 	}
-
-	g_Addresses.DevicePtr = MemoryHelper::ReadMemory<int>(addr_ResetSite2Pre - 0x4);
 
 	RenderFlare = HookHelper::CreateHook((void*)addr_RenderFlare, &RenderFlare_Hook);
 	RenderFlare_Trampoline = RenderFlare.trampoline().address();
@@ -1863,24 +1960,6 @@ static void ApplyFixFlareArtifacts()
 		}
 	);
 
-	static SafetyHookMid ResetSite1Pre{};
-	ResetSite1Pre = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite1Pre),
-		[](safetyhook::Context&)
-		{
-			ReleaseFlareFixResources();
-			g_State.device = nullptr;
-		}
-	);
-
-	static SafetyHookMid ResetSite2Pre{};
-	ResetSite2Pre = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite2Pre - 0x5),
-		[](safetyhook::Context&)
-		{
-			ReleaseFlareFixResources();
-			g_State.device = nullptr;
-		}
-	);
-
 	static SafetyHookMid DeviceCleanupPre{};
 	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(addr_DeviceCleanupPre - 0x3B),
 		[](safetyhook::Context&)
@@ -1905,6 +1984,31 @@ static void ApplyFixGlassReflections()
 	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x148, fixedVSPtr);
 	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x14C, fixedVSPtr);
 	MemoryHelper::WriteMemory<uint32_t>(addr_VSTable + 0x154, fixedVSPtr);
+}
+
+static void ApplyAchievementSupport()
+{
+	if (!AchievementSupport) return;
+
+	DWORD addr_GetGameLanguage = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 0C 57 8B 7C 24 0C 56 57 68", "GetGameLanguage");
+	DWORD addr_TrophyCountUpdate = ScanModuleSignature(g_State.GameModule, "8B 15 ?? ?? ?? ?? 83 EC 20 53 33 DB 56 8B F1", "TrophyCountUpdate");
+	DWORD addr_GiveTrophy = ScanModuleSignature(g_State.GameModule, "80 79 10 00 74 3A 8B 44 24 04", "GiveTrophy");
+	DWORD addr_UpdateObtainedTrophy = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 F8 40 73 33 8D 44 40 06", "UpdateObtainedTrophy");
+	DWORD addr_LoadTrophyCounter = ScanModuleSignature(g_State.GameModule, "83 7C 24 0C 00 75 18 68 98 00 00 00", "LoadTrophyCounter");
+
+	if (addr_GetGameLanguage == 0 ||
+		addr_TrophyCountUpdate == 0 ||
+		addr_GiveTrophy == 0 ||
+		addr_UpdateObtainedTrophy == 0 ||
+		addr_LoadTrophyCounter == 0) {
+		return;
+	}
+
+	GetGameLanguage = HookHelper::CreateHook((void*)addr_GetGameLanguage, &GetGameLanguage_Hook);
+	TrophyCountUpdate = HookHelper::CreateHook((void*)addr_TrophyCountUpdate, &TrophyCountUpdate_Hook);
+	GiveTrophy = HookHelper::CreateHook((void*)addr_GiveTrophy, &GiveTrophy_Hook);
+	UpdateObtainedTrophy = HookHelper::CreateHook((void*)addr_UpdateObtainedTrophy, &UpdateObtainedTrophy_Hook);
+	LoadTrophyCounter = HookHelper::CreateHook((void*)addr_LoadTrophyCounter, &LoadTrophyCounter_Hook);
 }
 
 static void ApplyDisableOnlineFeatures()
@@ -2221,7 +2325,7 @@ static void ApplyShopHooks()
 
 static void ApplyMainLoopHook()
 {
-	if (!HavokPhysicsFix && !RawMouseInput) return;
+	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport) return;
 
 	DWORD addr_MainLoop = ScanModuleSignature(g_State.GameModule, "83 EC 20 56 57 8B 3D ?? ?? ?? ?? 6A 03 33 F6 56", "MainLoop");
 
@@ -2244,6 +2348,99 @@ static void ApplyResolutionHook()
 
 	UpdateDisplaySettings = HookHelper::CreateHook((void*)addr_UpdateDisplaySettings, &UpdateDisplaySettings_Hook);
 	SetResolution = HookHelper::CreateHook((void*)addr_SetResolution, &SetResolution_Hook);
+}
+
+static void ApplyD3D9ApiMidHook()
+{
+	if (!FixFlareArtifacts && !AchievementSupport) return;
+
+	DWORD addr_ResetSite1 = ScanModuleSignature(g_State.GameModule, "8B 42 40 FF D0 83 3D", "ResetSite1");
+	DWORD addr_ResetSite2 = ScanModuleSignature(g_State.GameModule, "8B 08 8B 51 40 83 C4 04 68", "ResetSite2");
+
+	if (addr_ResetSite1 == 0 ||
+		addr_ResetSite2 == 0) {
+		return;
+	}
+
+	g_Addresses.DevicePtr = MemoryHelper::ReadMemory<int>(addr_ResetSite2 - 0x4);
+
+	static SafetyHookMid ResetSite1Pre{};
+	ResetSite1Pre = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite1),
+		[](safetyhook::Context&)
+		{
+			if (FixFlareArtifacts)
+			{
+				ReleaseFlareFixResources();
+				g_State.device = nullptr;
+			}
+
+			if (AchievementSupport)
+			{
+				AchievementOverlay::OnDeviceLost();
+			}
+		}
+	);
+
+	static SafetyHookMid ResetSite2Pre{};
+	ResetSite2Pre = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite2 - 0x5),
+		[](safetyhook::Context&)
+		{
+			if (FixFlareArtifacts)
+			{
+				ReleaseFlareFixResources();
+				g_State.device = nullptr;
+			}
+
+			if (AchievementSupport)
+			{
+				AchievementOverlay::OnDeviceLost();
+			}
+		}
+	);
+
+	if (!AchievementSupport) return;
+
+	AchievementOverlay::Init(g_Addresses.DevicePtr);
+
+	DWORD addr_Present1 = ScanModuleSignature(g_State.GameModule, "8B 51 44 6A 00 6A 00 6A 00 6A 00", "Present1");
+	DWORD addr_Present2 = ScanModuleSignature(g_State.GameModule, "8B 51 44 56 56 56 56 50", "Present2");
+
+	if (addr_Present1 == 0 ||
+		addr_Present2 == 0) {
+		return;
+	}
+
+	static SafetyHookMid Present1{};
+	Present1 = safetyhook::create_mid(reinterpret_cast<void*>(addr_Present1),
+		[](safetyhook::Context&)
+		{
+			AchievementOverlay::OnPresent();
+		}
+	);
+	
+	static SafetyHookMid Present2{};
+	Present2 = safetyhook::create_mid(reinterpret_cast<void*>(addr_Present2),
+		[](safetyhook::Context&)
+		{
+			AchievementOverlay::OnPresent();
+		}
+	);
+
+	static SafetyHookMid ResetSite1Post{};
+	ResetSite1Post = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite1 + 0x5),
+		[](safetyhook::Context&)
+		{
+			AchievementOverlay::OnDeviceReset();
+		}
+	);
+
+	static SafetyHookMid ResetSite2Post{};
+	ResetSite2Post = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite2 + 0x10),
+		[](safetyhook::Context&)
+		{
+			AchievementOverlay::OnDeviceReset();
+		}
+	);
 }
 
 static void Init()
@@ -2270,6 +2467,7 @@ static void Init()
 	ApplyFixGlassReflections();
 
 	// General
+	ApplyAchievementSupport();
 	ApplyDisableOnlineFeatures();
 	ApplyIncreasedEntityPersistence();
 	ApplyIncreasedDecalPersistence();
@@ -2295,6 +2493,7 @@ static void Init()
 	// Misc
 	ApplyMainLoopHook();
 	ApplyResolutionHook();
+	ApplyD3D9ApiMidHook();
 }
 
 #pragma endregion

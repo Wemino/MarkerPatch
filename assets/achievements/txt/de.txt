@@ -1,0 +1,51 @@
+Die letzte Grenze|Erlange alle Trophäen in Dead Space 2
+Patient auf freiem Fuß|Besorge dir deinen ersten Anzug
+Entgleist|Überlebe die Bahnsequenz
+Ein kleiner Schritt|Durchquere den ersten Schwerelosigkeitsbereich
+Clevere Mädchen|Überlebe deine erste Begegnung mit Stalkern
+Bitte keine Folter mehr|Schalte den Tormenter aus
+Die Reifeprüfung|Gewinne den Kampf in der Schule
+Action im Aufzug|Erledige während der Aufzugsequenz jeden Tripod
+Abschaltung|Besiege die KI
+Aufgeladen|Löse das Solaranlagen-Puzzle
+Hornissennest|Zerstöre das Tripod-Nest
+Operation!|Fange das Fragment mit der Ishimura ein
+Klopf, klopf|Bringe die Fahrt auf dem Bohrer hinter dich
+Das letzte Opfer|Zerstöre den Marker
+Auf der Flucht|Entkomme aus der Anlage
+Ins Auge dich die Nadel sticht|Überlebe die Augenstichmaschine
+Mach uns ganz|Beende das Spiel auf einem beliebigen Schwierigkeitsgrad
+Mission Impossible|Schließe das Spiel auf Schwierigkeitsgrad "Fanatiker" ab
+Trampeltier|Zertrete 10 Container
+Staubsauger|Dekomprimiere 20 Nekromorphs, ohne selbst rausgesogen zu werden
+... Und unten bleiben!|Erledige 25 kriechende Gegner mit "Zertreten" (Einzelspieler)
+Schnelldenker|Erledige 30 Nekromorphs mit Kinese-Objekten
+Die Nanny|Erledige 30 Crawler, ohne dass sie detonieren
+Eingefroren in der Zeit|Erledige 50 Nekromorphs, während sie in Stase sind (Einzelspieler)
+Erste Hilfe|Benutze zehnmal "Schnelle Heilung" (Einzelspieler)
+Epische Verstümmelung|Trenne 2.500 Nekromorph-Gliedmaßen ab (Einzelspieler)
+Sieht toll aus|Kaufe den erweiterten Anzug
+Komplett ausgestattet|Führe alle Upgrades deiner RIG und Stase durch
+Die Waffe der Wahl|Führe alle Upgrades bei einer Waffe durch
+Bis an die Zähne bewaffnet|Besitze gleichzeitig vier Waffen, die du mit allen Upgrades ausgestattet hast
+Alleskönner|Erledige einen Nekromorph mit jeder Waffe im Spiel (Einzelspieler)
+Junge von Milo|Zerstückel die Raumfahrer-Jungenstatue
+Sammle Peng ein|Finde den Peng-Schatz
+Der Bibliothekar|Sammle 100 Logs ein
+Der Elektriker|Sammle 10 Halbleiter ein
+Der Mechaniker|Sammle 10 Pläne ein
+Mein Zauberstab|Erledige 6 Gegner gleichzeitig mit dem Sekundärfeuer der Strahlenkanone (Einzelspieler)
+Schocktherapie|Spieße einen Feind mit dem Harpunengewehr auf und erledige 3 weitere mit Sekundärf. (Einzelspieler)
+Der Rasenmähermann|Erledige 4 Gegner mit der gleichen Ripper-Klinge
+Das ist eine Falle!|Erledige 20 Gegner mit aufgestellten Sprengminen
+Flambierte Nekros|Erledige 50 Gegner mit dem Flammenwerfer
+Kuckuck!|Erledige einen Stalker mit dem Suchergewehr im Zoommodus
+Kaiserschnitt|Gegner mit Sek.-Feuer der Laserkanone niederschlagen und mit Pr.-Feuer erledigen, bevor er aufsteht
+Bis zum bitteren Ende|Spieße einen Gegner auf und schleudere ihn 17 Meter weit. Er muss an der Oberfläche stecken bleiben.
+Schmecke deine eigene Medizin|Spieße einen lebenden Slasher mit einem Slasher-Arm auf, sodass er an der Oberfläche stecken bleibt
+Spieß im All|Spieße einen Gegner in ein Dekompressionsfenster, damit es nach außen explodiert
+Beinhart|Schließe das Spiel auf Schwierigkeitsgrad "Hardcore" ab
+Ein sauberer Schnitt|Trenne einem Lurker alle drei Tentakel mit dem Primärf.-Schuss der Strahlenkanone ab (Einzelspieler)
+Auch du, Brutus?|Erledige einen Brute, ohne selbst Schaden zu nehmen
+Schieß auf die Gliedmaßen!|Trenne 25 Nekromorph-Gliedmaßen ab (Einzelspieler)
+Bumerang|Erledige eine Zyste, indem du ihre Mine auffängst und sie zurückwirfst
