@@ -1014,6 +1014,8 @@ std::expected<uint32_t, OsError> vm_protect(uint8_t* address, size_t size, uint3
 
     auto* addr = align_down(address, static_cast<size_t>(sysconf(_SC_PAGESIZE)));
 
+    size = size + static_cast<size_t>(address - addr);
+
     if (mprotect(addr, size, static_cast<int>(protect)) == -1) {
         return std::unexpected{OsError::FAILED_TO_PROTECT};
     }
@@ -1402,6 +1404,10 @@ void trap_threads(uint8_t* from, uint8_t* to, size_t len, const std::function<vo
     VirtualQuery(from, &from_mbi, sizeof(from_mbi));
     VirtualQuery(to, &to_mbi, sizeof(to_mbi));
 
+    if (to_mbi.State != MEM_COMMIT) {
+        return;
+    }
+
     auto new_protect = PAGE_READWRITE;
 
     if (from_mbi.AllocationBase == find_me_mbi.AllocationBase || to_mbi.AllocationBase == find_me_mbi.AllocationBase) {
@@ -1482,7 +1488,7 @@ bool is_executable(uint8_t* address) {
 
 UnprotectMemory::~UnprotectMemory() {
     if (m_address != nullptr) {
-        vm_protect(m_address, m_size, m_original_protection);
+        [[maybe_unused]] auto old_protection = vm_protect(m_address, m_size, m_original_protection);
     }
 }
 
