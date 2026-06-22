@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <cfloat>
 
-#include "helper.hpp"
+#include "helper.cpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
 #include "imgui/imgui_impl_win32.h"

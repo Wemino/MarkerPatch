@@ -64,6 +64,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MARKERPATCH_EXPORTS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(ProjectName)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -132,7 +134,38 @@
     <ClInclude Include="..\include\safetyhook\safetyhook.hpp" />
     <ClInclude Include="..\include\safetyhook\Zydis.h" />
     <ClInclude Include="..\src\dllmain.hpp" />
-    <ClInclude Include="..\src\helper.hpp" />
+    <ClInclude Include="..\src\Globals.cpp" />
+    <ClInclude Include="..\src\helper.cpp" />
+    <ClInclude Include="..\src\Initialization\Initialization.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\HavokPhysicsFix.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\HighCoreCPUFix.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\VSyncRefreshRateFix.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixDifficultyRewards.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixSuitIDConflicts.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixSaveStringHandling.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixAutomaticWeaponFireRate.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixSolarArrayElevator.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixBlurResolution.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixShadowBlur.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixFlareArtifacts.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixGlassReflections.cpp" />
+    <ClInclude Include="..\src\Features\General\AchievementSupport.cpp" />
+    <ClInclude Include="..\src\Features\General\DisableOnlineFeatures.cpp" />
+    <ClInclude Include="..\src\Features\General\IncreasedEntityPersistence.cpp" />
+    <ClInclude Include="..\src\Features\General\IncreasedDecalPersistence.cpp" />
+    <ClInclude Include="..\src\Features\General\SkipIntro.cpp" />
+    <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp" />
+    <ClInclude Include="..\src\Features\Display\AutoResolution.cpp" />
+    <ClInclude Include="..\src\Features\Display\FontScaling.cpp" />
+    <ClInclude Include="..\src\Features\Input\RawMouseInput.cpp" />
+    <ClInclude Include="..\src\Features\Input\FilterInputDevices.cpp" />
+    <ClInclude Include="..\src\Features\Input\UseSDLControllerInput.cpp" />
+    <ClInclude Include="..\src\Features\Graphics\TextureFiltering.cpp" />
+    <ClInclude Include="..\src\Features\Graphics\DynamicShadowResolution.cpp" />
+    <ClInclude Include="..\src\Features\DLC\ShopHooks.cpp" />
+    <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp" />
+    <ClInclude Include="..\src\Features\Misc\ResolutionHook.cpp" />
+    <ClInclude Include="..\src\Features\Misc\D3D9ApiMidHook.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

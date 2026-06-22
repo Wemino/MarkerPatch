@@ -29,7 +29,102 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\dllmain.hpp" />
-    <ClInclude Include="..\src\helper.hpp" />
+    <ClInclude Include="..\src\Globals.cpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\helper.cpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Initialization\Initialization.cpp">
+      <Filter>src\Initialization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\HavokPhysicsFix.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\HighCoreCPUFix.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\VSyncRefreshRateFix.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixDifficultyRewards.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixSuitIDConflicts.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixSaveStringHandling.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixAutomaticWeaponFireRate.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixSolarArrayElevator.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixBlurResolution.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixShadowBlur.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixFlareArtifacts.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixGlassReflections.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\AchievementSupport.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\DisableOnlineFeatures.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\IncreasedEntityPersistence.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\IncreasedDecalPersistence.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\SkipIntro.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Display\AutoResolution.cpp">
+      <Filter>src\Features\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Display\FontScaling.cpp">
+      <Filter>src\Features\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Input\RawMouseInput.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Input\FilterInputDevices.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Input\UseSDLControllerInput.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Graphics\TextureFiltering.cpp">
+      <Filter>src\Features\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Graphics\DynamicShadowResolution.cpp">
+      <Filter>src\Features\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\DLC\ShopHooks.cpp">
+      <Filter>src\Features\DLC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp">
+      <Filter>src\Features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Misc\ResolutionHook.cpp">
+      <Filter>src\Features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Misc\D3D9ApiMidHook.cpp">
+      <Filter>src\Features\Misc</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\safetyhook\Zydis.h">
       <Filter>safetyhook</Filter>
     </ClInclude>
@@ -88,6 +183,36 @@
     </Filter>
     <Filter Include="include\imgui">
       <UniqueIdentifier>{280842d6-7424-4084-9e8f-2d4009bbed00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{6257eac3-483f-4772-96c3-f686f1727661}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Initialization">
+      <UniqueIdentifier>{70d3e0af-eb3c-4e03-ae85-bb6c93e2b9c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features">
+      <UniqueIdentifier>{06f20afe-804b-430b-be54-f62bf297c95b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\Fixes">
+      <UniqueIdentifier>{a3554697-6282-454c-bdd5-8ae664f2553b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\General">
+      <UniqueIdentifier>{4b0240b3-955f-4aa5-9484-a25cb417246e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\Display">
+      <UniqueIdentifier>{6a820a04-5d5c-4f13-a490-3ab73d4ecbee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\Input">
+      <UniqueIdentifier>{a3f65a9e-93ce-42a8-8402-9151c714fb00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\Graphics">
+      <UniqueIdentifier>{3a5c1732-946a-465a-813b-4d35d9d95abc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\DLC">
+      <UniqueIdentifier>{3341ee19-aafe-4332-94ab-e5ecff4e0277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\Misc">
+      <UniqueIdentifier>{fe5d7060-a743-42c0-ba09-a24059e94a4e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
