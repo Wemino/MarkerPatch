@@ -6,11 +6,11 @@
 // MaxAnisotropy
 // =====================
 
-static safetyhook::InlineHook InitTextureSampler;
+static safetyhook::InlineHook TX_ChangeOptions;
 
-static int __cdecl InitTextureSampler_Hook(int a1, int a2)
+static int __cdecl TX_ChangeOptions_Hook(int a1, int a2)
 {
-	int result = InitTextureSampler.unsafe_ccall<int>(a1, a2);
+	int result = TX_ChangeOptions.unsafe_ccall<int>(a1, a2);
 
 	// Get current filtering flags
 	int* flags_ptr = (int*)(a2 + 16);
@@ -45,9 +45,9 @@ static void ApplyTextureFiltering()
 {
 	if (MaxAnisotropy == 0 && !ForceTrilinearFiltering) return;
 
-	DWORD addr_InitTextureSampler = ScanModuleSignature(g_State.GameModule, "8B 44 24 08 53 8B 58 10 8B CB 8B D3 81 E1 00 00", "InitTextureSampler");
+	DWORD addr_InitTextureSampler = ScanModuleSignature(g_State.GameModule, "8B 44 24 08 53 8B 58 10 8B CB 8B D3 81 E1 00 00", "TX_ChangeOptions");
 
 	if (addr_InitTextureSampler == 0) return;
 
-	InitTextureSampler = HookHelper::CreateHook((void*)addr_InitTextureSampler, &InitTextureSampler_Hook);
+	TX_ChangeOptions = HookHelper::CreateHook((void*)addr_InitTextureSampler, &TX_ChangeOptions_Hook);
 }

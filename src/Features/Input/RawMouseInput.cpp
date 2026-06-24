@@ -98,17 +98,6 @@ static int __fastcall UpdateCameraPosition_Hook(int thisp, float a2)
 	return UpdateCameraPosition.unsafe_fastcall<int>(thisp, a2);
 }
 
-static int __fastcall UpdateWeaponPoseBlend_Hook(int* thisp, int, float a2)
-{
-	if (!g_State.isControllerActive)
-	{
-		// Framerate independant sensitivity
-		a2 = TARGET_FRAME_TIME;
-	}
-
-	return UpdateWeaponPoseBlend.unsafe_thiscall<int>(thisp, a2);
-}
-
 static int __fastcall UpdateAimWithMomentum_Hook(int* thisp, int)
 {
 	uintptr_t self = reinterpret_cast<uintptr_t>(thisp);
@@ -529,7 +518,6 @@ static void ApplyRawMouseInput()
 	DWORD addr_UpdateAimingCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 64 01 00 00 A1 ?? ?? ?? ?? D9 45 0C 53 8B D9", "UpdateAimingCamera");
 	DWORD addr_UpdatePlayerCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 34 01 00 00 53 8B D9 8B 43 74", "UpdatePlayerCamera");
 	DWORD addr_ApplyCameraRotation = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 54 F3 0F 10 45 08 8B 45", "ApplyCameraRotation");
-	DWORD addr_UpdateWeaponPoseBlend = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 F3 0F 10 45 08 F3 0F 59 05 ?? ?? ?? ?? 81 EC A4 01 00 00", "UpdateWeaponPoseBlend");
 	DWORD addr_UpdateAimWithMomentum = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 74 53 56 8B F1 8B 46 74", "UpdateAimWithMomentum");
 	DWORD addr_UpdateBoundedAim = ScanModuleSignature(g_State.GameModule, "C3 CC 83 EC 20 D9 05 ?? ?? ?? ?? 53 56 D9 5C 24 08", "UpdateBoundedAim");
 	DWORD addr_UpdateConeAim = ScanModuleSignature(g_State.GameModule, "83 EC 30 56 8B F1 8B 46 14 85 C0 0F 84", "UpdateConeAim");
@@ -543,7 +531,6 @@ static void ApplyRawMouseInput()
 		addr_UpdateAimingCamera == 0 ||
 		addr_UpdatePlayerCamera == 0 ||
 		addr_ApplyCameraRotation == 0 ||
-		addr_UpdateWeaponPoseBlend == 0 ||
 		addr_UpdateAimWithMomentum == 0 ||
 		addr_UpdateBoundedAim == 0 ||
 		addr_UpdateConeAim == 0 ||
@@ -556,7 +543,6 @@ static void ApplyRawMouseInput()
 	UpdateCameraTracking = HookHelper::CreateHook((void*)addr_UpdateCameraTracking, &UpdateCameraTracking_Hook);
 	UpdateZeroGravityCamera = HookHelper::CreateHook((void*)addr_UpdateZeroGravityCamera, &UpdateZeroGravityCamera_Hook);
 	UpdateCameraPosition = HookHelper::CreateHook((void*)addr_UpdateCameraPosition, &UpdateCameraPosition_Hook);
-	UpdateWeaponPoseBlend = HookHelper::CreateHook((void*)addr_UpdateWeaponPoseBlend, &UpdateWeaponPoseBlend_Hook);
 	UpdateAimWithMomentum = HookHelper::CreateHook((void*)addr_UpdateAimWithMomentum, &UpdateAimWithMomentum_Hook);
 	UpdateBoundedAim = HookHelper::CreateHook((void*)(addr_UpdateBoundedAim + 0x2), &UpdateBoundedAim_Hook);
 	UpdateConeAim = HookHelper::CreateHook((void*)addr_UpdateConeAim, &UpdateConeAim_Hook);
