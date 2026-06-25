@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../../Globals.cpp"
+
 static void ApplyMainLoopHook()
 {
 	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport) return;

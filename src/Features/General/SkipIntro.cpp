@@ -32,6 +32,7 @@ static int __stdcall LoadUIAnimation_Hook(int id)
 
 	return LoadUIAnimation.stdcall<int>(id);
 }
+
 static void ApplySkipIntro()
 {
 	if (!SkipIntro) return;

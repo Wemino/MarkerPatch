@@ -32,6 +32,7 @@ static DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVi
 	if (dwUserIndex != 0) return ERROR_DEVICE_NOT_CONNECTED;
 	return ControllerHelper::SetVibration(pVibration);
 }
+
 static void ApplyUseSDLControllerInput()
 {
 	if (!UseSDLControllerInput) return;

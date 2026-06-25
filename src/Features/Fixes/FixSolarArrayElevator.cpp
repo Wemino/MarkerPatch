@@ -17,6 +17,7 @@ static char __fastcall Timeline_ScheduleEvent_Hook(int* thisp, int, DWORD* a2, i
 
 	return Timeline_ScheduleEvent.unsafe_thiscall<char>(thisp, a2, a3, a4, a5, a6);
 }
+
 static void ApplyFixSolarArrayElevator()
 {
 	if (!FixSolarArrayElevator) return;

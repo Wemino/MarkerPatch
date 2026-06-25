@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../../Globals.cpp"
+
 static void ApplyD3D9ApiMidHook()
 {
 	if (!FixFlareArtifacts && !AchievementSupport) return;

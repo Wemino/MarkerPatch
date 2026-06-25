@@ -25,6 +25,7 @@ static int __fastcall InitializeItem_hook(DWORD* thisp, int, int a2)
 
 	return result;
 }
+
 static void ApplyFixSuitIDConflicts()
 {
 	if (!FixSuitIDConflicts) return;

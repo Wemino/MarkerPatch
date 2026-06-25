@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../../Globals.cpp"
+
 static void ReleaseFlareFixResources()
 {
 	if (g_State.proxySurf)
@@ -20,6 +21,7 @@ static void ReleaseFlareFixResources()
 	g_State.resourcesValid = false;
 	g_State.snapshotValid = false;
 }
+
 static bool TrackSourceTexture(IDirect3DBaseTexture9* src)
 {
 	IDirect3DDevice9* dev = GetD3D9Device();

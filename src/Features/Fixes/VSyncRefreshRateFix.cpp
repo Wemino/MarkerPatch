@@ -13,6 +13,7 @@ static __int16 __cdecl SetHz_Hook(__int16 hz)
 	MemoryHelper::WriteMemory<float>(g_Addresses.TargetFrameTimeMsPtr, CalculateFpsConstant(hz));
 	return SetHz.ccall<__int16>(hz);
 }
+
 static void ApplyVSyncRefreshRateFix()
 {
 	if (!VSyncRefreshRateFix) return;

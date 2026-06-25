@@ -75,6 +75,7 @@ static char __fastcall LoadTrophyCounter_Hook(int thisPtr, int, int a2, const vo
 
 	return result;
 }
+
 static void ApplyAchievementSupport()
 {
 	if (!AchievementSupport) return;

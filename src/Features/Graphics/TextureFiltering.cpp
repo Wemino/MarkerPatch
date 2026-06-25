@@ -41,6 +41,7 @@ static int __cdecl TX_ChangeOptions_Hook(int a1, int a2)
 
 	return result;
 }
+
 static void ApplyTextureFiltering()
 {
 	if (MaxAnisotropy == 0 && !ForceTrilinearFiltering) return;

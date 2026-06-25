@@ -81,6 +81,7 @@ static int __cdecl MainLoop_Hook()
 
 	return MainLoop.unsafe_ccall<int>();
 }
+
 static void ApplyHavokPhysicsFix()
 {
 	if (!HavokPhysicsFix) return;

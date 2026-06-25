@@ -26,6 +26,7 @@ static bool __fastcall LoadGame_Hook(DWORD* thisPtr, int, int a2, DWORD* a3, int
 
 	return LoadGame.thiscall<bool>(thisPtr, a2, a3, a4, a5);
 }
+
 static void ApplyFixDifficultyRewards()
 {
 	if (!FixDifficultyRewards) return;

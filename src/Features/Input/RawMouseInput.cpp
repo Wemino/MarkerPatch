@@ -506,6 +506,7 @@ static UINT WINAPI GetRawInputData_Hook(HRAWINPUT hRawInput, UINT uiCommand, LPV
 
 	return result;
 }
+
 static void ApplyRawMouseInput()
 {
 	if (!RawMouseInput) return;

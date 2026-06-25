@@ -57,6 +57,7 @@ static errno_t __cdecl CopyStringFromSave_Hook(wchar_t* Destination, wchar_t* So
 	Destination[0x7F] = L'\0';
 	return 0;
 }
+
 static void ApplyFixSaveStringHandling()
 {
 	if (!FixSaveStringHandling) return;

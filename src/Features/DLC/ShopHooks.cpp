@@ -158,6 +158,7 @@ static int __fastcall AddShopItem_Hook(int thisPtr, int, DWORD* a2)
 
 	return AddShopItem.thiscall<int>(thisPtr, a2);
 }
+
 static void ApplyShopHooks()
 {
 	bool needBlock = !EnableHazardPack || !EnableMartialLawPack || !EnableSupernovaPack;

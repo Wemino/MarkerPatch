@@ -17,6 +17,7 @@ static int __cdecl IterativeShadowBlur_Hook(unsigned int a1, float a2, float a3,
 
 	return IterativeShadowBlur.unsafe_ccall<int>(a1, a2, a3, a4, a5, passCount, a7);
 }
+
 static void ApplyFixShadowBlur()
 {
 	if (!FixShadowBlur) return;

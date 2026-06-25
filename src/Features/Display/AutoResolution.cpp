@@ -21,6 +21,7 @@ static int __cdecl GetConfigInt_Hook(const char* Src, int ArgList)
 
 	return GetConfigInt.ccall<int>(Src, ArgList);
 }
+
 static void ApplyAutoResolution()
 {
 	if (!AutoResolution) return;

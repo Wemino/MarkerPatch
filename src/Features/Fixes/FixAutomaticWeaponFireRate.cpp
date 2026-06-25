@@ -34,6 +34,7 @@ static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
 	*fireDelayPtr = originalDelay;
 	return result;
 }
+
 static void ApplyFixAutomaticWeaponFireRate()
 {
 	if (!FixAutomaticWeaponFireRate) return;

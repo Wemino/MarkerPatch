@@ -28,6 +28,7 @@ static int __fastcall ResizeEntityBuffer_Hook(char* thisp, int, int bufferType, 
 
 	return ResizeEntityBuffer.thiscall<int>(thisp, bufferType, newLimit);
 }
+
 static void ApplyIncreasedEntityPersistence()
 {
 	if (!IncreasedEntityPersistence) return;

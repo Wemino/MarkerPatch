@@ -17,6 +17,7 @@ static unsigned int __cdecl SetDynamicShadowMapResolution_Hook(int shadowRes)
 
 	return SetDynamicShadowMapResolution.ccall<unsigned int>(shadowRes);
 }
+
 static void ApplyDynamicShadowResolution()
 {
 	if (DynamicShadowResolution <= 1920) return;

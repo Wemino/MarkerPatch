@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../../Globals.cpp"
+
 static void ApplyIncreasedDecalPersistence()
 {
 	if (!IncreasedDecalPersistence) return;

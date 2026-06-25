@@ -17,6 +17,7 @@ static int __cdecl DisplayUIPopup_Hook(const char* Src, int a2)
 
 	return DisplayUIPopup.ccall<int>(Src, a2);
 }
+
 static void ApplyDisableOnlineFeatures()
 {
 	if (!DisableOnlineFeatures) return;

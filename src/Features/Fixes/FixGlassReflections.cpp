@@ -2,6 +2,7 @@
 
 #include "../../Globals.cpp"
 #include "../../Shaders/GlassReflectionVS.hpp"
+
 static void ApplyFixGlassReflections()
 {
 	if (!FixGlassReflections) return;

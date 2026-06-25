@@ -13,6 +13,7 @@ static bool __cdecl IsXInputDevice_hook(DWORD* lpddi)
 	// Skip the expensive verification, we filter out DirectInput devices elsewhere
 	return false;
 }
+
 static void ApplyFilterInputDevices()
 {
 	if (!BlockDirectInputDevices) return;

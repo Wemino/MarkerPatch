@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "../../Globals.cpp"
+
 static void ApplyHighCoreCPUFix()
 {
 	if (!HighCoreCPUFix) return;
