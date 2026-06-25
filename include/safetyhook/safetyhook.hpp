@@ -41,16 +41,24 @@ import std.compat;
 #define SAFETYHOOK_COMPILER_MSVC 1
 #define SAFETYHOOK_COMPILER_GCC 0
 #define SAFETYHOOK_COMPILER_CLANG 0
-#elif defined(__GNUC__)
-#define SAFETYHOOK_COMPILER_MSVC 0
-#define SAFETYHOOK_COMPILER_GCC 1
-#define SAFETYHOOK_COMPILER_CLANG 0
 #elif defined(__clang__)
 #define SAFETYHOOK_COMPILER_MSVC 0
 #define SAFETYHOOK_COMPILER_GCC 0
 #define SAFETYHOOK_COMPILER_CLANG 1
+#elif defined(__GNUC__)
+#define SAFETYHOOK_COMPILER_MSVC 0
+#define SAFETYHOOK_COMPILER_GCC 1
+#define SAFETYHOOK_COMPILER_CLANG 0
 #else
 #error "Unsupported compiler"
+#endif
+
+#if defined(_MSC_VER)
+#define SAFETYHOOK_ABI_MSVC 1
+#define SAFETYHOOK_ABI_ITANIUM 0
+#else
+#define SAFETYHOOK_ABI_MSVC 0
+#define SAFETYHOOK_ABI_ITANIUM 1
 #endif
 
 #if SAFETYHOOK_COMPILER_MSVC
@@ -150,10 +158,10 @@ struct VmAccess {
     }
 };
 
-constexpr VmAccess VM_ACCESS_R{true, false, false};
-constexpr VmAccess VM_ACCESS_RW{true, true, false};
-constexpr VmAccess VM_ACCESS_RX{true, false, true};
-constexpr VmAccess VM_ACCESS_RWX{true, true, true};
+inline constexpr VmAccess VM_ACCESS_R{true, false, false};
+inline constexpr VmAccess VM_ACCESS_RW{true, true, false};
+inline constexpr VmAccess VM_ACCESS_RX{true, false, true};
+inline constexpr VmAccess VM_ACCESS_RWX{true, true, true};
 
 struct VmBasicInfo {
     uint8_t* address;
@@ -1045,6 +1053,16 @@ import std.compat;
 
 
 namespace safetyhook {
+/// @brief Number of ABI-specific non-function entries preceding the first virtual function pointer
+/// in the vtable layout for the current compiler/ABI.
+#if SAFETYHOOK_ABI_MSVC
+constexpr size_t VMT_HEADER = 1; // RTTICompleteObjectLocator*
+#elif SAFETYHOOK_ABI_ITANIUM
+constexpr size_t VMT_HEADER = 2; // offset-to-top + RTTI ptr
+#else
+constexpr size_t VMT_HEADER = 0;
+#endif
+
 /// @brief A hook class that allows for hooking a single method in a VMT.
 class SAFETYHOOK_API VmHook final {
 public:
@@ -1176,7 +1194,7 @@ public:
     template <typename T> [[nodiscard]] std::expected<VmHook, Error> hook_method(size_t index, T new_function) {
         VmHook hook{};
 
-        ++index; // Skip RTTI pointer.
+        index += VMT_HEADER; // Skip RTTI header.
         hook.m_original_vm = m_new_vmt[index];
         store(reinterpret_cast<uint8_t*>(&hook.m_new_vm), new_function);
         hook.m_vmt_entry = &m_new_vmt[index];
