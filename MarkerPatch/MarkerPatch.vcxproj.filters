@@ -170,6 +170,9 @@
     <ClInclude Include="..\include\AchievementOverlay.hpp">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini" />

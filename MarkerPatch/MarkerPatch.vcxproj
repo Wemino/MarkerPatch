@@ -110,6 +110,7 @@
     <ClCompile Include="..\include\safetyhook\safetyhook.cpp" />
     <ClCompile Include="..\include\safetyhook\Zydis.c" />
     <ClCompile Include="..\src\dllmain.cpp" />
+    <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini">

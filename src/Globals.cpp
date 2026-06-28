@@ -136,6 +136,7 @@ float FontScalingFactor = 0;
 bool RawMouseInput = false;
 bool UseSDLControllerInput = false;
 bool BlockDirectInputDevices = false;
+bool DisableKeyboardHook = false;
 bool GyroEnabled = false;
 float GyroSensitivity = 0.0f;
 float GyroSmoothing = 0.0f;

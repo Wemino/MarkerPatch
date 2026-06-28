@@ -25,6 +25,7 @@
 #include "Features/Display/AutoResolution.cpp"
 #include "Features/Display/FontScaling.cpp"
 
+#include "Features/Input/DisableKeyboardHook.cpp"
 #include "Features/Input/RawMouseInput.cpp"
 #include "Features/Input/FilterInputDevices.cpp"
 #include "Features/Input/UseSDLControllerInput.cpp"
