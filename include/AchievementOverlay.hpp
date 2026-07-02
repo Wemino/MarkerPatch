@@ -20,6 +20,7 @@ namespace AchievementOverlay
 {
     // Config
     inline constexpr bool kBlockGameInputWhileVisible = true;
+    inline constexpr unsigned long long kCursorIdleHideMs = 3000;
 
     // State
     inline IDirect3DDevice9* g_pDevice = nullptr;
@@ -42,9 +43,12 @@ namespace AchievementOverlay
 
     inline float g_savedScrollY = 0.0f;
     inline bool g_restoreScroll = false;
+    inline int g_restoreScrollFrames = 0;
 
     inline XINPUT_STATE g_padState{};
     inline bool g_padConnected = false;
+
+    inline unsigned long long g_lastMouseInputTick = 0;
 
     struct ToastItem
     {
@@ -715,9 +719,17 @@ namespace AchievementOverlay
 
             if (g_restoreScroll)
             {
-                if (axis > 0.5f || axis < -0.5f || wheel != 0.0f)
+                float wanted = g_savedScrollY;
+                float maxY = ImGui::GetScrollMaxY();
+                if (wanted > maxY) wanted = maxY;
+
+                float diff = ImGui::GetScrollY() - wanted;
+                if (diff < 0.0f) diff = -diff;
+
+                if (diff < 0.5f || axis > 0.5f || axis < -0.5f || wheel != 0.0f || ++g_restoreScrollFrames > 10)
                 {
                     g_restoreScroll = false;
+                    g_restoreScrollFrames = 0;
                 }
             }
             else if (axis != 0.0f)
@@ -931,6 +943,21 @@ namespace AchievementOverlay
         }
     }
 
+    // The Win32 backend forces a hardware cursor while the overlay is up, which is wrong when playing
+    // on a controller. Keep it hidden unless the mouse moved or clicked in the last few seconds
+    inline void UpdateOverlayCursor()
+    {
+        ImGuiIO& io = ImGui::GetIO();
+
+        bool mouseActive = io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f || io.MouseWheel != 0.0f || ImGui::IsAnyMouseDown();
+
+        if (mouseActive)
+            g_lastMouseInputTick = GetTickCount64();
+
+        if (!g_lastMouseInputTick || GetTickCount64() - g_lastMouseInputTick > kCursorIdleHideMs)
+            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+    }
+
     inline void Render(IDirect3DDevice9* pDevice)
     {
         ImGui_ImplDX9_NewFrame();
@@ -979,7 +1006,12 @@ namespace AchievementOverlay
 
         if (g_visible)
         {
+            UpdateOverlayCursor();
             DrawAchievementsWindow(pDevice);
+        }
+        else
+        {
+            g_lastMouseInputTick = 0;
         }
 
         DrawUnlockToast();
