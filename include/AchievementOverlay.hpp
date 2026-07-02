@@ -1262,6 +1262,7 @@ namespace AchievementOverlay
         if (g_visible)
         {
             g_restoreScroll = true;
+            g_restoreScrollFrames = 0;
         }
     }
 
