@@ -1,4 +1,4 @@
-<p align="center">
+﻿<p align="center">
   <img src="assets/MarkerPatch_Logo.png" style="max-width:70%">
 </p>
 
@@ -327,6 +327,18 @@ Available DLC options (configurable in the `[DLC]` section of `MarkerPatch.ini`)
 > **Note**: All DLC options are disabled by default because automatically granting all DLC items at the first shop of your first playthrough would be poor game design. You can selectively enable the DLC items you want through the configuration file to maintain better pacing. Since the EA servers are offline, ownership verification can no longer be performed for certain DLC items that previously required it.
 
 > **Important**: This only works if the DLC items haven't already been added to the shop, as shop inventory is tied to save data. Items already in your save cannot be removed, so configuring DLC requires starting a new save file if you want different items available.
+
+## ASI Plugin Loading
+
+Loads `.asi` plugins from a `plugins` folder next to the game. Ignored when Ultimate ASI Loader is already loading them.
+
+## Archive Asset Dump
+
+Writes the game's assets into an `archive_dump` folder as they are loaded, using the same paths they have inside the archives.
+
+## Mod File Loading
+
+Replaces game assets with loose files from `mods\<mod name>`, laid out the same way as the dump.
 
 ## Configuration
 

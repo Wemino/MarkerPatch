@@ -7,7 +7,10 @@
 #include <Windows.h>
 #include <d3d9.h>
 
+#include <mutex>
 #include <stacktrace>
+#include <system_error>
+#include <unordered_set>
 #include "ini.hpp"
 #include "Controller.hpp"
 #include "LAAPatcher.hpp"
@@ -25,6 +28,8 @@ struct GlobalState
 	// System initialization
 	bool isInit = false;
 	HMODULE GameModule = NULL;
+
+	bool isUALPresent = false;
 
 	// Display configuration
 	int screenWidth = 0;
@@ -125,6 +130,7 @@ int IncreasedEntityPersistenceLimbs = 0;
 bool IncreasedDecalPersistence = false;
 bool SkipIntro = false;
 bool SkipArtificialLoadingDelay = false;
+bool LoadASIPlugins = false;
 int CheckLAAPatch = 0;
 
 // Display
@@ -149,6 +155,10 @@ int MaxAnisotropy = 0;
 bool ForceTrilinearFiltering = false;
 int DynamicShadowResolution = 0;
 
+// Modding
+bool DumpArchiveAssets = false;
+bool LoadModFiles = false;
+
 // DLC
 bool EnableHazardPack = false;
 bool EnableMartialLawPack = false;
@@ -170,6 +180,11 @@ static DWORD ScanModuleSignature(HMODULE Module, std::string_view Signature, con
 	}
 
 	return Address;
+}
+
+static std::filesystem::path BuildLongPath(const std::string& root, const std::string& relativePath)
+{
+	return std::filesystem::path("\\\\?\\" + root + "\\" + relativePath);
 }
 
 static float CalculateFpsConstant(int target_fps)

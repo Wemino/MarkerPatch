@@ -29,6 +29,7 @@ static void ReadConfig()
 	IncreasedDecalPersistence = IniHelper::ReadInteger("General", "IncreasedDecalPersistence", 1) == 1;
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
 	SkipArtificialLoadingDelay = IniHelper::ReadInteger("General", "SkipArtificialLoadingDelay", 1) == 1;
+	LoadASIPlugins = IniHelper::ReadInteger("General", "LoadASIPlugins", 1) == 1;
 	CheckLAAPatch = IniHelper::ReadInteger("General", "CheckLAAPatch", 0);
 
 	// Display
@@ -52,6 +53,10 @@ static void ReadConfig()
 	MaxAnisotropy = IniHelper::ReadInteger("Graphics", "MaxAnisotropy", 16);
 	ForceTrilinearFiltering = IniHelper::ReadInteger("Graphics", "ForceTrilinearFiltering", 1) == 1;
 	DynamicShadowResolution = IniHelper::ReadInteger("Graphics", "DynamicShadowResolution", 1920);
+
+	// Modding
+	DumpArchiveAssets = IniHelper::ReadInteger("Modding", "DumpArchiveAssets", 0) == 1;
+	LoadModFiles = IniHelper::ReadInteger("Modding", "LoadModFiles", 1) == 1;
 
 	// DLC
 	EnableHazardPack = IniHelper::ReadInteger("DLC", "EnableHazardPack", 0) == 1;
@@ -130,6 +135,11 @@ static void Init()
 	ApplyTextureFiltering();
 	ApplyDynamicShadowResolution();
 
+	// Modding
+	ApplyArchiveDump();
+	ApplyModFiles();
+	ApplyArchiveStreamHook();
+
 	// DLC
 	ApplyShopHooks();
 
@@ -137,6 +147,7 @@ static void Init()
 	ApplyMainLoopHook();
 	ApplyResolutionHook();
 	ApplyD3D9ApiMidHook();
+	ApplyASILoader();
 }
 
 safetyhook::InlineHook regOpenKeyHook;

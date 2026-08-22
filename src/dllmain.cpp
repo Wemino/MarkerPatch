@@ -21,6 +21,7 @@
 #include "Features/General/IncreasedDecalPersistence.cpp"
 #include "Features/General/SkipIntro.cpp"
 #include "Features/General/SkipArtificialLoadingDelay.cpp"
+#include "Features/General/ASILoader.cpp"
 
 #include "Features/Display/AutoResolution.cpp"
 #include "Features/Display/FontScaling.cpp"
@@ -32,6 +33,10 @@
 
 #include "Features/Graphics/TextureFiltering.cpp"
 #include "Features/Graphics/DynamicShadowResolution.cpp"
+
+#include "Features/Modding/ArchiveDump.cpp"
+#include "Features/Modding/ModFiles.cpp"
+#include "Features/Modding/ArchiveStreamHook.cpp"
 
 #include "Features/DLC/ShopHooks.cpp"
 
@@ -50,8 +55,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 			// Prevents DLL from receiving thread notifications
 			DisableThreadLibraryCalls(hModule);
 
+			g_State.isUALPresent = IsUALPresent();
+
 			// Skip wrapper initialization when loaded as .asi
-			if (!IsUALPresent())
+			if (!g_State.isUALPresent)
 			{
 				SystemHelper::LoadProxyLibrary();
 			}

@@ -156,6 +156,7 @@
     <ClInclude Include="..\src\Features\General\IncreasedDecalPersistence.cpp" />
     <ClInclude Include="..\src\Features\General\SkipIntro.cpp" />
     <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp" />
+    <ClInclude Include="..\src\Features\General\ASILoader.cpp" />
     <ClInclude Include="..\src\Features\Display\AutoResolution.cpp" />
     <ClInclude Include="..\src\Features\Display\FontScaling.cpp" />
     <ClInclude Include="..\src\Features\Input\RawMouseInput.cpp" />
@@ -163,6 +164,9 @@
     <ClInclude Include="..\src\Features\Input\UseSDLControllerInput.cpp" />
     <ClInclude Include="..\src\Features\Graphics\TextureFiltering.cpp" />
     <ClInclude Include="..\src\Features\Graphics\DynamicShadowResolution.cpp" />
+    <ClInclude Include="..\src\Features\Modding\ArchiveDump.cpp" />
+    <ClInclude Include="..\src\Features\Modding\ModFiles.cpp" />
+    <ClInclude Include="..\src\Features\Modding\ArchiveStreamHook.cpp" />
     <ClInclude Include="..\src\Features\DLC\ShopHooks.cpp" />
     <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp" />
     <ClInclude Include="..\src\Features\Misc\ResolutionHook.cpp" />

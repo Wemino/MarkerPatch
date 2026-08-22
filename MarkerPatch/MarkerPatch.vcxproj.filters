@@ -92,6 +92,9 @@
     <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\General\ASILoader.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\Display\AutoResolution.cpp">
       <Filter>src\Features\Display</Filter>
     </ClInclude>
@@ -115,6 +118,15 @@
     </ClInclude>
     <ClInclude Include="..\src\Features\DLC\ShopHooks.cpp">
       <Filter>src\Features\DLC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Modding\ArchiveDump.cpp">
+      <Filter>src\Features\Modding</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Modding\ModFiles.cpp">
+      <Filter>src\Features\Modding</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Modding\ArchiveStreamHook.cpp">
+      <Filter>src\Features\Modding</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp">
       <Filter>src\Features\Misc</Filter>
@@ -213,6 +225,9 @@
     </Filter>
     <Filter Include="src\Features\DLC">
       <UniqueIdentifier>{3341ee19-aafe-4332-94ab-e5ecff4e0277}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Features\Modding">
+      <UniqueIdentifier>{a7f3c2e1-4b8d-4c9a-9e21-5d6f7a8b9c01}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Features\Misc">
       <UniqueIdentifier>{fe5d7060-a743-42c0-ba09-a24059e94a4e}</UniqueIdentifier>
