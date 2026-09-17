@@ -13,6 +13,24 @@ safetyhook::InlineHook BuildContactConstraintJacobian;
 safetyhook::InlineHook ProcessEntityDeath;
 safetyhook::InlineHook MainLoop;
 
+static int* g_hpfDeathFrameCount = nullptr;
+static float* g_hpfFrameTimeScale = nullptr;
+static float* g_hpfConstraintMass = nullptr;
+
+static uintptr_t g_hpfRetImpulseDamper = 0;
+static uintptr_t g_hpfRetErrorScaler = 0;
+static uintptr_t g_hpfRetMassCapture = 0;
+static uintptr_t g_hpfRetForceDamper = 0;
+static uintptr_t g_hpfRetTimestepLimiter = 0;
+
+static volatile float g_hpfK08 = 0.8f;
+static volatile float g_hpfK20 = 20.0f;
+static volatile float g_hpfK2 = 2.0f;
+static volatile float g_hpfK05 = 0.5f;
+static volatile float g_hpfK100 = 100.0f;
+
+__declspec(align(16)) static volatile unsigned int g_hpfAbsMask[4] = { 0x7FFFFFFFu, 0x7FFFFFFFu, 0x7FFFFFFFu, 0x7FFFFFFFu };
+
 static void __cdecl BuildContactConstraintJacobian_Hook(__m128* a1, float* a2, bool a3, __m128** a4)
 {
 	float backup_deltaTime = a2[3];
@@ -82,6 +100,159 @@ static int __cdecl MainLoop_Hook()
 	return MainLoop.unsafe_ccall<int>();
 }
 
+__declspec(naked) static void HavokStub_PhysicsImpulseDamper()
+{
+	__asm
+	{
+		push	eax
+		lea		esp, [esp - 10h]
+		movups[esp], xmm3
+		movss	xmm3, dword ptr[esp + 0Ch]
+
+		mov		eax, dword ptr[g_hpfDeathFrameCount]
+		cmp		dword ptr[eax], 0
+		jle		Threshold20
+
+		comiss	xmm3, dword ptr[g_hpfK08]
+		ja		Scale
+		jmp		Restore
+
+		Threshold20 :
+		comiss	xmm3, dword ptr[g_hpfK20]
+		jbe		Restore
+
+		Scale :
+		mov		eax, dword ptr[g_hpfFrameTimeScale]
+		divss	xmm3, dword ptr[eax]
+		movss	dword ptr[esp + 0Ch], xmm3
+
+		Restore :
+		movups	xmm3, [esp]
+		lea		esp, [esp + 10h]
+		pop		eax
+
+		// 8 stolen bytes
+		shufps	xmm2, xmm1, 0AAh
+		shufps	xmm3, xmm3, 0FFh
+		jmp		dword ptr[g_hpfRetImpulseDamper]
+	}
+}
+
+__declspec(naked) static void HavokStub_ConstraintErrorScaler()
+{
+	__asm
+	{
+		push	eax
+		lea		esp, [esp - 10h]
+		movups[esp], xmm2
+		movss	xmm2, dword ptr[esp + 0Ch]
+
+		mov		eax, dword ptr[g_hpfFrameTimeScale]
+		divss	xmm2, dword ptr[eax]
+		movss	dword ptr[esp + 0Ch], xmm2
+
+		movups	xmm2, [esp]
+		lea		esp, [esp + 10h]
+		pop		eax
+
+		// 6 stolen bytes
+		movaps	xmm2, xmmword ptr[esi]
+		mulps	xmm1, xmm2
+		jmp		dword ptr[g_hpfRetErrorScaler]
+	}
+}
+
+__declspec(naked) static void HavokStub_ConstraintMassCapture()
+{
+	__asm
+	{
+		push	eax
+		push	ecx
+
+		mov		eax, dword ptr[esp + 18h]
+		mov		ecx, dword ptr[g_hpfConstraintMass]
+		mov		dword ptr[ecx], eax
+
+		pop		ecx
+		pop		eax
+
+		// 6 stolen bytes
+		fld		dword ptr[esp + 10h]
+		_emit 0DEh
+		_emit 0FAh
+		jmp		dword ptr[g_hpfRetMassCapture]
+	}
+}
+
+__declspec(naked) static void HavokStub_ConstraintForceDamper()
+{
+	__asm
+	{
+		push	ecx
+		lea		esp, [esp - 10h]
+		movups[esp], xmm0
+
+		movss	xmm0, dword ptr[esp + 16Ch]
+		andps	xmm0, xmmword ptr[g_hpfAbsMask]
+		comiss	xmm0, dword ptr[g_hpfK08]
+		jbe		Done
+
+		movss	xmm0, dword ptr[esp + 170h]
+		mov		ecx, dword ptr[g_hpfFrameTimeScale]
+		divss	xmm0, dword ptr[ecx]
+		mov		ecx, dword ptr[g_hpfConstraintMass]
+		divss	xmm0, dword ptr[ecx]
+		mulss	xmm0, dword ptr[g_hpfK08]
+		movss	dword ptr[eax + 0Ch], xmm0
+
+		Done :
+		movups	xmm0, [esp]
+		lea		esp, [esp + 10h]
+		pop		ecx
+
+		// 6 stolen bytes
+		fld		dword ptr[esp + 68h]
+		fchs
+		jmp		dword ptr[g_hpfRetForceDamper]
+	}
+}
+
+__declspec(naked) static void HavokStub_TimestepLimiter()
+{
+	__asm
+	{
+		push	ecx
+		lea		esp, [esp - 10h]
+		movups[esp], xmm0
+
+		movss	xmm0, dword ptr[esp + 16Ch]
+		andps	xmm0, xmmword ptr[g_hpfAbsMask]
+
+		comiss	xmm0, dword ptr[g_hpfK2]
+		ja		Clamp
+
+		comiss	xmm0, dword ptr[g_hpfK05]
+		jbe		Done
+
+		mov		ecx, dword ptr[g_hpfConstraintMass]
+		movss	xmm0, dword ptr[ecx]
+		comiss	xmm0, dword ptr[g_hpfK100]
+		jb		Done
+
+		Clamp :
+		mov		dword ptr[esp + 24h], 0C1F00000h // -30.0f
+
+		Done :
+		movups	xmm0, [esp]
+		lea		esp, [esp + 10h]
+		pop		ecx
+
+		// 7 stolen bytes
+		fld		dword ptr[esp + 158h]
+		jmp		dword ptr[g_hpfRetTimestepLimiter]
+	}
+}
+
 static void ApplyHavokPhysicsFix()
 {
 	if (!HavokPhysicsFix) return;
@@ -93,7 +264,7 @@ static void ApplyHavokPhysicsFix()
 	DWORD addr_ProcessEntityDeath = ScanModuleSignature(g_State.GameModule, "53 56 8B F1 8B 4C 24 18 8B C1 32 DB 83 E8 16 0F 84 17 01 00 00", "ProcessEntityDeath");
 	DWORD addr_physicsImpulseDamper = ScanModuleSignature(g_State.GameModule, "0F C6 D1 AA 0F C6 DB FF F3 0F 58 D4 0F 28 C8 0F C6 C8 FF F3 0F 5C CA F3 0F 59 CB 0F 28 E1", "physicsImpulseDamper");
 	DWORD addr_constraintErrorScaler = ScanModuleSignature(g_State.GameModule, "0F 28 16 0F 59 CA 0F 58 C3 0F 58 C1 8D 4A 10 0F 28 C8 0F C6 C8 55 F3 0F 58 C8 83 C2 20 0F C6 C0 AA F3 0F 58 C1 0F C6 D2 FF F3 0F 5C D0 F3 0F 11 94 24 30 02 00 00", "constraintErrorScaler");
-	DWORD addr_constraintMassCapture = ScanModuleSignature(g_State.GameModule, "D9 44 24 10 DE FA D9 C9 D9 58 0C D9 44 24 68", "constraintMassCapture");
+	DWORD addr_constraintMassCapture = ScanModuleSignature(g_State.GameModule, "D9 44 24 10 DE FA D9 C9 D9 58 0C D9 44 24 68 D9 E0 D9 5C 24 10 D9 84 24 58 01 00 00", "constraintMassCapture");
 
 	if (addr_BuildContactConstraintJacobian == 0 ||
 		addr_SolveBallSocketChainConstraints == 0 ||
@@ -112,73 +283,28 @@ static void ApplyHavokPhysicsFix()
 	InitializePhysicsSolverParameters = HookHelper::CreateHook((void*)addr_InitializePhysicsSolverParameters, &InitializePhysicsSolverParameters_Hook);
 	ProcessEntityDeath = HookHelper::CreateHook((void*)addr_ProcessEntityDeath, &ProcessEntityDeath_Hook);
 
-	static SafetyHookMid physicsImpulseDamper{};
-	physicsImpulseDamper = safetyhook::create_mid(addr_physicsImpulseDamper,
-		[](safetyhook::Context& ctx)
-		{
-			if (g_State.deathFrameCount > 0 && ctx.xmm3.f32[3] > 0.8f)
-			{
-				ctx.xmm3.f32[3] = ctx.xmm3.f32[3] / g_State.frameTimeScale;
-			}
-			else if (ctx.xmm3.f32[3] > 20.0f)
-			{
-				ctx.xmm3.f32[3] = ctx.xmm3.f32[3] / g_State.frameTimeScale;
-			}
-		}
-	);
+	g_hpfDeathFrameCount = &g_State.deathFrameCount;
+	g_hpfFrameTimeScale = &g_State.frameTimeScale;
+	g_hpfConstraintMass = &g_State.constraintMass;
 
-	static SafetyHookMid constraintErrorScaler{};
-	constraintErrorScaler = safetyhook::create_mid(addr_constraintErrorScaler,
-		[](safetyhook::Context& ctx)
-		{
-			ctx.xmm2.f32[3] = ctx.xmm2.f32[3] / g_State.frameTimeScale;
-		}
-	);
+	g_hpfRetImpulseDamper = addr_physicsImpulseDamper + 8;
+	g_hpfRetErrorScaler = addr_constraintErrorScaler + 6;
+	g_hpfRetMassCapture = addr_constraintMassCapture + 6;
+	g_hpfRetForceDamper = (addr_constraintMassCapture + 0xB) + 6;
+	g_hpfRetTimestepLimiter = (addr_constraintMassCapture + 0x15) + 7;
 
-	static SafetyHookMid constraintMassCapture{};
-	constraintMassCapture = safetyhook::create_mid(addr_constraintMassCapture,
-		[](safetyhook::Context& ctx)
-		{
-			uint32_t esp = ctx.esp;
-			float* v306_ptr = (float*)(esp + 0x10);
-			g_State.constraintMass = *v306_ptr;
-		}
-	);
+	MemoryHelper::MakeJMP(addr_physicsImpulseDamper, reinterpret_cast<uintptr_t>(&HavokStub_PhysicsImpulseDamper));
+	MemoryHelper::MakeNOP(addr_physicsImpulseDamper + 5, 3);
 
-	static SafetyHookMid constraintForceDamper{};
-	constraintForceDamper = safetyhook::create_mid(addr_constraintMassCapture + 0xB,
-		[](safetyhook::Context& ctx)
-		{
-			uint32_t esp = ctx.esp;
-			uint32_t eax = ctx.eax;
+	MemoryHelper::MakeJMP(addr_constraintErrorScaler, reinterpret_cast<uintptr_t>(&HavokStub_ConstraintErrorScaler));
+	MemoryHelper::MakeNOP(addr_constraintErrorScaler + 5, 1);
 
-			float* v369_ptr = (float*)(esp + 0x158);
-			float* v370_ptr = (float*)(esp + 0x15C);
+	MemoryHelper::MakeJMP(addr_constraintMassCapture, reinterpret_cast<uintptr_t>(&HavokStub_ConstraintMassCapture));
+	MemoryHelper::MakeNOP(addr_constraintMassCapture + 5, 1);
 
-			if (fabs(*v369_ptr) > 0.8f)
-			{
-				float* tau_ptr = (float*)(eax + 0x0C);
-				float scaleFactor = 0.8f;
+	MemoryHelper::MakeJMP(addr_constraintMassCapture + 0xB, reinterpret_cast<uintptr_t>(&HavokStub_ConstraintForceDamper));
+	MemoryHelper::MakeNOP(addr_constraintMassCapture + 0xB + 5, 1);
 
-				*tau_ptr = ((*v370_ptr / g_State.frameTimeScale) / g_State.constraintMass) * scaleFactor;
-			}
-		}
-	);
-
-	static SafetyHookMid timestepLimiter{};
-	timestepLimiter = safetyhook::create_mid(addr_constraintMassCapture + 0x15,
-		[](safetyhook::Context& ctx)
-		{
-			uint32_t esp_val = ctx.esp;
-
-			float* v307 = (float*)(esp_val + 0x10);
-			float* v369 = (float*)(esp_val + 0x158);
-
-			if (fabs(*v369) > 2.0f || (fabs(*v369) > 0.5f && g_State.constraintMass >= 100.0f))
-			{
-				float* v307 = (float*)(esp_val + 0x10);
-				*v307 = -30.0f;
-			}
-		}
-	);
+	MemoryHelper::MakeJMP(addr_constraintMassCapture + 0x15, reinterpret_cast<uintptr_t>(&HavokStub_TimestepLimiter));
+	MemoryHelper::MakeNOP(addr_constraintMassCapture + 0x15 + 5, 2);
 }
