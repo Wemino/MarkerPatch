@@ -11,6 +11,7 @@
 
 #include "helper.cpp"
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include "imgui/imgui_impl_dx9.h"
 #include "imgui/imgui_impl_win32.h"
 
@@ -21,6 +22,7 @@ namespace AchievementOverlay
     // Config
     inline constexpr bool kBlockGameInputWhileVisible = true;
     inline constexpr unsigned long long kCursorIdleHideMs = 3000;
+    inline constexpr WORD kToggleButtons = XINPUT_GAMEPAD_LEFT_THUMB | XINPUT_GAMEPAD_DPAD_UP;
 
     // State
     inline IDirect3DDevice9* g_pDevice = nullptr;
@@ -286,11 +288,11 @@ namespace AchievementOverlay
     {
         bool found = false;
         for (const CounterMap& c : kCounters)
-        if (c.slot == slot)
-        {
-            SetAchievementProgress(c.achvId, count);
-            found = true;
-        }
+            if (c.slot == slot)
+            {
+                SetAchievementProgress(c.achvId, count);
+                found = true;
+            }
 
         for (int i = 0; i < kSamplerWeaponCount; i++)
         {
@@ -329,11 +331,11 @@ namespace AchievementOverlay
     {
         bool found = false;
         for (const CounterMap& c : kCounters)
-        if (c.hash == hash)
-        {
-            SetAchievementProgress(c.achvId, count);
-            found = true;
-        }
+            if (c.hash == hash)
+            {
+                SetAchievementProgress(c.achvId, count);
+                found = true;
+            }
 
         if (found)
         {
@@ -617,6 +619,34 @@ namespace AchievementOverlay
     }
 
     // ImGui setup
+    inline void SetupStyle(ImGuiStyle& style)
+    {
+        ImGui::StyleColorsDark();
+
+        style.WindowRounding = 0.0f;
+        style.WindowBorderSize = 0.0f;
+        style.ChildRounding = 0.0f;
+        style.FrameRounding = 0.0f;
+        style.FrameBorderSize = 1.0f;
+        style.ScrollbarRounding = 0.0f;
+        style.ScrollbarSize = 10.0f;
+        style.GrabRounding = 0.0f;
+
+        ImVec4* c = style.Colors;
+        c[ImGuiCol_Text] = ImVec4(0.78f, 0.86f, 0.91f, 1.00f);
+        c[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.60f, 0.68f, 1.00f);
+        c[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        c[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        c[ImGuiCol_Border] = ImVec4(0.38f, 0.58f, 0.70f, 0.60f);
+        c[ImGuiCol_FrameBg] = ImVec4(0.05f, 0.11f, 0.16f, 1.00f);
+        c[ImGuiCol_PlotHistogram] = ImVec4(0.22f, 0.43f, 0.57f, 1.00f);
+        c[ImGuiCol_Separator] = ImVec4(0.25f, 0.40f, 0.50f, 0.60f);
+        c[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.05f, 0.08f, 0.60f);
+        c[ImGuiCol_ScrollbarGrab] = ImVec4(0.30f, 0.50f, 0.62f, 0.80f);
+        c[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.40f, 0.64f, 0.78f, 0.90f);
+        c[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.50f, 0.76f, 0.90f, 1.00f);
+    }
+
     inline void InitImGui(IDirect3DDevice9* pDevice)
     {
         if (g_imguiInitialized || !pDevice || !g_hWnd)
@@ -630,7 +660,7 @@ namespace AchievementOverlay
         io.IniFilename = nullptr;
 
         ImGuiStyle& style = ImGui::GetStyle();
-        ImGui::StyleColorsDark();
+        SetupStyle(style);
         style.ScaleAllSizes(g_uiScale);
         style.FontScaleDpi = g_uiScale; // scales the font to the render resolution
         style.AntiAliasedLinesUseTex = false; // we render with point sampling, which the textured-line path can't use
@@ -680,6 +710,40 @@ namespace AchievementOverlay
     }
 
     // Rendering
+    inline void DrawPanel(float headerH)
+    {
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        ImVec2 a = ImGui::GetWindowPos();
+        ImVec2 b(a.x + ImGui::GetWindowWidth(), a.y + ImGui::GetWindowHeight());
+        float cut = 10.0f * g_uiScale;
+
+        ImVec2 pts[8] =
+        {
+            ImVec2(a.x + cut, a.y), ImVec2(b.x - cut, a.y), ImVec2(b.x, a.y + cut), ImVec2(b.x, b.y - cut),
+            ImVec2(b.x - cut, b.y), ImVec2(a.x + cut, b.y), ImVec2(a.x, b.y - cut), ImVec2(a.x, a.y + cut)
+        };
+
+        ImGui::PushClipRect(a, b, false);
+        dl->AddConvexPolyFilled(pts, 8, ImGui::GetColorU32(ImVec4(0.02f, 0.05f, 0.08f, 0.94f)));
+
+        if (headerH > 0.0f)
+        {
+            ImVec2 band[6] =
+            {
+                ImVec2(a.x + cut, a.y), ImVec2(b.x - cut, a.y), ImVec2(b.x, a.y + cut),
+                ImVec2(b.x, a.y + headerH), ImVec2(a.x, a.y + headerH), ImVec2(a.x, a.y + cut)
+            };
+
+            int vtx = dl->VtxBuffer.Size;
+            dl->AddConvexPolyFilled(band, 6, ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
+            ImGui::ShadeVertsLinearColorGradientKeepAlpha(dl, vtx, dl->VtxBuffer.Size, a, ImVec2(b.x, a.y), IM_COL32(88, 152, 192, 255), IM_COL32(20, 44, 64, 255));
+            dl->AddLine(ImVec2(a.x, a.y + headerH), ImVec2(b.x, a.y + headerH), ImGui::GetColorU32(ImGuiCol_Border));
+        }
+
+        dl->AddPolyline(pts, 8, ImGui::GetColorU32(ImVec4(0.45f, 0.66f, 0.78f, 0.90f)), ImDrawFlags_Closed, 1.5f * g_uiScale);
+        ImGui::PopClipRect();
+    }
+
     inline void DrawAchievementsWindow(IDirect3DDevice9* pDevice)
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -700,22 +764,52 @@ namespace AchievementOverlay
         float axis = GetControllerScrollAxis();
         float wheel = ImGui::GetIO().MouseWheel;
 
-        if (g_restoreScroll)
-        {
-            ImGui::SetNextWindowScroll(ImVec2(-1.0f, g_savedScrollY));
-        }
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings;
 
-        if (ImGui::Begin("Achievements", &g_visible))
+        if (ImGui::Begin("Achievements", nullptr, flags))
         {
             static bool s_secretPrev = false;
             bool secretNow = g_padConnected && (g_padState.Gamepad.wButtons & XINPUT_GAMEPAD_A);
 
-            if (secretNow && !s_secretPrev)
+            if ((secretNow && !s_secretPrev) || ImGui::IsKeyPressed(ImGuiKey_Space, false))
             {
                 g_showSecrets = !g_showSecrets;
             }
 
             s_secretPrev = secretNow;
+
+            // Header: title, unlocked count and controls
+            ImGuiStyle& style = ImGui::GetStyle();
+            float headerH = ImGui::GetTextLineHeight() + style.WindowPadding.y * 2.0f;
+            DrawPanel(headerH);
+
+            int unlockedCount = 0;
+            for (size_t i = 0; i < g_achievements.size(); i++)
+            {
+                if (i < g_unlocked.size() && g_unlocked[i])
+                {
+                    unlockedCount++;
+                }
+            }
+
+            char count[32];
+            snprintf(count, sizeof(count), "%d / %d", unlockedCount, (int)g_achievements.size());
+
+            ImGui::SetCursorPos(ImVec2(style.WindowPadding.x, style.WindowPadding.y));
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Achievements");
+            ImGui::SameLine(ImGui::GetWindowWidth() - style.WindowPadding.x - ImGui::CalcTextSize(count).x);
+            ImGui::TextColored(ImVec4(1.0f, 0.84f, 0.40f, 1.0f), "%s", count);
+
+            ImGui::SetCursorPosY(headerH + style.ItemSpacing.y);
+            ImGui::TextDisabled("[Space / A] %s secret achievements    [Wheel / Stick] Scroll    [Home / L3 + Up] Close", g_showSecrets ? "Hide" : "Show");
+            ImGui::Separator();
+
+            if (g_restoreScroll)
+            {
+                ImGui::SetNextWindowScroll(ImVec2(-1.0f, g_savedScrollY));
+            }
+
+            ImGui::BeginChild("##list");
 
             if (g_restoreScroll)
             {
@@ -737,9 +831,6 @@ namespace AchievementOverlay
                 float delta = axis * 1500.0f * g_uiScale * ImGui::GetIO().DeltaTime;
                 ImGui::SetScrollY(ImGui::GetScrollY() - delta);
             }
-
-            ImGui::Checkbox("Show secret achievements", &g_showSecrets);
-            ImGui::Separator();
 
             const float iconSize = 64.0f * g_uiScale;
 
@@ -766,10 +857,10 @@ namespace AchievementOverlay
                     ImVec2 p = ImGui::GetCursorScreenPos();
                     ImVec2 p2(p.x + iconSize, p.y + iconSize);
                     ImDrawList* dl = ImGui::GetWindowDrawList();
-                    dl->AddRectFilled(p, p2, IM_COL32(90, 90, 90, 255), 4.0f);
-                    dl->AddRectFilled(ImVec2(p.x + 1, p.y + 1), ImVec2(p2.x - 1, p2.y - 1), IM_COL32(35, 35, 35, 255), 4.0f);
+                    dl->AddRectFilled(p, p2, IM_COL32(70, 104, 124, 255));
+                    dl->AddRectFilled(ImVec2(p.x + 1, p.y + 1), ImVec2(p2.x - 1, p2.y - 1), IM_COL32(12, 26, 38, 255));
                     ImVec2 ts = ImGui::CalcTextSize("?");
-                    dl->AddText(ImVec2(p.x + (iconSize - ts.x) * 0.5f, p.y + (iconSize - ts.y) * 0.5f), IM_COL32(170, 170, 170, 255), "?");
+                    dl->AddText(ImVec2(p.x + (iconSize - ts.x) * 0.5f, p.y + (iconSize - ts.y) * 0.5f), IM_COL32(130, 160, 180, 255), "?");
                     ImGui::Dummy(ImVec2(iconSize, iconSize));
                 }
 
@@ -784,12 +875,14 @@ namespace AchievementOverlay
                     desc = (i < g_text.size()) ? g_text[i].desc.c_str() : "";
                 }
 
-                ImVec4 nameCol = unlocked ? ImVec4(1.0f, 0.84f, 0.40f, 1.0f) : ImVec4(0.85f, 0.85f, 0.85f, 1.0f);
+                ImVec4 nameCol = unlocked ? ImVec4(1.0f, 0.84f, 0.40f, 1.0f) : ImVec4(0.86f, 0.92f, 0.96f, 1.0f);
                 ImGui::TextColored(nameCol, "%s", name);
 
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
                 ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
                 ImGui::TextWrapped("%s", desc);
                 ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
 
                 char overlay[32];
                 float barFrac;
@@ -810,13 +903,11 @@ namespace AchievementOverlay
 
                 // Draw the bar without its built-in overlay, then place the counter at the top-left
                 ImVec2 barPos = ImGui::GetCursorScreenPos();
-                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.22f, 0.60f, 0.85f, 1.0f));
                 ImGui::ProgressBar(barFrac, ImVec2(-FLT_MIN, 0.0f), "");
-                ImGui::PopStyleColor();
 
                 ImVec2 ots = ImGui::CalcTextSize(overlay);
                 float barH = ImGui::GetFrameHeight();
-                ImGui::GetWindowDrawList()->AddText(ImVec2(barPos.x + 6.0f * g_uiScale, barPos.y + (barH - ots.y) * 0.5f), IM_COL32(255, 255, 255, 255), overlay);
+                ImGui::GetWindowDrawList()->AddText(ImVec2(barPos.x + 6.0f * g_uiScale, barPos.y + (barH - ots.y) * 0.5f), IM_COL32(230, 240, 246, 255), overlay);
 
                 ImGui::EndGroup();
                 ImGui::PopID();
@@ -828,6 +919,8 @@ namespace AchievementOverlay
             {
                 g_savedScrollY = ImGui::GetScrollY();
             }
+
+            ImGui::EndChild();
         }
 
         ImGui::End();
@@ -911,6 +1004,8 @@ namespace AchievementOverlay
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
             if (ImGui::Begin(wname, nullptr, flags))
             {
+                DrawPanel(0.0f);
+
                 int id = it.achvId;
                 float iconSize = 64.0f * scale;
 
@@ -928,7 +1023,7 @@ namespace AchievementOverlay
                 ImGui::TextWrapped("%s", name);
                 if (desc[0])
                 {
-                    ImGui::TextColored(ImVec4(0.78f, 0.78f, 0.78f, 1.0f), "%s", desc);
+                    ImGui::TextColored(ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "%s", desc);
                 }
 
                 ImGui::PopTextWrapPos();
@@ -1116,7 +1211,8 @@ namespace AchievementOverlay
 
     inline bool WantCaptureController()
     {
-        return kBlockGameInputWhileVisible && g_imguiInitialized && g_visible && !g_deviceLost;
+        bool comboHeld = g_padConnected && (g_padState.Gamepad.wButtons & kToggleButtons) == kToggleButtons;
+        return kBlockGameInputWhileVisible && g_imguiInitialized && (g_visible || comboHeld) && !g_deviceLost;
     }
 
     inline void OnPresent(IDirect3DDevice9* pDevice)
@@ -1275,9 +1371,14 @@ namespace AchievementOverlay
 
         PollDeviceHealth(pDevice);
 
-        if (GetAsyncKeyState(VK_HOME) & 1)
+        static bool s_comboPrev = false;
+        bool comboNow = g_padConnected && (g_padState.Gamepad.wButtons & kToggleButtons) == kToggleButtons;
+
+        if ((GetAsyncKeyState(VK_HOME) & 1) || (comboNow && !s_comboPrev))
         {
             Toggle();
         }
+
+        s_comboPrev = comboNow;
     }
 }
