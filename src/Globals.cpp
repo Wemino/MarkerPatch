@@ -68,6 +68,12 @@ struct GlobalState
 	bool resourcesValid = false;
 	bool snapshotValid = false;
 
+	// Fire rate fix
+	DWORD lastShotTime = 0;
+	DWORD readyTime = 0;
+	float shotError = 0.0f;
+	bool usesFireAnim = true;
+
 	// Misc
 	bool isLoadingShopItems = false;
 	bool forceCurrentItem = false;
@@ -88,6 +94,7 @@ struct GameAddresses
 	DWORD LoadedSaveMemoryPtr = 0;
 	DWORD TargetFrameTimeMsPtr = 0;
 	DWORD EngineFrameTimePtr = 0;
+	DWORD SimTimeMsPtr = 0;
 	DWORD UpsideDownYawMin = 0;
 	DWORD UpsideDownYawMax = 0;
 	DWORD UpsideDownPitchMin = 0;
