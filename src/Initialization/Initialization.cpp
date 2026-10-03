@@ -9,7 +9,9 @@ static void ReadConfig()
 	// Fixes
 	HavokPhysicsFix = IniHelper::ReadInteger("Fixes", "HavokPhysicsFix", 1) == 1;
 	HighCoreCPUFix = IniHelper::ReadInteger("Fixes", "HighCoreCPUFix", 1) == 1;
+	ThreadAffinityFix = IniHelper::ReadInteger("Fixes", "ThreadAffinityFix", 1) == 1;
 	VSyncRefreshRateFix = IniHelper::ReadInteger("Fixes", "VSyncRefreshRateFix", 1) == 1;
+	FixFrameLimiter = IniHelper::ReadInteger("Fixes", "FixFrameLimiter", 1) == 1;
 	FixDifficultyRewards = IniHelper::ReadInteger("Fixes", "FixDifficultyRewards", 1) == 1;
 	FixSuitIDConflicts = IniHelper::ReadInteger("Fixes", "FixSuitIDConflicts", 1) == 1;
 	FixSaveStringHandling = IniHelper::ReadInteger("Fixes", "FixSaveStringHandling", 1) == 1;
@@ -18,7 +20,16 @@ static void ReadConfig()
 	FixBlurResolution = IniHelper::ReadInteger("Fixes", "FixBlurResolution", 1) == 1;
 	FixShadowBlur = IniHelper::ReadInteger("Fixes", "FixShadowBlur", 1) == 1;
 	FixFlareArtifacts = IniHelper::ReadInteger("Fixes", "FixFlareArtifacts", 1) == 1;
-	FixGlassReflections = IniHelper::ReadInteger("Fixes", "FixGlassReflections", 1) == 1;
+	FixVertexNormals = IniHelper::ReadInteger("Fixes", "FixVertexNormals", 1) == 1;
+	FixClothPhysics = IniHelper::ReadInteger("Fixes", "FixClothPhysics", 1) == 1;
+	FixMenuSpeed = IniHelper::ReadInteger("Fixes", "FixMenuSpeed", 1) == 1;
+	FixGameClock = IniHelper::ReadInteger("Fixes", "FixGameClock", 1) == 1;
+	FixMainLoopSpin = IniHelper::ReadInteger("Fixes", "FixMainLoopSpin", 1) == 1;
+	FixStreamingBudget = IniHelper::ReadInteger("Fixes", "FixStreamingBudget", 1) == 1;
+	FixAudioSyncStall = IniHelper::ReadInteger("Fixes", "FixAudioSyncStall", 1) == 1;
+	PreloadStreamedTextures = IniHelper::ReadInteger("Fixes", "PreloadStreamedTextures", 1) == 1;
+	FixInputHistory = IniHelper::ReadInteger("Fixes", "FixInputHistory", 1) == 1;
+	FixImpalingProjectiles = IniHelper::ReadInteger("Fixes", "FixImpalingProjectiles", 1) == 1;
 
 	// General
 	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
@@ -36,12 +47,14 @@ static void ReadConfig()
 	AutoResolution = IniHelper::ReadInteger("Display", "AutoResolution", 1) == 1;
 	FontScaling = IniHelper::ReadInteger("Display", "FontScaling", 1) == 1;
 	FontScalingFactor = IniHelper::ReadFloat("Display", "FontScalingFactor", 1.0f);
+	FOVScale = IniHelper::ReadFloat("Display", "FOVScale", 1.0f);
 
 	// Input
 	RawMouseInput = IniHelper::ReadInteger("Input", "RawMouseInput", 1) == 1;
 	UseSDLControllerInput = IniHelper::ReadInteger("Input", "UseSDLControllerInput", 1) == 1;
 	BlockDirectInputDevices = IniHelper::ReadInteger("Input", "BlockDirectInputDevices", 1) == 1;
 	DisableKeyboardHook = IniHelper::ReadInteger("Input", "DisableKeyboardHook", 1) == 1;
+	ExtraMouseButtonBinding = IniHelper::ReadInteger("Input", "ExtraMouseButtonBinding", 1) == 1;
 	GyroEnabled = IniHelper::ReadInteger("Input", "GyroEnabled", 0) == 1;
 	GyroSensitivity = IniHelper::ReadFloat("Input", "GyroSensitivity", 1.0f);
 	GyroSmoothing = IniHelper::ReadFloat("Input", "GyroSmoothing", 0.016f);
@@ -51,8 +64,9 @@ static void ReadConfig()
 
 	// Graphics
 	MaxAnisotropy = IniHelper::ReadInteger("Graphics", "MaxAnisotropy", 16);
-	ForceTrilinearFiltering = IniHelper::ReadInteger("Graphics", "ForceTrilinearFiltering", 1) == 1;
 	DynamicShadowResolution = IniHelper::ReadInteger("Graphics", "DynamicShadowResolution", 1920);
+	ImprovedAntiAliasingMode = IniHelper::ReadInteger("Graphics", "ImprovedAntiAliasingMode", 2);
+	SSAAScale = IniHelper::ReadFloat("Graphics", "SSAAScale", 2.0f);
 
 	// Modding
 	DumpArchiveAssets = IniHelper::ReadInteger("Modding", "DumpArchiveAssets", 0) == 1;
@@ -66,6 +80,8 @@ static void ReadConfig()
 	EnableHackerDLC = IniHelper::ReadInteger("DLC", "EnableHackerDLC", 0) == 1;
 	EnableZealotDLC = IniHelper::ReadInteger("DLC", "EnableZealotDLC", 0) == 1;
 	EnableRivetGunDLC = IniHelper::ReadInteger("DLC", "EnableRivetGunDLC", 0) == 1;
+	EnableIgnitionRooms = IniHelper::ReadInteger("DLC", "EnableIgnitionRooms", 0) == 1;
+	EnableOriginalPlasmaCutter = IniHelper::ReadInteger("DLC", "EnableOriginalPlasmaCutter", 0) == 1;
 
 	if (AutoResolution || UseSDLControllerInput)
 	{
@@ -77,6 +93,9 @@ static void ReadConfig()
 	}
 
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
+	FOVScale = std::clamp(FOVScale, 0.5f, 2.0f);
+	ImprovedAntiAliasingMode = std::clamp(ImprovedAntiAliasingMode, 0, 3);
+	SSAAScale = std::clamp(SSAAScale, 1.0f, 4.0f);
 
 	// Set a maximum so that the game doesn't crash
 	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 35);
@@ -102,7 +121,9 @@ static void Init()
 	// Fixes
 	ApplyHavokPhysicsFix();
 	ApplyHighCoreCPUFix();
+	ApplyThreadAffinityFix();
 	ApplyVSyncRefreshRateFix();
+	ApplyFixFrameLimiter();
 	ApplyFixDifficultyRewards();
 	ApplyFixSuitIDConflicts();
 	ApplyFixSaveStringHandling();
@@ -111,7 +132,15 @@ static void Init()
 	ApplyFixBlurResolution();
 	ApplyFixShadowBlur();
 	ApplyFixFlareArtifacts();
-	ApplyFixGlassReflections();
+	ApplyFixVertexNormals();
+	ApplyFixClothPhysics();
+	ApplyFixMenuSpeed();
+	ApplyFixGameClock();
+	ApplyFixMainLoopSpin();
+	ApplyFixStreamingBudget();
+	ApplyFixAudioSyncStall();
+	ApplyFixInputHistory();
+	ApplyFixImpalingProjectiles();
 
 	// General
 	ApplyAchievementSupport();
@@ -124,16 +153,19 @@ static void Init()
 	// Display
 	ApplyAutoResolution();
 	ApplyFontScaling();
+	ApplyFOVScaling();
 
 	// Input
 	ApplyRawMouseInput();
 	ApplyFilterInputDevices();
 	ApplyDisableKeyboardHook();
+	ApplyExtraMouseButtonBinding();
 	ApplyUseSDLControllerInput();
 
 	// Graphics
 	ApplyTextureFiltering();
 	ApplyDynamicShadowResolution();
+	ApplyImprovedAntiAliasing();
 
 	// Modding
 	ApplyArchiveDump();
@@ -141,7 +173,7 @@ static void Init()
 	ApplyArchiveStreamHook();
 
 	// DLC
-	ApplyShopHooks();
+	ApplyBonusUnlocks();
 
 	// Misc
 	ApplyMainLoopHook();

@@ -17,12 +17,12 @@ namespace ArchiveStream
 	constexpr uint32_t FOURCC_RPAK = 0x5270616B;
 
 	// UStream
-	constexpr uintptr_t OFF_STREAM_RESOURCE = 0x108;
-	constexpr uintptr_t OFF_STREAM_OFFSET = 0x10C;
+	constexpr uintptr_t OFF_STREAM_PARSING_RESOURCE = 0x108;
+	constexpr uintptr_t OFF_STREAM_RESOURCE_OFFSET = 0x10C;
 
-	// Resource
-	constexpr uintptr_t OFF_RES_DATA = 0x08;
-	constexpr uintptr_t OFF_RES_SIZE = 0x0C;
+	// TGameResource
+	constexpr uintptr_t OFF_RES_STREAM_DATA = 0x08;
+	constexpr uintptr_t OFF_RES_DATA_SIZE = 0x0C;
 
 	// SHDR body, from the start of the SHOC chunk
 	constexpr uintptr_t OFF_SHDR_SIZE = 0x28;
@@ -45,7 +45,7 @@ namespace ArchiveStream
 	std::mutex g_lock;
 	std::unordered_map<uintptr_t, StreamState> g_streams;
 
-	safetyhook::InlineHook DispatchChunk;
+	safetyhook::InlineHook UStreamer_DispatchChunk;
 
 	static void CopyBounded(char* destination, size_t destinationSize, const char*& source, const char* end)
 	{
@@ -62,14 +62,14 @@ namespace ArchiveStream
 		if (source < end) ++source;
 	}
 
-	static bool ReadHeader(const uint32_t* chunk, AssetHeader& out)
+	static bool ReadHeader(const uint32_t* pChunk, AssetHeader& out)
 	{
-		const uint32_t chunkSize = chunk[1];
+		const uint32_t chunkSize = pChunk[1];
 
 		// Bounds the string walk below
 		if (chunkSize < OFF_SHDR_STRINGS || chunkSize > 0x20000) return false;
 
-		const uint8_t* base = reinterpret_cast<const uint8_t*>(chunk);
+		const uint8_t* base = reinterpret_cast<const uint8_t*>(pChunk);
 		out.size = *reinterpret_cast<const uint32_t*>(base + OFF_SHDR_SIZE);
 
 		const char* cursor = reinterpret_cast<const char*>(base + OFF_SHDR_STRINGS);
@@ -136,12 +136,12 @@ namespace ArchiveStream
 		return result;
 	}
 
-	static char HandleHeader(uintptr_t thisptr, uintptr_t stream, uint32_t* chunk, uintptr_t buffer)
+	static char HandleHeader(uintptr_t thisptr, uintptr_t pStream, uint32_t* pChunk, uintptr_t pBuffer)
 	{
 		AssetHeader header{};
 		StreamState state;
 
-		const bool parsed = ReadHeader(chunk, header);
+		const bool parsed = ReadHeader(pChunk, header);
 
 		if (parsed)
 		{
@@ -154,22 +154,22 @@ namespace ArchiveStream
 
 		if (parsed && LoadModFiles && ModFiles::Open(state.relativePath, modFile))
 		{
-			patched = MemoryHelper::WriteMemory<uint32_t>(reinterpret_cast<uintptr_t>(chunk) + OFF_SHDR_SIZE, modFile.size);
+			patched = MemoryHelper::WriteMemory<uint32_t>(reinterpret_cast<uintptr_t>(pChunk) + OFF_SHDR_SIZE, modFile.size);
 		}
 
-		const char result = DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), stream, chunk, buffer);
+		const char result = UStreamer_DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), pStream, pChunk, pBuffer);
 
-		const uintptr_t resource = *reinterpret_cast<uintptr_t*>(stream + OFF_STREAM_RESOURCE);
+		const uintptr_t resource = *reinterpret_cast<uintptr_t*>(pStream + OFF_STREAM_PARSING_RESOURCE);
 
 		if (patched)
 		{
-			MemoryHelper::WriteMemory<uint32_t>(reinterpret_cast<uintptr_t>(chunk) + OFF_SHDR_SIZE, header.size);
+			MemoryHelper::WriteMemory<uint32_t>(reinterpret_cast<uintptr_t>(pChunk) + OFF_SHDR_SIZE, header.size);
 
 			// A null resource means the asset is already loaded and its payload is skipped
 			if (resource != 0)
 			{
-				const uintptr_t data = *reinterpret_cast<uintptr_t*>(resource + OFF_RES_DATA);
-				const uint32_t size = *reinterpret_cast<uint32_t*>(resource + OFF_RES_SIZE);
+				const uintptr_t data = *reinterpret_cast<uintptr_t*>(resource + OFF_RES_STREAM_DATA);
+				const uint32_t size = *reinterpret_cast<uint32_t*>(resource + OFF_RES_DATA_SIZE);
 
 				// Guards against reading past the buffer
 				if (data != 0 && size == modFile.size)
@@ -178,30 +178,30 @@ namespace ArchiveStream
 				}
 
 				// The engine mounts the resource once its offset reaches its size
-				MemoryHelper::WriteMemory<uint32_t>(stream + OFF_STREAM_OFFSET, size);
+				MemoryHelper::WriteMemory<uint32_t>(pStream + OFF_STREAM_RESOURCE_OFFSET, size);
 
 				uint32_t completion[3] = { FOURCC_SHOC, sizeof(completion), FOURCC_SDAT };
 
-				DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), stream, completion, buffer);
+				UStreamer_DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), pStream, completion, pBuffer);
 
 				state.skipPayload = true;
 			}
 		}
 
 		std::lock_guard<std::mutex> guard(g_lock);
-		g_streams[stream] = std::move(state);
+		g_streams[pStream] = std::move(state);
 
 		return result;
 	}
 
-	static char HandlePayload(uintptr_t thisptr, uintptr_t stream, uint32_t* chunk, uintptr_t buffer)
+	static char HandlePayload(uintptr_t thisptr, uintptr_t pStream, uint32_t* pChunk, uintptr_t pBuffer)
 	{
 		std::string relativePath;
 
 		{
 			std::lock_guard<std::mutex> guard(g_lock);
 
-			const auto entry = g_streams.find(stream);
+			const auto entry = g_streams.find(pStream);
 
 			if (entry != g_streams.end())
 			{
@@ -214,17 +214,17 @@ namespace ArchiveStream
 			}
 		}
 
-		const uintptr_t resource = *reinterpret_cast<uintptr_t*>(stream + OFF_STREAM_RESOURCE);
+		const uintptr_t resource = *reinterpret_cast<uintptr_t*>(pStream + OFF_STREAM_PARSING_RESOURCE);
 
-		const char result = DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), stream, chunk, buffer);
+		const char result = UStreamer_DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), pStream, pChunk, pBuffer);
 
 		if (!DumpArchiveAssets || resource == 0 || relativePath.empty()) return result;
 
 		// Cleared, so that fragment was the last one
-		if (*reinterpret_cast<uintptr_t*>(stream + OFF_STREAM_RESOURCE) != 0) return result;
+		if (*reinterpret_cast<uintptr_t*>(pStream + OFF_STREAM_PARSING_RESOURCE) != 0) return result;
 
-		const uintptr_t data = *reinterpret_cast<uintptr_t*>(resource + OFF_RES_DATA);
-		const uint32_t size = *reinterpret_cast<uint32_t*>(resource + OFF_RES_SIZE);
+		const uintptr_t data = *reinterpret_cast<uintptr_t*>(resource + OFF_RES_STREAM_DATA);
+		const uint32_t size = *reinterpret_cast<uint32_t*>(resource + OFF_RES_DATA_SIZE);
 
 		if (data != 0)
 		{
@@ -234,17 +234,17 @@ namespace ArchiveStream
 		return result;
 	}
 
-	static char __fastcall DispatchChunk_Hook(uintptr_t thisptr, int, uintptr_t stream, uint32_t* chunk, uintptr_t buffer)
+	static char __fastcall UStreamer_DispatchChunk_Hook(uintptr_t thisptr, int, uintptr_t pStream, uint32_t* pChunk, uintptr_t pBuffer)
 	{
-		if (stream && chunk && chunk[0] == FOURCC_SHOC)
+		if (pStream && pChunk && pChunk[0] == FOURCC_SHOC)
 		{
-			const uint32_t kind = chunk[2];
+			const uint32_t kind = pChunk[2];
 
-			if (kind == FOURCC_SHDR) return HandleHeader(thisptr, stream, chunk, buffer);
-			if (kind == FOURCC_SDAT || kind == FOURCC_RPAK) return HandlePayload(thisptr, stream, chunk, buffer);
+			if (kind == FOURCC_SHDR) return HandleHeader(thisptr, pStream, pChunk, pBuffer);
+			if (kind == FOURCC_SDAT || kind == FOURCC_RPAK) return HandlePayload(thisptr, pStream, pChunk, pBuffer);
 		}
 
-		return DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), stream, chunk, buffer);
+		return UStreamer_DispatchChunk.unsafe_thiscall<char>(reinterpret_cast<void*>(thisptr), pStream, pChunk, pBuffer);
 	}
 }
 
@@ -252,9 +252,9 @@ static void ApplyArchiveStreamHook()
 {
 	if (!DumpArchiveAssets && !LoadModFiles) return;
 
-	DWORD addr_DispatchChunk = ScanModuleSignature(g_State.GameModule, "51 53 57 8B 7C 24 14 8B 07 8B D9 C6 44 24 0B 01 ", "DispatchChunk");
+	DWORD addr_UStreamer_DispatchChunk = ScanModuleSignature(g_State.GameModule, "51 53 57 8B 7C 24 14 8B 07 8B D9 C6 44 24 0B 01 ", "UStreamer_DispatchChunk");
 
-	if (addr_DispatchChunk == 0) return;
+	if (addr_UStreamer_DispatchChunk == 0) return;
 
-	ArchiveStream::DispatchChunk = HookHelper::CreateHook(reinterpret_cast<void*>(addr_DispatchChunk), &ArchiveStream::DispatchChunk_Hook);
+	ArchiveStream::UStreamer_DispatchChunk = HookHelper::CreateHook(reinterpret_cast<void*>(addr_UStreamer_DispatchChunk), &ArchiveStream::UStreamer_DispatchChunk_Hook);
 }

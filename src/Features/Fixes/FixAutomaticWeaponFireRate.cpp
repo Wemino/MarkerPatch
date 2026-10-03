@@ -8,24 +8,24 @@
 // FixAutomaticWeaponFireRate
 // =========================
 
-safetyhook::InlineHook CheckFireCooldown;
-safetyhook::InlineHook UpdateEngineTimer;
-safetyhook::InlineHook ResetUseTimer;
+safetyhook::InlineHook Item_IsReadyToUse;
+safetyhook::InlineHook TimeManager_HandleEvents;
+safetyhook::InlineHook Item_ResetUseTimer;
 
 static float GetConsoleFireDelay(float fireDelay, bool usesFireAnim)
 {
 	return (ceilf(fireDelay / TARGET_FRAME_TIME - 0.01f) + usesFireAnim) * TARGET_FRAME_TIME * 1000.0f;
 }
 
-static int __fastcall UpdateEngineTimer_Hook(DWORD* thisp, int, DWORD* a2)
+static int __fastcall TimeManager_HandleEvents_Hook(DWORD* thisp, int, DWORD* msg)
 {
-	int result = UpdateEngineTimer.unsafe_thiscall<int>(thisp, a2);
-	float frameTime = MemoryHelper::ReadMemory<float>(g_Addresses.EngineFrameTimePtr);
+	int result = TimeManager_HandleEvents.unsafe_thiscall<int>(thisp, msg);
+	float frameTime = MemoryHelper::ReadMemory<float>(g_Addresses.FrameTimeSecPtr);
 	g_State.frameTime += (std::min(frameTime, g_State.frameTime * 2.0f) - g_State.frameTime) * 0.2f;
 	return result;
 }
 
-static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
+static bool __fastcall Item_IsReadyToUse_Hook(int thisp, int)
 {
 	float* fireDelayPtr = (float*)(thisp + 800);
 	float originalDelay = *fireDelayPtr;
@@ -42,21 +42,21 @@ static bool __fastcall CheckFireCooldown_Hook(int thisp, int)
 		*fireDelayPtr = std::max(delayMs, 0.0f) / 1000.0f;
 	}
 
-	bool result = CheckFireCooldown.unsafe_thiscall<bool>(thisp);
+	bool result = Item_IsReadyToUse.unsafe_thiscall<bool>(thisp);
 	*fireDelayPtr = originalDelay;
 
 	if (result && isTracked && g_State.readyTime == 0)
 	{
-		g_State.readyTime = MemoryHelper::ReadMemory<DWORD>(g_Addresses.SimTimeMsPtr);
+		g_State.readyTime = MemoryHelper::ReadMemory<DWORD>(g_Addresses.SimTimeElapsedMSecPtr);
 	}
 
 	return result;
 }
 
-static void __fastcall ResetUseTimer_Hook(int thisp, int)
+static void __fastcall Item_ResetUseTimer_Hook(int thisp, int)
 {
 	DWORD previousShotTime = MemoryHelper::ReadMemory<DWORD>(thisp + 792);
-	ResetUseTimer.unsafe_thiscall<void>(thisp);
+	Item_ResetUseTimer.unsafe_thiscall<void>(thisp);
 	DWORD shotTime = MemoryHelper::ReadMemory<DWORD>(thisp + 792);
 	float frameMs = g_State.frameTime * 1000.0f;
 
@@ -78,21 +78,21 @@ static void ApplyFixAutomaticWeaponFireRate()
 {
 	if (!FixAutomaticWeaponFireRate) return;
 
-	DWORD addr_UpdateEngineTimer = ScanModuleSignature(g_State.GameModule, "83 EC 10 55 56 57 8B F1 E8", "UpdateEngineTimer");
-	DWORD addr_CheckFireCooldown = ScanModuleSignature(g_State.GameModule, "51 8B 81 18 03 00 00 D9 05", "CheckFireCooldown");
-	DWORD addr_ResetUseTimer = ScanModuleSignature(g_State.GameModule, "A1 ?? ?? ?? ?? 89 81 18 03 00 00 C3", "ResetUseTimer");
+	DWORD addr_TimeManager_HandleEvents = ScanModuleSignature(g_State.GameModule, "83 EC 10 55 56 57 8B F1 E8", "TimeManager_HandleEvents");
+	DWORD addr_Item_IsReadyToUse = ScanModuleSignature(g_State.GameModule, "51 8B 81 18 03 00 00 D9 05", "Item_IsReadyToUse");
+	DWORD addr_Item_ResetUseTimer = ScanModuleSignature(g_State.GameModule, "A1 ?? ?? ?? ?? 89 81 18 03 00 00 C3", "Item_ResetUseTimer");
 
-	if (addr_UpdateEngineTimer == 0 ||
-		addr_CheckFireCooldown == 0 ||
-		addr_ResetUseTimer == 0) {
+	if (addr_TimeManager_HandleEvents == 0 ||
+		addr_Item_IsReadyToUse == 0 ||
+		addr_Item_ResetUseTimer == 0) {
 		return;
 	}
 
-	g_Addresses.EngineFrameTimePtr = MemoryHelper::ReadMemory<int>(addr_UpdateEngineTimer + 0x265);
-	g_Addresses.SimTimeMsPtr = MemoryHelper::ReadMemory<int>(addr_ResetUseTimer + 0x1);
+	g_Addresses.FrameTimeSecPtr = MemoryHelper::ReadMemory<int>(addr_TimeManager_HandleEvents + 0x265);
+	g_Addresses.SimTimeElapsedMSecPtr = MemoryHelper::ReadMemory<int>(addr_Item_ResetUseTimer + 0x1);
 	g_State.frameTime = TARGET_FRAME_TIME;
 
-	UpdateEngineTimer = HookHelper::CreateHook((void*)addr_UpdateEngineTimer, &UpdateEngineTimer_Hook);
-	CheckFireCooldown = HookHelper::CreateHook((void*)addr_CheckFireCooldown, &CheckFireCooldown_Hook);
-	ResetUseTimer = HookHelper::CreateHook((void*)addr_ResetUseTimer, &ResetUseTimer_Hook);
+	TimeManager_HandleEvents = HookHelper::CreateHook((void*)addr_TimeManager_HandleEvents, &TimeManager_HandleEvents_Hook);
+	Item_IsReadyToUse = HookHelper::CreateHook((void*)addr_Item_IsReadyToUse, &Item_IsReadyToUse_Hook);
+	Item_ResetUseTimer = HookHelper::CreateHook((void*)addr_Item_ResetUseTimer, &Item_ResetUseTimer_Hook);
 }

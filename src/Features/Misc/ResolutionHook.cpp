@@ -11,6 +11,13 @@ safetyhook::InlineHook UpdateDisplaySettings;
 
 static __int16 __cdecl SetResolution_Hook(__int16 width, __int16 height)
 {
+	// Supersampling renders at a multiple of the configured resolution
+	if (g_State.isSupersampling)
+	{
+		width = static_cast<__int16>(ToRenderSize(width));
+		height = static_cast<__int16>(ToRenderSize(height));
+	}
+
 	g_State.currentHeight = height;
 	g_State.resolutionScale = static_cast<float>(height) / 720.0f;
 	return SetResolution.ccall<__int16>(width, height);
@@ -31,7 +38,7 @@ static __int16 __cdecl UpdateDisplaySettings_Hook(__int16 width, __int16 height,
 
 static void ApplyResolutionHook()
 {
-	if (!FixBlurResolution && !FixShadowBlur && !VSyncRefreshRateFix) return;
+	if (!FixBlurResolution && !FixShadowBlur && !VSyncRefreshRateFix && !g_State.isSupersampling) return;
 
 	DWORD addr_UpdateDisplaySettings = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 B2 01 66 39 05", "UpdateDisplaySettings");
 	DWORD addr_SetResolution = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 66 A3", "SetResolution");

@@ -30,6 +30,7 @@ namespace AchievementOverlay
     inline HWND g_hWnd = nullptr;
     inline WNDPROC g_oWndProc = nullptr;
     inline uintptr_t g_devicePtrAddr = 0;
+    inline const DWORD* g_renderStates = nullptr;
 
     inline bool g_hooksInstalled = false;
     inline bool g_imguiInitialized = false;
@@ -1053,6 +1054,163 @@ namespace AchievementOverlay
             ImGui::SetMouseCursor(ImGuiMouseCursor_None);
     }
 
+    struct OverlayVertex
+    {
+        float x, y, z, rhw;
+        D3DCOLOR col;
+        float u, v;
+    };
+    inline std::vector<OverlayVertex> g_vertices;
+
+    inline constexpr DWORD kOverlayFVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+
+    struct DeviceState { DWORD type; DWORD value; DWORD def; };
+    inline constexpr DeviceState kRenderStates[] =
+    {
+        { D3DRS_ZENABLE, D3DZB_FALSE, D3DZB_FALSE },
+        { D3DRS_FILLMODE, D3DFILL_SOLID, D3DFILL_SOLID },
+        { D3DRS_SHADEMODE, D3DSHADE_GOURAUD, D3DSHADE_GOURAUD },
+        { D3DRS_ALPHATESTENABLE, FALSE, FALSE },
+        { D3DRS_SRCBLEND, D3DBLEND_SRCALPHA, D3DBLEND_ONE },
+        { D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA, D3DBLEND_ZERO },
+        { D3DRS_CULLMODE, D3DCULL_NONE, D3DCULL_CCW },
+        { D3DRS_ALPHABLENDENABLE, TRUE, FALSE },
+        { D3DRS_FOGENABLE, FALSE, FALSE },
+        { D3DRS_STENCILENABLE, FALSE, FALSE },
+        { D3DRS_COLORWRITEENABLE, 0xF, 0xF },
+        { D3DRS_BLENDOP, D3DBLENDOP_ADD, D3DBLENDOP_ADD },
+        { D3DRS_SCISSORTESTENABLE, TRUE, FALSE },
+        { D3DRS_SRGBWRITEENABLE, FALSE, FALSE },
+    };
+    inline constexpr DeviceState kStageStates[] =
+    {
+        { D3DTSS_COLOROP, D3DTOP_MODULATE, D3DTOP_MODULATE },
+        { D3DTSS_COLORARG1, D3DTA_TEXTURE, D3DTA_TEXTURE },
+        { D3DTSS_COLORARG2, D3DTA_DIFFUSE, D3DTA_CURRENT },
+        { D3DTSS_ALPHAOP, D3DTOP_MODULATE, D3DTOP_SELECTARG1 },
+        { D3DTSS_ALPHAARG1, D3DTA_TEXTURE, D3DTA_TEXTURE },
+        { D3DTSS_ALPHAARG2, D3DTA_DIFFUSE, D3DTA_CURRENT },
+    };
+
+    inline void SetupRenderState(IDirect3DDevice9* pDevice, ImDrawData* drawData)
+    {
+        D3DVIEWPORT9 vp = { 0, 0, (DWORD)drawData->DisplaySize.x, (DWORD)drawData->DisplaySize.y, 0.0f, 1.0f };
+        pDevice->SetViewport(&vp);
+        pDevice->SetVertexShader(nullptr);
+        pDevice->SetPixelShader(nullptr);
+        pDevice->SetFVF(kOverlayFVF);
+
+        for (const DeviceState& s : kRenderStates)
+        {
+            pDevice->SetRenderState((D3DRENDERSTATETYPE)s.type, s.value);
+        }
+
+        for (const DeviceState& s : kStageStates)
+        {
+            pDevice->SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE)s.type, s.value);
+        }
+
+        pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+        pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+        pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+        pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+        pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+        pDevice->SetSamplerState(0, D3DSAMP_SRGBTEXTURE, FALSE);
+    }
+
+    inline void RenderDrawData(IDirect3DDevice9* pDevice, ImDrawData* drawData)
+    {
+        if (drawData->DisplaySize.x <= 0.0f || drawData->DisplaySize.y <= 0.0f)
+            return;
+
+        if (drawData->Textures)
+        {
+            for (ImTextureData* tex : *drawData->Textures)
+            {
+                if (tex->Status != ImTextureStatus_OK)
+                {
+                    ImGui_ImplDX9_UpdateTexture(tex);
+                }
+            }
+        }
+
+        SetupRenderState(pDevice, drawData);
+
+        ImVec2 origin = drawData->DisplayPos;
+
+        for (const ImDrawList* list : drawData->CmdLists)
+        {
+            g_vertices.resize(list->VtxBuffer.Size);
+
+            for (int i = 0; i < list->VtxBuffer.Size; i++)
+            {
+                const ImDrawVert& src = list->VtxBuffer[i];
+                OverlayVertex& dst = g_vertices[i];
+                dst.x = src.pos.x - origin.x - 0.5f;
+                dst.y = src.pos.y - origin.y - 0.5f;
+                dst.z = 0.0f;
+                dst.rhw = 1.0f;
+                dst.col = (src.col & 0xFF00FF00) | ((src.col & 0x00FF0000) >> 16) | ((src.col & 0x000000FF) << 16); // ImGui packs ABGR, D3D9 wants ARGB
+                dst.u = src.uv.x;
+                dst.v = src.uv.y;
+            }
+
+            for (const ImDrawCmd& cmd : list->CmdBuffer)
+            {
+                if (cmd.UserCallback)
+                {
+                    if (cmd.UserCallback == ImGui::GetPlatformIO().DrawCallback_ResetRenderState)
+                    {
+                        SetupRenderState(pDevice, drawData);
+                    }
+                    else
+                    {
+                        cmd.UserCallback(list, &cmd);
+                    }
+
+                    continue;
+                }
+
+                RECT clip = { (LONG)(cmd.ClipRect.x - origin.x), (LONG)(cmd.ClipRect.y - origin.y), (LONG)(cmd.ClipRect.z - origin.x), (LONG)(cmd.ClipRect.w - origin.y) };
+                if (clip.right <= clip.left || clip.bottom <= clip.top || cmd.ElemCount == 0)
+                {
+                    continue;
+                }
+
+                // Only the vertices this command uses get uploaded
+                const ImDrawIdx* indices = list->IdxBuffer.Data + cmd.IdxOffset;
+                ImDrawIdx minIndex = indices[0];
+                ImDrawIdx maxIndex = indices[0];
+                for (unsigned int i = 1; i < cmd.ElemCount; i++)
+                {
+                    if (indices[i] < minIndex) minIndex = indices[i];
+                    if (indices[i] > maxIndex) maxIndex = indices[i];
+                }
+
+                pDevice->SetScissorRect(&clip);
+                pDevice->SetTexture(0, (IDirect3DTexture9*)(uintptr_t)cmd.GetTexID());
+                pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, minIndex, maxIndex - minIndex + 1, cmd.ElemCount / 3, indices, sizeof(ImDrawIdx) == 2 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, g_vertices.data() + cmd.VtxOffset, sizeof(OverlayVertex));
+            }
+        }
+    }
+
+    // Render states go back to the values the game last set, or the D3D9 default for the ones it never set
+    inline void RestoreDeviceStates(IDirect3DDevice9* pDevice)
+    {
+        for (const DeviceState& s : kRenderStates)
+        {
+            DWORD value = g_renderStates ? g_renderStates[s.type] : 0xFFFFFFFF;
+            pDevice->SetRenderState((D3DRENDERSTATETYPE)s.type, value != 0xFFFFFFFF ? value : s.def);
+        }
+
+        for (const DeviceState& s : kStageStates)
+        {
+            pDevice->SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE)s.type, s.def);
+        }
+
+        pDevice->SetTexture(0, nullptr);
+    }
+
     inline void Render(IDirect3DDevice9* pDevice)
     {
         ImGui_ImplDX9_NewFrame();
@@ -1092,11 +1250,6 @@ namespace AchievementOverlay
 
         ImGui::NewFrame();
 
-        if (ImDrawCallback setNearest = ImGui::GetPlatformIO().DrawCallback_SetSamplerNearest)
-        {
-            ImGui::GetBackgroundDrawList()->AddCallback(setNearest, nullptr);
-        }
-
         UpdatePlatinum();
 
         if (g_visible)
@@ -1113,7 +1266,7 @@ namespace AchievementOverlay
 
         ImGui::EndFrame();
         ImGui::Render();
-        ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+        RenderDrawData(pDevice, ImGui::GetDrawData());
     }
 
     inline LRESULT CALLBACK WndProc_Hook(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1198,9 +1351,10 @@ namespace AchievementOverlay
     }
 
     // Public API
-    inline void Init(uintptr_t devicePtrAddr)
+    inline void Init(uintptr_t devicePtrAddr, uintptr_t renderStatesAddr)
     {
         g_devicePtrAddr = devicePtrAddr;
+        g_renderStates = reinterpret_cast<const DWORD*>(renderStatesAddr);
     }
 
     inline void FeedControllerState(const XINPUT_STATE& state, bool connected)
@@ -1258,30 +1412,23 @@ namespace AchievementOverlay
 
         ImGui::GetIO().MouseDrawCursor = g_visible; // cursor only for the menu, not toasts
 
-        IDirect3DStateBlock9* stateBlock = nullptr;
-        if (FAILED(pDevice->CreateStateBlock(D3DSBT_ALL, &stateBlock)))
-        {
-            stateBlock = nullptr;
-        }
-
-        if (stateBlock)
-        {
-            stateBlock->Capture();
-        }
-
-        IDirect3DSurface9* prevRT = nullptr;
         IDirect3DSurface9* bb = nullptr;
+        IDirect3DSurface9* depth = nullptr;
+        IDirect3DSurface9* targets[D3D_MAX_SIMULTANEOUS_RENDERTARGETS] = {};
 
-        D3DVIEWPORT9 prevViewport{};
-        RECT prevScissor{};
-        const bool haveViewport = SUCCEEDED(pDevice->GetViewport(&prevViewport));
-        const bool haveScissor = SUCCEEDED(pDevice->GetScissorRect(&prevScissor));
-
-        if (SUCCEEDED(pDevice->GetRenderTarget(0, &prevRT)) && prevRT && SUCCEEDED(pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb)) && bb && SUCCEEDED(pDevice->SetRenderTarget(0, bb)))
+        if (SUCCEEDED(pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb)) && bb && SUCCEEDED(pDevice->GetRenderTarget(0, &targets[0])) && targets[0])
         {
-            DWORD prevColorWrite = 0;
-            pDevice->GetRenderState(D3DRS_COLORWRITEENABLE, &prevColorWrite);
-            pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+            for (DWORD i = 1; i < D3D_MAX_SIMULTANEOUS_RENDERTARGETS; i++)
+            {
+                if (SUCCEEDED(pDevice->GetRenderTarget(i, &targets[i])) && targets[i])
+                {
+                    pDevice->SetRenderTarget(i, nullptr);
+                }
+            }
+
+            pDevice->GetDepthStencilSurface(&depth);
+            pDevice->SetDepthStencilSurface(nullptr);
+            pDevice->SetRenderTarget(0, bb);
 
             HRESULT sceneHr = pDevice->BeginScene(); // if already open, skip our EndScene below
             Render(pDevice);
@@ -1291,34 +1438,35 @@ namespace AchievementOverlay
                 pDevice->EndScene();
             }
 
-            pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, prevColorWrite);
-            pDevice->SetRenderTarget(0, prevRT);
+            RestoreDeviceStates(pDevice);
 
-            if (haveViewport)
+            for (DWORD i = 0; i < D3D_MAX_SIMULTANEOUS_RENDERTARGETS; i++)
             {
-                pDevice->SetViewport(&prevViewport);
+                if (targets[i])
+                {
+                    pDevice->SetRenderTarget(i, targets[i]);
+                }
             }
 
-            if (haveScissor)
+            pDevice->SetDepthStencilSurface(depth);
+        }
+
+        for (IDirect3DSurface9* target : targets)
+        {
+            if (target)
             {
-                pDevice->SetScissorRect(&prevScissor);
+                target->Release();
             }
         }
 
-        if (stateBlock)
+        if (depth)
         {
-            stateBlock->Apply();
-            stateBlock->Release();
+            depth->Release();
         }
 
         if (bb)
         {
             bb->Release();
-        }
-
-        if (prevRT)
-        {
-            prevRT->Release();
         }
     }
 

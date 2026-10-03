@@ -6,52 +6,52 @@
 // IncreasedEntityPersistence
 // ==========================
 
-safetyhook::InlineHook ResizeEntityBuffer;
+safetyhook::InlineHook EnemyLifetimeManager_ResetPopLimit;
 
-static int __fastcall ResizeEntityBuffer_Hook(char* thisp, int, int bufferType, int newLimit)
+static int __fastcall EnemyLifetimeManager_ResetPopLimit_Hook(char* thisp, int, int bucketType, int size)
 {
 	// The game want to clean up the array
-	if (newLimit == 0)
+	if (size == 0)
 	{
-		return ResizeEntityBuffer.thiscall<int>(thisp, bufferType, newLimit);
+		return EnemyLifetimeManager_ResetPopLimit.thiscall<int>(thisp, bucketType, size);
 	}
 
-	if (bufferType == 0 && IncreasedEntityPersistenceBodies != 0) // bodies
+	if (bucketType == 0) // bodies
 	{
-		newLimit = IncreasedEntityPersistenceBodies;
+		size = std::max(size, IncreasedEntityPersistenceBodies);
 	}
 
-	if (bufferType == 1 && IncreasedEntityPersistenceLimbs != 0) // limbs
+	if (bucketType == 1) // limbs
 	{
-		newLimit = IncreasedEntityPersistenceLimbs;
+		size = std::max(size, IncreasedEntityPersistenceLimbs);
 	}
 
-	return ResizeEntityBuffer.thiscall<int>(thisp, bufferType, newLimit);
+	return EnemyLifetimeManager_ResetPopLimit.thiscall<int>(thisp, bucketType, size);
 }
 
 static void ApplyIncreasedEntityPersistence()
 {
 	if (!IncreasedEntityPersistence) return;
 
-	DWORD addr_ResizeEntityBuffer = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 EC 14 55 56 8D 04 40 8D 2C C1 57", "ResizeEntityBuffer");
-	DWORD addr_ResizeEntityBuffer_Init = ScanModuleSignature(g_State.GameModule, "51 53 33 DB 55 56 57 8B F9 89 3D", "EntityBuffer_Init");
+	DWORD addr_EnemyLifetimeManager_ResetPopLimit = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 EC 14 55 56 8D 04 40 8D 2C C1 57", "EnemyLifetimeManager_ResetPopLimit");
+	DWORD addr_EnemyLifetimeManager_Ctor = ScanModuleSignature(g_State.GameModule, "51 53 33 DB 55 56 57 8B F9 89 3D", "EnemyLifetimeManager_Ctor");
 
-	if (addr_ResizeEntityBuffer == 0 ||
-		addr_ResizeEntityBuffer_Init == 0) {
+	if (addr_EnemyLifetimeManager_ResetPopLimit == 0 ||
+		addr_EnemyLifetimeManager_Ctor == 0) {
 		return;
 	}
 
 	if (IncreasedEntityPersistenceBodies != 0)
 	{
-		MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x34, IncreasedEntityPersistenceBodies);
-		MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x7A, IncreasedEntityPersistenceBodies);
+		MemoryHelper::WriteMemory<uint8_t>(addr_EnemyLifetimeManager_Ctor + 0x34, IncreasedEntityPersistenceBodies);
+		MemoryHelper::WriteMemory<int>(addr_EnemyLifetimeManager_Ctor + 0x7A, IncreasedEntityPersistenceBodies);
 	}
 
 	if (IncreasedEntityPersistenceLimbs != 0)
 	{
-		MemoryHelper::WriteMemory<uint8_t>(addr_ResizeEntityBuffer_Init + 0x86, IncreasedEntityPersistenceLimbs);
-		MemoryHelper::WriteMemory<int>(addr_ResizeEntityBuffer_Init + 0x91, IncreasedEntityPersistenceLimbs);
+		MemoryHelper::WriteMemory<uint8_t>(addr_EnemyLifetimeManager_Ctor + 0x86, IncreasedEntityPersistenceLimbs);
+		MemoryHelper::WriteMemory<int>(addr_EnemyLifetimeManager_Ctor + 0x91, IncreasedEntityPersistenceLimbs);
 	}
 
-	ResizeEntityBuffer = HookHelper::CreateHook((void*)addr_ResizeEntityBuffer, &ResizeEntityBuffer_Hook);
+	EnemyLifetimeManager_ResetPopLimit = HookHelper::CreateHook((void*)addr_EnemyLifetimeManager_ResetPopLimit, &EnemyLifetimeManager_ResetPopLimit_Hook);
 }

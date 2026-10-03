@@ -111,6 +111,15 @@
     <ClCompile Include="..\include\safetyhook\Zydis.c" />
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp" />
+    <ClInclude Include="..\src\Shaders\FlashlightOverlayVS.hpp" />
+    <ClInclude Include="..\src\Shaders\FXAAPS.hpp" />
+    <ClInclude Include="..\src\Shaders\GlassReflectionVS.hpp" />
+    <ClInclude Include="..\src\Shaders\MeshParticleVS.hpp" />
+    <ClInclude Include="..\src\Shaders\MotionBlurVelocityVS.hpp" />
+    <ClInclude Include="..\src\Shaders\ScreenMeshVS.hpp" />
+    <ClInclude Include="..\src\Shaders\SMAAShaders.hpp" />
+    <ClInclude Include="..\src\Shaders\SMAATextures.hpp" />
+    <ClInclude Include="..\src\Shaders\SupersamplingShaders.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini">
@@ -140,7 +149,9 @@
     <ClInclude Include="..\src\Initialization\Initialization.cpp" />
     <ClInclude Include="..\src\Features\Fixes\HavokPhysicsFix.cpp" />
     <ClInclude Include="..\src\Features\Fixes\HighCoreCPUFix.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\ThreadAffinityFix.cpp" />
     <ClInclude Include="..\src\Features\Fixes\VSyncRefreshRateFix.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixFrameLimiter.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixDifficultyRewards.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixSuitIDConflicts.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixSaveStringHandling.cpp" />
@@ -149,7 +160,16 @@
     <ClInclude Include="..\src\Features\Fixes\FixBlurResolution.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixShadowBlur.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixFlareArtifacts.cpp" />
-    <ClInclude Include="..\src\Features\Fixes\FixGlassReflections.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixVertexNormals.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixClothPhysics.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixMenuSpeed.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixGameClock.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixMainLoopSpin.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixStreamingBudget.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixAudioSyncStall.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\PreloadStreamedTextures.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixInputHistory.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixImpalingProjectiles.cpp" />
     <ClInclude Include="..\src\Features\General\AchievementSupport.cpp" />
     <ClInclude Include="..\src\Features\General\DisableOnlineFeatures.cpp" />
     <ClInclude Include="..\src\Features\General\IncreasedEntityPersistence.cpp" />
@@ -159,15 +179,18 @@
     <ClInclude Include="..\src\Features\General\ASILoader.cpp" />
     <ClInclude Include="..\src\Features\Display\AutoResolution.cpp" />
     <ClInclude Include="..\src\Features\Display\FontScaling.cpp" />
+    <ClInclude Include="..\src\Features\Display\FOVScaling.cpp" />
     <ClInclude Include="..\src\Features\Input\RawMouseInput.cpp" />
+    <ClInclude Include="..\src\Features\Input\ExtraMouseButtonBinding.cpp" />
     <ClInclude Include="..\src\Features\Input\FilterInputDevices.cpp" />
     <ClInclude Include="..\src\Features\Input\UseSDLControllerInput.cpp" />
     <ClInclude Include="..\src\Features\Graphics\TextureFiltering.cpp" />
     <ClInclude Include="..\src\Features\Graphics\DynamicShadowResolution.cpp" />
+    <ClInclude Include="..\src\Features\Graphics\ImprovedAntiAliasing.cpp" />
     <ClInclude Include="..\src\Features\Modding\ArchiveDump.cpp" />
     <ClInclude Include="..\src\Features\Modding\ModFiles.cpp" />
     <ClInclude Include="..\src\Features\Modding\ArchiveStreamHook.cpp" />
-    <ClInclude Include="..\src\Features\DLC\ShopHooks.cpp" />
+    <ClInclude Include="..\src\Features\DLC\BonusUnlocks.cpp" />
     <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp" />
     <ClInclude Include="..\src\Features\Misc\ResolutionHook.cpp" />
     <ClInclude Include="..\src\Features\Misc\D3D9ApiMidHook.cpp" />

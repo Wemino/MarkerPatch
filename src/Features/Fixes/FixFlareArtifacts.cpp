@@ -54,29 +54,33 @@ static bool TrackSourceTexture(IDirect3DBaseTexture9* src)
 // FixFlareArtifacts
 // =========================
 
-static safetyhook::InlineHook RenderFlare;
-static uintptr_t RenderFlare_Trampoline = 0;
+static safetyhook::InlineHook AddCoronaModulatedQuad;
+static uintptr_t AddCoronaModulatedQuad_Trampoline = 0;
 
-__declspec(naked) static int __cdecl RenderFlare_Hook(DWORD* pFlare, int textureId, float posX, float posY, float sizeX, float sizeY, float rotation, float alpha, float colorReg, int renderPass, bool isScreenSpace)
+static safetyhook::MidHook FlareSnapshot{};
+static safetyhook::MidHook FlareTextureSubst{};
+static safetyhook::MidHook DeviceCleanupPre{};
+
+__declspec(naked) static int __cdecl AddCoronaModulatedQuad_Hook(DWORD* ci, const float* color, float x, float y, float z, float w, float angle, float sx, float sy, unsigned int pTexture, bool cutCorners)
 {
 	__asm
 	{
 		mov byte ptr[g_State.inFlareDraw], 1
 
 		// Forward stack args, offset stays 0x28 as ESP drops
-		push dword ptr[esp + 0x28] // isScreenSpace
-		push dword ptr[esp + 0x28] // renderPass
-		push dword ptr[esp + 0x28] // colorReg
-		push dword ptr[esp + 0x28] // alpha
-		push dword ptr[esp + 0x28] // rotation
-		push dword ptr[esp + 0x28] // sizeY
-		push dword ptr[esp + 0x28] // sizeX
-		push dword ptr[esp + 0x28] // posY
-		push dword ptr[esp + 0x28] // posX
-		push dword ptr[esp + 0x28] // textureId
+		push dword ptr[esp + 0x28] // cutCorners
+		push dword ptr[esp + 0x28] // pTexture
+		push dword ptr[esp + 0x28] // sy
+		push dword ptr[esp + 0x28] // sx
+		push dword ptr[esp + 0x28] // angle
+		push dword ptr[esp + 0x28] // w
+		push dword ptr[esp + 0x28] // z
+		push dword ptr[esp + 0x28] // y
+		push dword ptr[esp + 0x28] // x
+		push dword ptr[esp + 0x28] // color
 
 		// Call original function
-		mov edx, [RenderFlare_Trampoline]
+		mov edx, [AddCoronaModulatedQuad_Trampoline]
 		call edx
 
 		// Balance stack
@@ -86,73 +90,69 @@ __declspec(naked) static int __cdecl RenderFlare_Hook(DWORD* pFlare, int texture
 		ret
 	}
 }
+
+static void OnFlareSnapshot(safetyhook::Context&)
+{
+	if (!g_State.resourcesValid || !g_State.sourceTex || !g_State.proxySurf) return;
+
+	IDirect3DDevice9* dev = GetD3D9Device();
+	if (!dev) return;
+
+	IDirect3DTexture9* src2d = static_cast<IDirect3DTexture9*>(g_State.sourceTex);
+	IDirect3DSurface9* srcSurf = nullptr;
+	if (FAILED(src2d->GetSurfaceLevel(0, &srcSurf)) || !srcSurf) return;
+
+	HRESULT hr = dev->StretchRect(srcSurf, nullptr, g_State.proxySurf, nullptr, D3DTEXF_NONE);
+	srcSurf->Release();
+
+	g_State.snapshotValid = SUCCEEDED(hr);
+}
+
+static void OnFlareTextureSubst(safetyhook::Context& ctx)
+{
+	if (ctx.ebx != 258) return;
+	if (!g_State.inFlareDraw) return;
+
+	IDirect3DBaseTexture9* tex = reinterpret_cast<IDirect3DBaseTexture9*>(ctx.ecx);
+	if (!tex) return;
+
+	if (!g_State.resourcesValid || g_State.sourceTex != tex)
+	{
+		TrackSourceTexture(tex);
+	}
+
+	if (!g_State.snapshotValid) return;
+	if (g_State.sourceTex != tex) return;
+
+	ctx.ecx = reinterpret_cast<uintptr_t>(g_State.proxyTex);
+}
+
+static void OnDeviceCleanupPre(safetyhook::Context&)
+{
+	ReleaseFlareFixResources();
+	g_State.device = nullptr;
+}
+
 static void ApplyFixFlareArtifacts()
 {
 	if (!FixFlareArtifacts) return;
 
-	DWORD addr_RenderFlare = ScanModuleSignature(g_State.GameModule, "56 8B F0 8B 06 57 BF 01 00 00 00 23 C7", "RenderFlare");
+	DWORD addr_AddCoronaModulatedQuad = ScanModuleSignature(g_State.GameModule, "56 8B F0 8B 06 57 BF 01 00 00 00 23 C7", "AddCoronaModulatedQuad");
 	DWORD addr_FlareSnapshot = ScanModuleSignature(g_State.GameModule, "83 C0 28 88 4E 1E 2B D5 8B 36 3B D3 0F 85", "FlareSnapshot");
 	DWORD addr_FlareTextureSubst = ScanModuleSignature(g_State.GameModule, "8B 10 51 6A 04 53 50 8B 82 14 01 00 00 FF D0", "FlareTextureSubst");
 	DWORD addr_DeviceCleanupPre = ScanModuleSignature(g_State.GameModule, "85 C0 74 12 8B 08 8B 51 08 50 FF D2 C7 05 ?? ?? ?? ?? ?? ?? ?? ?? E9", "DeviceCleanupPre");
 
-	if (addr_RenderFlare == 0 ||
+	if (addr_AddCoronaModulatedQuad == 0 ||
 		addr_FlareSnapshot == 0 ||
 		addr_FlareTextureSubst == 0 ||
 		addr_DeviceCleanupPre == 0) {
 		return;
 	}
 
-	RenderFlare = HookHelper::CreateHook((void*)addr_RenderFlare, &RenderFlare_Hook);
-	RenderFlare_Trampoline = RenderFlare.trampoline().address();
+	AddCoronaModulatedQuad = HookHelper::CreateHook((void*)addr_AddCoronaModulatedQuad, &AddCoronaModulatedQuad_Hook);
+	AddCoronaModulatedQuad_Trampoline = AddCoronaModulatedQuad.trampoline().address();
 
-	static SafetyHookMid FlareSnapshot{};
-	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareSnapshot + 0x2B),
-		[](safetyhook::Context&)
-		{
-			if (!g_State.resourcesValid || !g_State.sourceTex || !g_State.proxySurf) return;
-
-			IDirect3DDevice9* dev = GetD3D9Device();
-			if (!dev) return;
-
-			IDirect3DTexture9* src2d = static_cast<IDirect3DTexture9*>(g_State.sourceTex);
-			IDirect3DSurface9* srcSurf = nullptr;
-			if (FAILED(src2d->GetSurfaceLevel(0, &srcSurf)) || !srcSurf) return;
-
-			HRESULT hr = dev->StretchRect(srcSurf, nullptr, g_State.proxySurf, nullptr, D3DTEXF_NONE);
-			srcSurf->Release();
-
-			g_State.snapshotValid = SUCCEEDED(hr);
-		}
-	);
-
-	static SafetyHookMid FlareTextureSubst{};
-	FlareTextureSubst = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareTextureSubst + 0x1B),
-		[](safetyhook::Context& ctx)
-		{
-			if (ctx.ebx != 258) return;
-			if (!g_State.inFlareDraw) return;
-
-			IDirect3DBaseTexture9* tex = reinterpret_cast<IDirect3DBaseTexture9*>(ctx.ecx);
-			if (!tex) return;
-
-			if (!g_State.resourcesValid || g_State.sourceTex != tex)
-			{
-				TrackSourceTexture(tex);
-			}
-
-			if (!g_State.snapshotValid) return;
-			if (g_State.sourceTex != tex) return;
-
-			ctx.ecx = reinterpret_cast<uintptr_t>(g_State.proxyTex);
-		}
-	);
-
-	static SafetyHookMid DeviceCleanupPre{};
-	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(addr_DeviceCleanupPre - 0x3B),
-		[](safetyhook::Context&)
-		{
-			ReleaseFlareFixResources();
-			g_State.device = nullptr;
-		}
-	);
+	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareSnapshot + 0x2B), OnFlareSnapshot);
+	FlareTextureSubst = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareTextureSubst + 0x1B), OnFlareTextureSubst);
+	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(addr_DeviceCleanupPre - 0x3B), OnDeviceCleanupPre);
 }

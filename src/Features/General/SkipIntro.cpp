@@ -6,45 +6,45 @@
 // SkipIntro
 // ====================
 
-safetyhook::InlineHook LoadMovie;
-safetyhook::InlineHook LoadUIAnimation;
+safetyhook::InlineHook RtMoviePlayer_Play;
+safetyhook::InlineHook UIScreenManager_ShowScreen;
 
-static char __fastcall LoadMovie_Hook(int thisPtr, int, const char* Source, char a3, int a4, int a5, int a6)
+static char __fastcall RtMoviePlayer_Play_Hook(int thisPtr, int, const char* movieName, char preload, int movieAllocator, int streamBufferSize, int allocatorSize)
 {
 	// Skip logos video
-	if (strstr(Source, "trio_frontend.vp6\x00"))
+	if (strstr(movieName, "trio_frontend.vp6\x00"))
 	{
-		Source = "\x00";
-		(void)LoadMovie.disable();
+		movieName = "\x00";
+		(void)RtMoviePlayer_Play.disable();
 	}
 
-	return LoadMovie.thiscall<char>(thisPtr, Source, a3, a4, a5, a6);
+	return RtMoviePlayer_Play.thiscall<char>(thisPtr, movieName, preload, movieAllocator, streamBufferSize, allocatorSize);
 }
 
-static int __stdcall LoadUIAnimation_Hook(int id)
+static int __stdcall UIScreenManager_ShowScreen_Hook(int signature)
 {
 	// FE66 - skip the animation playing alongside the video
-	if (id == 0x46453636)
+	if (signature == 0x46453636)
 	{
-		(void)LoadUIAnimation.disable();
+		(void)UIScreenManager_ShowScreen.disable();
 		return 0;
 	}
 
-	return LoadUIAnimation.stdcall<int>(id);
+	return UIScreenManager_ShowScreen.stdcall<int>(signature);
 }
 
 static void ApplySkipIntro()
 {
 	if (!SkipIntro) return;
 
-	DWORD addr_LoadUIAnimation = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 08 56 E8 ?? ?? ?? ?? 56 E8 ?? ?? ?? ?? 8B C8", "LoadUIAnimation");
-	DWORD addr_LoadMovie = ScanModuleSignature(g_State.GameModule, "83 EC 10 53 55 56 33 DB 57 8B F1 88 5C 24 13 E8", "LoadMovie");
+	DWORD addr_UIScreenManager_ShowScreen = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 08 56 E8 ?? ?? ?? ?? 56 E8 ?? ?? ?? ?? 8B C8", "UIScreenManager_ShowScreen");
+	DWORD addr_RtMoviePlayer_Play = ScanModuleSignature(g_State.GameModule, "83 EC 10 53 55 56 33 DB 57 8B F1 88 5C 24 13 E8", "RtMoviePlayer_Play");
 
-	if (addr_LoadUIAnimation == 0 ||
-		addr_LoadMovie == 0) {
+	if (addr_UIScreenManager_ShowScreen == 0 ||
+		addr_RtMoviePlayer_Play == 0) {
 		return;
 	}
 
-	LoadUIAnimation = HookHelper::CreateHook((void*)addr_LoadUIAnimation, &LoadUIAnimation_Hook);
-	LoadMovie = HookHelper::CreateHook((void*)addr_LoadMovie, &LoadMovie_Hook);
+	UIScreenManager_ShowScreen = HookHelper::CreateHook((void*)addr_UIScreenManager_ShowScreen, &UIScreenManager_ShowScreen_Hook);
+	RtMoviePlayer_Play = HookHelper::CreateHook((void*)addr_RtMoviePlayer_Play, &RtMoviePlayer_Play_Hook);
 }

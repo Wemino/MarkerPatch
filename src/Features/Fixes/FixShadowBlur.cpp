@@ -6,25 +6,25 @@
 // FixShadowBlur
 // =========================
 
-safetyhook::InlineHook IterativeShadowBlur;
+safetyhook::InlineHook BlurAttenuationBuffer;
 
-static int __cdecl IterativeShadowBlur_Hook(unsigned int a1, float a2, float a3, float a4, float a5, int passCount, char a7)
+static int __cdecl BlurAttenuationBuffer_Hook(unsigned int shadowAttenuationRenderTarget, float depth_Diff_For_No_Blur_Close, float depth_Diff_For_No_Blur_Far, float far_And_Close_Blend_Distance, float level_for_backcompositing, int nbrPasses, char doSkyCulling)
 {
 	if (g_State.currentHeight > 720)
 	{
-		passCount = static_cast<int>(static_cast<float>(passCount) * g_State.resolutionScale * g_State.resolutionScale);
+		nbrPasses = static_cast<int>(static_cast<float>(nbrPasses) * g_State.resolutionScale * g_State.resolutionScale);
 	}
 
-	return IterativeShadowBlur.unsafe_ccall<int>(a1, a2, a3, a4, a5, passCount, a7);
+	return BlurAttenuationBuffer.unsafe_ccall<int>(shadowAttenuationRenderTarget, depth_Diff_For_No_Blur_Close, depth_Diff_For_No_Blur_Far, far_And_Close_Blend_Distance, level_for_backcompositing, nbrPasses, doSkyCulling);
 }
 
 static void ApplyFixShadowBlur()
 {
 	if (!FixShadowBlur) return;
 
-	DWORD addr_ShadowBlur = ScanModuleSignature(g_State.GameModule, "83 EC 44 53 56 57 83 F8 07 73 0A B8 07 00 00 00 A3", "ShadowBlur");
+	DWORD addr_BlurAttenuationBuffer = ScanModuleSignature(g_State.GameModule, "83 EC 44 53 56 57 83 F8 07 73 0A B8 07 00 00 00 A3", "BlurAttenuationBuffer");
 
-	if (addr_ShadowBlur == 0) return;
+	if (addr_BlurAttenuationBuffer == 0) return;
 
-	IterativeShadowBlur = HookHelper::CreateHook((void*)(addr_ShadowBlur - 0xB), &IterativeShadowBlur_Hook);
+	BlurAttenuationBuffer = HookHelper::CreateHook((void*)(addr_BlurAttenuationBuffer - 0xB), &BlurAttenuationBuffer_Hook);
 }

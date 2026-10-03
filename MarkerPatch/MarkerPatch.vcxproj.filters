@@ -44,7 +44,13 @@
     <ClInclude Include="..\src\Features\Fixes\HighCoreCPUFix.cpp">
       <Filter>src\Features\Fixes</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\ThreadAffinityFix.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\Fixes\VSyncRefreshRateFix.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixFrameLimiter.cpp">
       <Filter>src\Features\Fixes</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Features\Fixes\FixDifficultyRewards.cpp">
@@ -71,7 +77,34 @@
     <ClInclude Include="..\src\Features\Fixes\FixFlareArtifacts.cpp">
       <Filter>src\Features\Fixes</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Features\Fixes\FixGlassReflections.cpp">
+    <ClInclude Include="..\src\Features\Fixes\FixVertexNormals.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixClothPhysics.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixMenuSpeed.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixGameClock.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixMainLoopSpin.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixStreamingBudget.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixAudioSyncStall.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\PreloadStreamedTextures.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixInputHistory.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixImpalingProjectiles.cpp">
       <Filter>src\Features\Fixes</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Features\General\AchievementSupport.cpp">
@@ -101,7 +134,13 @@
     <ClInclude Include="..\src\Features\Display\FontScaling.cpp">
       <Filter>src\Features\Display</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Display\FOVScaling.cpp">
+      <Filter>src\Features\Display</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\Input\RawMouseInput.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Input\ExtraMouseButtonBinding.cpp">
       <Filter>src\Features\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Features\Input\FilterInputDevices.cpp">
@@ -116,7 +155,10 @@
     <ClInclude Include="..\src\Features\Graphics\DynamicShadowResolution.cpp">
       <Filter>src\Features\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Features\DLC\ShopHooks.cpp">
+    <ClInclude Include="..\src\Features\Graphics\ImprovedAntiAliasing.cpp">
+      <Filter>src\Features\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\DLC\BonusUnlocks.cpp">
       <Filter>src\Features\DLC</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Features\Modding\ArchiveDump.cpp">
@@ -185,6 +227,33 @@
     <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp">
       <Filter>src\Features\Input</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Shaders\FXAAPS.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\GlassReflectionVS.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\SMAAShaders.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\SMAATextures.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\SupersamplingShaders.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\FlashlightOverlayVS.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\MeshParticleVS.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\MotionBlurVelocityVS.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\ScreenMeshVS.hpp">
+      <Filter>src\Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini" />
@@ -231,6 +300,9 @@
     </Filter>
     <Filter Include="src\Features\Misc">
       <UniqueIdentifier>{fe5d7060-a743-42c0-ba09-a24059e94a4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Shaders">
+      <UniqueIdentifier>{26f31c42-ad1b-48dc-8f81-ceaec790d273}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

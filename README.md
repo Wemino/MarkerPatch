@@ -28,13 +28,24 @@ DXVK limits the framerate to 60 FPS by default. To increase this limit, add the 
 
 # Features
 
-## Havok Physics Fix
+## Physics Fix
 
-Stabilizes physics behavior at high framerates to eliminate the annoying flying corpses and limbs. While physics issues begin above 30 FPS, they become noticeably problematic after 100 FPS, causing dead bodies and severed limbs to launch erratically across rooms.
+Keeps the physics behaving as they do at 30 FPS at any higher framerate. This fixes dead bodies and severed limbs launching erratically across rooms, and the hair of some characters losing its weight and floating almost horizontally.
 
 ## High-Core CPU Fix
 
 Prevents the game from crashing on systems with more than 10 CPU cores. The game's CPU detection code collects information about each core into fixed-size arrays, but these arrays weren't sized to handle more than 10 cores. When more cores are detected, the code overflows these arrays, corrupting memory and causing crashes later during execution. The patch stops the CPU detection loop early to prevent this overflow.
+
+## Thread Affinity Fix
+
+Stops the game from locking its main thread and its render thread to the first CPU core. The game pins both threads to a core number that is never set, so both end up forced onto core 0. They then have to take turns instead of running in parallel, on the core that also handles most of Windows' interrupts, which lowers the framerate and causes stutters.
+
+## Stutter Fixes
+
+Removes several stutters and hitches, mostly while the game loads the next area in the background:
+- **Streaming**: The game lets its streaming work use the rest of a 30 FPS frame, stretching frames to 33 ms at high framerates. It's now limited to the actual frame time.
+- **Audio**: When the audio of a new area loads, the game waits on the audio mixer several times in a row, freezing a frame for up to 60 ms. The mixer now answers right away, shortening the stutter.
+- **Textures**: Textures are only sent to the GPU the first time they're drawn, causing a hitch on the first frame showing a new area. They're now uploaded a few at a time while the area streams in.
 
 ## VSync Refresh Rate Fix
 
@@ -57,9 +68,12 @@ Corrects the VSync implementation to use the refresh rate selected in the game's
 
 Stabilizes the fire rate of automatic weapons across all framerates. The game's weapon cooldown system checks more frequently at higher framerates, causing automatic weapons like the Pulse Rifle and Flamethrower to fire progressively faster as FPS increases.
 
-## Solar Array Elevator Fix
+## High Frame Fixes
 
-Fixes the Solar Array Elevator's door becoming stuck in Chapter 7 after a checkpoint is reloaded above 30 FPS, which can leave the player unable to progress. At higher framerates the door's position isn't set correctly before the elevator moves, and this fix sets it properly so the elevator works as intended.
+Fixes several issues that only appear at framerates above 30 FPS:
+- **Movement**: At high framerates, Isaac could stop for a moment when turning while moving, as the game recognizes movement from a short history of recent inputs that turning with the mouse fills up in a few milliseconds.
+- **Solar Array Elevator**: Fixes the elevator's door becoming stuck in Chapter 7 after a checkpoint is reloaded above 30 FPS, which can leave the player unable to progress. At higher framerates the door's position isn't set correctly before the elevator moves, and this fix sets it properly so the elevator works as intended.
+- **Menus**: Makes the menus animate at the same speed at any framerate. The menu lists count their scrolling in frames, and the camera of the menus eases toward the cursor once per frame, so above 30 FPS the save list scrolls almost instantly and the camera jumps to the corners.
 
 ## Skip Artificial Loading Delay
 
@@ -119,6 +133,10 @@ For those who prefer different subtitle sizes, `FontScalingFactor` in `MarkerPat
   </table>
 </div>
 
+## FOV Scaling
+
+Allows adjusting the camera's field of view with `FOVScale` in `MarkerPatch.ini`. Values above 1.0 widen the view and values below 1.0 narrow it.
+
 ## Soft Shadow Blur Fix
 
 Restores soft shadow blur intensity at high resolutions. The game applies a fixed number of blur passes to shadows, calibrated for 720p, causing shadows to appear sharp and pixelated at higher resolutions where the same blur covers a smaller portion of the screen. This fix adjusts the blur pass count so shadow edges remain smooth across all resolutions.
@@ -137,6 +155,14 @@ Restores soft shadow blur intensity at high resolutions. The game applies a fixe
     </tr>
   </table>
 </div>
+
+## Improved Anti-Aliasing
+
+Makes the in-game Anti-Aliasing option work. The option only controls "EdgeAA", a screen effect that runs when a level effect requests it, so with it enabled the game is still rendered without any anti-aliasing most of the time. The patch replaces it with one of these techniques, selected with `ImprovedAntiAliasingMode` in `MarkerPatch.ini`:
+
+- **FXAA**: Fast edge smoothing, applied to every frame while Anti-Aliasing is enabled in the game's settings.
+- **SMAA**: Sharper and more accurate edge smoothing than FXAA ([SMAA](https://github.com/iryoku/smaa) 1x, Ultra preset), applied to every frame while Anti-Aliasing is enabled in the game's settings.
+- **SSAA**: Renders the game at a higher resolution and scales it down to the display resolution, which also smooths thin details and shimmering that edge smoothing can't fix. The resolution multiplier is set with `SSAAScale`, 2.0 renders 1920x1080 at 3840x2160 for example. This is very demanding on the GPU.
 
 ## Dynamic Shadow Resolution
 
@@ -163,9 +189,9 @@ Restores depth of field blur intensity at high resolutions. The game's DOF effec
   </table>
 </div>
 
-## Reflections Fix
+## Vertex Normals Fix
 
-Fixes distorted, repeating reflections on reflective surfaces. The PC port declares the vertex normal and tangent data as unsigned values when they should be signed, so the game reconstructs the reflection at skewed angles and layers it across the surface. This corrects the data interpretation so reflections render properly, matching the original console appearance.
+Fixes shaders that misread vertex normals. The game stores vertex normals and tangents as unsigned bytes that its shaders convert back into directions, but five vertex shaders in the PC port skip that conversion. Glass reflections come out at skewed angles and repeat across the surface, and the flashlight, mesh particles, motion blur and one more effect shader work with the wrong surface directions. This adds the missing conversion to those shaders so they match the original console appearance.
 
 <div align="center">
   <table>
@@ -206,6 +232,10 @@ Implements proper raw mouse input to fix sensitivity issues. This works similarl
 
 The fix decouples mouse sensitivity from the game's framerate, providing consistent aiming regardless of FPS.
 
+## Extra Mouse Button Binding
+
+Allows the extra mouse buttons (Mouse 4 to Mouse 8) to be assigned to any action in the controls menu. The game only accepts mouse buttons for a few actions and refuses them for all the others, such as reloading, with an "unable to assign that input" message, even though the side buttons make great replacements for keyboard keys.
+
 ## SDL Controller Support
 
 Adds support for PlayStation and Nintendo Switch controllers via SDL3.
@@ -215,8 +245,6 @@ Adds support for PlayStation and Nintendo Switch controllers via SDL3.
 Enables motion-controlled aiming using the controller's gyroscope for supported controllers (DualShock 4, DualSense, Switch Pro Controller).
 
 Enable with `GyroEnabled = 1` in `MarkerPatch.ini`.
-
-> **Note**: Gyro aiming is only active during normal gameplay and not supported in zero-gravity sections.
 
 > **Note**: If you experience gyro drift, place the controller on a stable surface for a few seconds to calibrate.
 
@@ -228,9 +256,8 @@ Blocks all DirectInput devices except mouse and keyboard to prevent unwanted cam
 
 The game initializes various controller and input devices on startup, which can cause the camera to spin uncontrollably when these devices send unintended signals. Additionally, the original code performed an unoptimized XInput compatibility check on every enumerated device, causing noticeable delays during game startup.
 
-## Anisotropic & Trilinear Filtering
+## Anisotropic Filtering
 
-### Anisotropic Filtering
 Forces anisotropic texture filtering on all textures to improve clarity at oblique viewing angles. The original game already uses anisotropic filtering selectively on specific surfaces where developers determined it had the most visual impact (primarily floors and other large flat surfaces). 
 
 In a [Beyond3D interview](https://beyond3d.com/content/interviews/45/3), a developer explained the approach they took: "I once found an entire room in the game tagged as aniso. Our artists had secretly started using that flag because it looked better. Unfortunately doing an entire room was way too much and we removed it... I've never measured the cost but it doesn't take much to feel its impact on the scene so we only use it on big win items."
@@ -251,9 +278,6 @@ Set `MaxAnisotropy` from 2 to 16 (16 recommended) for best results.
     </tr>
   </table>
 </div>
-
-### Trilinear Filtering
-Forces proper trilinear filtering for smoother texture transitions between mipmap levels.
 
 ## Disable Online Features
 
@@ -321,8 +345,12 @@ Available DLC options (configurable in the `[DLC]` section of `MarkerPatch.ini`)
 
 **Bonus Content:**
 - Rivet Gun DLC (Pre-Order Content).
+- Original Plasma Cutter: Granted to players with a Dead Space save.
 - Zealot DLC: Zealot Suit & matching Force Gun (Collector's Edition Content).
-- Hacker DLC: Hacker Suit & matching Contact Beam (Ignition Rewards).
+- Hacker DLC: Hacker Suit & matching Contact Beam (Ignition Rewards). These two items don't belong to a content pack, the store is made to accept them once they are reached.
+
+**Console Bonuses:**
+- Ignition Rooms: Opens the sealed conduit rooms containing bonus items, unlocked on console for Dead Space Ignition owners.
 
 > **Note**: All DLC options are disabled by default because automatically granting all DLC items at the first shop of your first playthrough would be poor game design. You can selectively enable the DLC items you want through the configuration file to maintain better pacing. Since the EA servers are offline, ownership verification can no longer be performed for certain DLC items that previously required it.
 
@@ -350,4 +378,5 @@ All features can be customized via the `MarkerPatch.ini` file. Each setting incl
 - [safetyhook](https://github.com/cursey/safetyhook) for hooking.  
 - [ImGui](https://github.com/ocornut/imgui) for the achievement window.  
 - [mINI](https://github.com/metayeti/mINI) for INI file handling.  
+- [SMAA](https://github.com/iryoku/smaa) for the SMAA anti-aliasing.  
 - [CRASHARKI](https://github.com/CRASHARKI) for the logo.

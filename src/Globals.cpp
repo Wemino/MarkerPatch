@@ -7,6 +7,9 @@
 #include <Windows.h>
 #include <d3d9.h>
 
+#include <atomic>
+#include <deque>
+#include <intrin.h>
 #include <mutex>
 #include <stacktrace>
 #include <system_error>
@@ -21,6 +24,11 @@
 #include "AchievementOverlay.hpp"
 
 #pragma comment(lib, "SDL3-static.lib")
+
+// Windows 10 1803 and later, missing from older SDKs
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
 
 
 struct GlobalState
@@ -40,24 +48,18 @@ struct GlobalState
 	bool isControllerActive = false;
 	bool isXInverted = false;
 	bool isYInverted = false;
+	uintptr_t mouseDeviceState = 0;
 
 	// Raw input state
 	std::atomic<LONG> rawMouseDeltaX{ 0 };
 	std::atomic<LONG> rawMouseDeltaY{ 0 };
 	LONG frameRawX = 0;
 	LONG frameRawY = 0;
-
-	// Physics
-	float frameTimeScale = 0.0f;
-	float constraintMass = 0.0f;
-	int deathFrameCount = 0;
-
-	// Scripted aiming scene context
-	int* momentumAimOuter = nullptr;
-	uintptr_t momentumAimData = 0;
-	int* boundedAimOuter = nullptr;
-	uintptr_t coneAimData = 0;
-	int* oscillatingAimOuter = nullptr;
+	float frameGyroYaw = 0.0f;
+	float frameGyroPitch = 0.0f;
+	uintptr_t mouseAimData = 0;
+	float mouseAimPitch = 0.0f;
+	float mouseAimYaw = 0.0f;
 
 	// Flare fix
 	IDirect3DDevice9* device = nullptr;
@@ -74,6 +76,31 @@ struct GlobalState
 	float shotError = 0.0f;
 	bool usesFireAnim = true;
 
+	// Frame timing
+	LARGE_INTEGER qpcFrequency{};
+	LONGLONG nextFrameCounter = 0;
+	HANDLE frameLimiterTimer = nullptr;
+	double frameLimiterSpinMs = 1.0;
+
+	// Main loop spin fix
+	HANDLE mainLoopTimer = nullptr;
+	int framesBeforeMix = 0;
+
+	// Streaming fix
+	double refreshPeriodMs = 1000.0 / 60.0;
+
+	// Audio sync fix
+	HANDLE dacWakeEvent = nullptr;
+	std::atomic<int> extraMixChunks{ 0 };
+	std::atomic<int> maxExtraMixChunks{ -1 };
+	std::atomic<DWORD> lastCommandWaitTime{ 0 };
+
+	// Menu speed fix
+	double aptTime = 0.0;
+	float menuStepTime = 0.0f;
+	float menuFrameSteps = 1.0f;
+	bool isMenuStep = true;
+
 	// Misc
 	bool isLoadingShopItems = false;
 	bool forceCurrentItem = false;
@@ -81,6 +108,8 @@ struct GlobalState
 	float resolutionScale = 0.0f;
 	float frameTime = 0.0f;
 	bool elevatorFixArmed = false;
+	bool isCopyingCamera = false;
+	bool isSupersampling = false;
 };
 
 // Global instance
@@ -89,17 +118,27 @@ GlobalState g_State;
 struct GameAddresses
 {
 	DWORD DevicePtr = 0;
-	DWORD InputManagerPtr = 0;
-	DWORD NgGamePlusPtr = 0;
-	DWORD LoadedSaveMemoryPtr = 0;
+	DWORD InputDeviceManagerPtr = 0;
+	DWORD UIFrontendManagerPtr = 0;
+	DWORD OptionsDifficultyPtr = 0;
 	DWORD TargetFrameTimeMsPtr = 0;
-	DWORD EngineFrameTimePtr = 0;
-	DWORD SimTimeMsPtr = 0;
-	DWORD UpsideDownYawMin = 0;
-	DWORD UpsideDownYawMax = 0;
-	DWORD UpsideDownPitchMin = 0;
-	DWORD UpsideDownPitchMax = 0;
-	DWORD CameraRollToYawCoef = 0;
+	DWORD FrameTimeSecPtr = 0;
+	DWORD SimTimeElapsedMSecPtr = 0;
+	DWORD FrameLimiterEnabledPtr = 0;
+	DWORD FoundIgnitionSaveOffset = 0;
+	DWORD FoundDS1SaveOffset = 0;
+	DWORD UnlockHandlerPtr = 0;
+	DWORD AAValsFlagsPtr = 0;
+	DWORD PresentParamsPtr = 0;
+	DWORD HangingMinYawPtr = 0;
+	DWORD HangingMaxYawPtr = 0;
+	DWORD HangingMinPitchPtr = 0;
+	DWORD HangingMaxPitchPtr = 0;
+	DWORD HangingYawFactorPtr = 0;
+	DWORD ResponseCurvePtr = 0;
+	DWORD SoundProviderPtr = 0;
+	DWORD PresentModePtr = 0;
+	DWORD PresentIntervalsPtr = 0;
 };
 
 // Memory addresses
@@ -109,6 +148,15 @@ static constexpr float TARGET_FRAME_TIME = 1.0f / 30.0f;
 static constexpr float PITCH_LIMIT_NORMAL = M_PI / 3.0f;
 static constexpr float PITCH_LIMIT_AIM_DOWN = -5.0f * M_PI / 12.0f;
 static constexpr float DEG2RAD = 0.017453292f;
+static constexpr float MAX_BLUR_RADIUS = 20.0f;
+
+enum AntiAliasingMode
+{
+	AA_DISABLED,
+	AA_FXAA,
+	AA_SMAA,
+	AA_SSAA
+};
 
 // =============================
 // Ini Variables
@@ -117,7 +165,9 @@ static constexpr float DEG2RAD = 0.017453292f;
 // Fixes
 bool HavokPhysicsFix = false;
 bool HighCoreCPUFix = false;
+bool ThreadAffinityFix = false;
 bool VSyncRefreshRateFix = false;
+bool FixFrameLimiter = false;
 bool FixDifficultyRewards = false;
 bool FixSuitIDConflicts = false;
 bool FixSaveStringHandling = false;
@@ -126,7 +176,16 @@ bool FixSolarArrayElevator = false;
 bool FixBlurResolution = false;
 bool FixShadowBlur = false;
 bool FixFlareArtifacts = false;
-bool FixGlassReflections = false;
+bool FixVertexNormals = false;
+bool FixClothPhysics = false;
+bool FixMenuSpeed = false;
+bool FixGameClock = false;
+bool FixMainLoopSpin = false;
+bool FixStreamingBudget = false;
+bool FixAudioSyncStall = false;
+bool PreloadStreamedTextures = false;
+bool FixInputHistory = false;
+bool FixImpalingProjectiles = false;
 
 // General
 bool AchievementSupport = false;
@@ -144,12 +203,14 @@ int CheckLAAPatch = 0;
 bool AutoResolution = false;
 bool FontScaling = false;
 float FontScalingFactor = 0;
+float FOVScale = 0.0f;
 
 // Input
 bool RawMouseInput = false;
 bool UseSDLControllerInput = false;
 bool BlockDirectInputDevices = false;
 bool DisableKeyboardHook = false;
+bool ExtraMouseButtonBinding = false;
 bool GyroEnabled = false;
 float GyroSensitivity = 0.0f;
 float GyroSmoothing = 0.0f;
@@ -159,8 +220,9 @@ bool InvertABXYButtons = false;
 
 // Graphics
 int MaxAnisotropy = 0;
-bool ForceTrilinearFiltering = false;
 int DynamicShadowResolution = 0;
+int ImprovedAntiAliasingMode = 0;
+float SSAAScale = 0.0f;
 
 // Modding
 bool DumpArchiveAssets = false;
@@ -174,6 +236,8 @@ bool EnableSeveredDLC = false;
 bool EnableHackerDLC = false;
 bool EnableZealotDLC = false;
 bool EnableRivetGunDLC = false;
+bool EnableIgnitionRooms = false;
+bool EnableOriginalPlasmaCutter = false;
 
 static DWORD ScanModuleSignature(HMODULE Module, std::string_view Signature, const char* PatchName, int FunctionStartCheckCount = -1, bool ShowError = true)
 {

@@ -2,6 +2,16 @@
 
 #include "../../Globals.cpp"
 
+static safetyhook::MidHook fontScaler1{};
+static safetyhook::MidHook fontScaler2{};
+static safetyhook::MidHook fontScaler3{};
+static safetyhook::MidHook fontScaler4{};
+
+static void OnFontScaler(safetyhook::Context& ctx)
+{
+	ctx.xmm0.f32[0] = ctx.xmm0.f32[0] * FontScalingFactor;
+}
+
 static void ApplyFontScaling()
 {
 	if (!FontScaling) return;
@@ -22,19 +32,9 @@ static void ApplyFontScaling()
 
 	if (FontScalingFactor == 1.0f) return;
 
-	static SafetyHookMid fontScaler1{};
-	fontScaler1 = safetyhook::create_mid(addr_FontScaling + 0x8,
-		[](safetyhook::Context& ctx)
-		{
-			ctx.xmm0.f32[0] = ctx.xmm0.f32[0] * FontScalingFactor;
-		}
-	);
+	fontScaler1 = safetyhook::create_mid(addr_FontScaling + 0x8, OnFontScaler);
+	fontScaler2 = safetyhook::create_mid(addr_FontScaling + 0x3A, OnFontScaler);
 
-	static SafetyHookMid fontScaler2{};
-	fontScaler2 = safetyhook::create_mid(addr_FontScaling + 0x3A,
-		[](safetyhook::Context& ctx)
-		{
-			ctx.xmm0.f32[0] = ctx.xmm0.f32[0] * FontScalingFactor;
-		}
-	);
+	fontScaler3 = safetyhook::create_mid(addr_FontScaling2 + 0x5, OnFontScaler);
+	fontScaler4 = safetyhook::create_mid(addr_FontScaling2 + 0x34, OnFontScaler);
 }

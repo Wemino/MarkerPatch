@@ -6,11 +6,11 @@
 // FixSuitIDConflicts
 // =========================
 
-safetyhook::InlineHook InitializeItem;
+safetyhook::InlineHook PickupItem_SpawnInit;
 
-static int __fastcall InitializeItem_hook(DWORD* thisp, int, int a2)
+static int __fastcall PickupItem_SpawnInit_Hook(DWORD* thisp, int, int spawnInfo)
 {
-	int result = InitializeItem.unsafe_thiscall<int>(thisp, a2);
+	int result = PickupItem_SpawnInit.unsafe_thiscall<int>(thisp, spawnInfo);
 
 	// Hacker Suit
 	if (MatchId(thisp + 9, 0x58CB43ED, 0xEDE44FA8, 0x4E4F574B, 0x35373230))
@@ -30,9 +30,9 @@ static void ApplyFixSuitIDConflicts()
 {
 	if (!FixSuitIDConflicts) return;
 
-	DWORD addr_InitializeItem = ScanModuleSignature(g_State.GameModule, "83 EC 08 55 56 8B F1 57 85 F6 74", "InitializeItem");
+	DWORD addr_PickupItem_SpawnInit = ScanModuleSignature(g_State.GameModule, "83 EC 08 55 56 8B F1 57 85 F6 74", "PickupItem_SpawnInit");
 
-	if (addr_InitializeItem == 0) return;
+	if (addr_PickupItem_SpawnInit == 0) return;
 
-	InitializeItem = HookHelper::CreateHook((void*)addr_InitializeItem, &InitializeItem_hook);
+	PickupItem_SpawnInit = HookHelper::CreateHook((void*)addr_PickupItem_SpawnInit, &PickupItem_SpawnInit_Hook);
 }

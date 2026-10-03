@@ -4,7 +4,9 @@
 
 #include "Features/Fixes/HavokPhysicsFix.cpp"
 #include "Features/Fixes/HighCoreCPUFix.cpp"
+#include "Features/Fixes/ThreadAffinityFix.cpp"
 #include "Features/Fixes/VSyncRefreshRateFix.cpp"
+#include "Features/Fixes/FixFrameLimiter.cpp"
 #include "Features/Fixes/FixDifficultyRewards.cpp"
 #include "Features/Fixes/FixSuitIDConflicts.cpp"
 #include "Features/Fixes/FixSaveStringHandling.cpp"
@@ -13,7 +15,16 @@
 #include "Features/Fixes/FixBlurResolution.cpp"
 #include "Features/Fixes/FixShadowBlur.cpp"
 #include "Features/Fixes/FixFlareArtifacts.cpp"
-#include "Features/Fixes/FixGlassReflections.cpp"
+#include "Features/Fixes/FixVertexNormals.cpp"
+#include "Features/Fixes/FixClothPhysics.cpp"
+#include "Features/Fixes/FixMenuSpeed.cpp"
+#include "Features/Fixes/FixGameClock.cpp"
+#include "Features/Fixes/FixMainLoopSpin.cpp"
+#include "Features/Fixes/FixStreamingBudget.cpp"
+#include "Features/Fixes/FixAudioSyncStall.cpp"
+#include "Features/Fixes/PreloadStreamedTextures.cpp"
+#include "Features/Fixes/FixInputHistory.cpp"
+#include "Features/Fixes/FixImpalingProjectiles.cpp"
 
 #include "Features/General/AchievementSupport.cpp"
 #include "Features/General/DisableOnlineFeatures.cpp"
@@ -25,20 +36,23 @@
 
 #include "Features/Display/AutoResolution.cpp"
 #include "Features/Display/FontScaling.cpp"
+#include "Features/Display/FOVScaling.cpp"
 
 #include "Features/Input/DisableKeyboardHook.cpp"
+#include "Features/Input/ExtraMouseButtonBinding.cpp"
 #include "Features/Input/RawMouseInput.cpp"
 #include "Features/Input/FilterInputDevices.cpp"
 #include "Features/Input/UseSDLControllerInput.cpp"
 
 #include "Features/Graphics/TextureFiltering.cpp"
 #include "Features/Graphics/DynamicShadowResolution.cpp"
+#include "Features/Graphics/ImprovedAntiAliasing.cpp"
 
 #include "Features/Modding/ArchiveDump.cpp"
 #include "Features/Modding/ModFiles.cpp"
 #include "Features/Modding/ArchiveStreamHook.cpp"
 
-#include "Features/DLC/ShopHooks.cpp"
+#include "Features/DLC/BonusUnlocks.cpp"
 
 #include "Features/Misc/MainLoopHook.cpp"
 #include "Features/Misc/ResolutionHook.cpp"
