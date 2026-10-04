@@ -22,6 +22,26 @@ enum AntiAliasingPass
 static const unsigned char* const AA_VERTEX_SHADERS[AA_PASS_COUNT] = { g_SMAAEdgeDetectionVS, g_SMAABlendingWeightVS, g_SMAANeighborhoodBlendingVS, g_DownsampleVS };
 static const unsigned char* const AA_PIXEL_SHADERS[AA_PASS_COUNT] = { g_SMAAEdgeDetectionPS, g_SMAABlendingWeightPS, g_SMAANeighborhoodBlendingPS, g_DownsamplePS };
 
+struct AARenderState
+{
+	D3DRENDERSTATETYPE type;
+	DWORD value;
+	DWORD def;
+};
+
+static const AARenderState AA_RENDER_STATES[] =
+{
+	{ D3DRS_ZENABLE, D3DZB_FALSE, D3DZB_FALSE },
+	{ D3DRS_STENCILENABLE, FALSE, FALSE },
+	{ D3DRS_ALPHABLENDENABLE, FALSE, FALSE },
+	{ D3DRS_ALPHATESTENABLE, FALSE, FALSE },
+	{ D3DRS_SCISSORTESTENABLE, FALSE, FALSE },
+	{ D3DRS_CLIPPLANEENABLE, 0, 0 },
+	{ D3DRS_CULLMODE, D3DCULL_NONE, D3DCULL_CCW },
+	{ D3DRS_COLORWRITEENABLE, 0xF, 0xF },
+	{ D3DRS_SRGBWRITEENABLE, FALSE, FALSE },
+};
+
 static IDirect3DVertexShader9* g_aaVertexShaders[AA_PASS_COUNT] = {};
 static IDirect3DPixelShader9* g_aaPixelShaders[AA_PASS_COUNT] = {};
 static IDirect3DTexture9* g_smaaAreaTex = nullptr;
@@ -160,15 +180,11 @@ static bool CreateSMAAResources(IDirect3DDevice9* dev, const D3DSURFACE_DESC& de
 static void SetFullscreenPassStates(IDirect3DDevice9* dev)
 {
 	dev->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
-	dev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	dev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	dev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	dev->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-	dev->SetRenderState(D3DRS_CLIPPLANEENABLE, 0);
-	dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	dev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
-	dev->SetRenderState(D3DRS_SRGBWRITEENABLE, FALSE);
+
+	for (const AARenderState& state : AA_RENDER_STATES)
+	{
+		dev->SetRenderState(state.type, state.value);
+	}
 
 	for (DWORD sampler = 0; sampler < 3; sampler++)
 	{
@@ -179,6 +195,45 @@ static void SetFullscreenPassStates(IDirect3DDevice9* dev)
 		dev->SetSamplerState(sampler, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
 		dev->SetSamplerState(sampler, D3DSAMP_SRGBTEXTURE, FALSE);
 	}
+}
+
+static void RestoreGameStates(IDirect3DDevice9* dev)
+{
+	const DWORD* renderStates = reinterpret_cast<const DWORD*>(g_Addresses.RenderStatesPtr);
+
+	for (const AARenderState& state : AA_RENDER_STATES)
+	{
+		dev->SetRenderState(state.type, renderStates[state.type] != 0xFFFFFFFF ? renderStates[state.type] : state.def);
+	}
+
+	for (DWORD sampler = 0; sampler < 3; sampler++)
+	{
+		const BYTE* samplerStates = reinterpret_cast<const BYTE*>(g_Addresses.SamplerStatesPtr + sampler * 12);
+
+		if (samplerStates[0] != 0xFF) dev->SetSamplerState(sampler, D3DSAMP_MIPFILTER, samplerStates[0]);
+		if (samplerStates[1] != 0xFF) dev->SetSamplerState(sampler, D3DSAMP_MINFILTER, samplerStates[1]);
+		if (samplerStates[2] != 0xFF) dev->SetSamplerState(sampler, D3DSAMP_MAGFILTER, samplerStates[2]);
+
+		if (samplerStates[4] != 0xFF)
+		{
+			dev->SetSamplerState(sampler, D3DSAMP_ADDRESSU, samplerStates[4]);
+			dev->SetSamplerState(sampler, D3DSAMP_ADDRESSV, samplerStates[4]);
+		}
+
+		dev->SetSamplerState(sampler, D3DSAMP_SRGBTEXTURE, FALSE);
+		dev->SetTexture(sampler, nullptr);
+	}
+
+	IDirect3DVertexDeclaration9* vertexDeclaration = *reinterpret_cast<IDirect3DVertexDeclaration9**>(g_Addresses.VertexDeclarationPtr);
+	if (vertexDeclaration) dev->SetVertexDeclaration(vertexDeclaration);
+
+	dev->SetVertexShader(*reinterpret_cast<IDirect3DVertexShader9**>(g_Addresses.VertexShaderPtr));
+	dev->SetPixelShader(*reinterpret_cast<IDirect3DPixelShader9**>(g_Addresses.PixelShaderPtr));
+	dev->SetVertexShaderConstantF(0, reinterpret_cast<const float*>(g_Addresses.VertexShaderConstantsPtr), 1);
+	dev->SetPixelShaderConstantF(0, reinterpret_cast<const float*>(g_Addresses.PixelShaderConstantsPtr), 1);
+
+	const DWORD* stream = reinterpret_cast<const DWORD*>(g_Addresses.StreamSourcesPtr);
+	if (stream[1] != 0xFFFFFFFF) dev->SetStreamSource(0, reinterpret_cast<IDirect3DVertexBuffer9*>(stream[1]), stream[2], stream[3]);
 }
 
 static void DrawFullscreenPass(IDirect3DDevice9* dev, AntiAliasingPass pass, const D3DSURFACE_DESC& target)
@@ -208,9 +263,7 @@ static void RenderSMAA(IDirect3DDevice9* dev)
 	D3DSURFACE_DESC desc{};
 	frameSurf->GetDesc(&desc);
 
-	IDirect3DStateBlock9* stateBlock = nullptr;
-
-	if (CreateSMAAResources(dev, desc) && SUCCEEDED(dev->CreateStateBlock(D3DSBT_ALL, &stateBlock)))
+	if (CreateSMAAResources(dev, desc))
 	{
 		IDirect3DSurface9* colorSurf = nullptr;
 		IDirect3DSurface9* edgesSurf = nullptr;
@@ -250,8 +303,10 @@ static void RenderSMAA(IDirect3DDevice9* dev)
 		dev->SetRenderState(D3DRS_SRGBWRITEENABLE, TRUE);
 		DrawFullscreenPass(dev, SMAA_NEIGHBORHOOD_BLENDING, desc);
 
-		stateBlock->Apply();
-		stateBlock->Release();
+		RestoreGameStates(dev);
+
+		// The frame changed, the copy of it the game made is out of date like after its own edge blur
+		*reinterpret_cast<BYTE*>(g_Addresses.FrameCopyValidPtr) = 0;
 
 		colorSurf->Release();
 		edgesSurf->Release();
@@ -285,13 +340,11 @@ static HRESULT WINAPI CopyToBackBuffer_Hook(IDirect3DSurface9* backBuffer, const
 
 	IDirect3DTexture9* frameTex = nullptr;
 	IDirect3DSurface9* prevTarget = nullptr;
-	IDirect3DStateBlock9* stateBlock = nullptr;
 	HRESULT hr = D3DERR_INVALIDCALL;
 
 	if (CreatePassShaders(dev, SSAA_DOWNSAMPLE) &&
 		SUCCEEDED(frame->GetContainer(IID_PPV_ARGS(&frameTex))) &&
-		SUCCEEDED(dev->GetRenderTarget(0, &prevTarget)) &&
-		SUCCEEDED(dev->CreateStateBlock(D3DSBT_ALL, &stateBlock)))
+		SUCCEEDED(dev->GetRenderTarget(0, &prevTarget)))
 	{
 		// Average the render pixels covered by each display pixel, in linear space
 		float scale = std::max(static_cast<float>(frameDesc.Width) / backBufferDesc.Width, static_cast<float>(frameDesc.Height) / backBufferDesc.Height);
@@ -314,7 +367,7 @@ static HRESULT WINAPI CopyToBackBuffer_Hook(IDirect3DSurface9* backBuffer, const
 		}
 
 		dev->SetRenderTarget(0, prevTarget);
-		stateBlock->Apply();
+		RestoreGameStates(dev);
 		hr = D3D_OK;
 	}
 	else
@@ -322,7 +375,6 @@ static HRESULT WINAPI CopyToBackBuffer_Hook(IDirect3DSurface9* backBuffer, const
 		hr = dev->StretchRect(frame, nullptr, backBuffer, nullptr, D3DTEXF_LINEAR);
 	}
 
-	if (stateBlock) stateBlock->Release();
 	if (prevTarget) prevTarget->Release();
 	if (frameTex) frameTex->Release();
 	dev->Release();
@@ -434,6 +486,28 @@ static void ApplyImprovedAntiAliasing()
 {
 	if (ImprovedAntiAliasingMode == AA_DISABLED) return;
 
+	if (ImprovedAntiAliasingMode != AA_FXAA)
+	{
+		DWORD addr_DeviceCacheReset = ScanModuleSignature(g_State.GameModule, "56 68 00 01 00 00 33 F6 6A FF 68 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? E8 ?? ?? ?? ?? 68 00 01 00 00 6A FF 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 68 00 10 00 00 6A FF 68 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? E8 ?? ?? ?? ?? 68 00 10 00 00 6A FF 68", "DeviceCacheReset");
+		DWORD addr_SamplerCacheReset = ScanModuleSignature(g_State.GameModule, "68 F0 00 00 00 6A FF 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 0C C3", "SamplerCacheReset");
+		DWORD addr_RenderStateFlush = ScanModuleSignature(g_State.GameModule, "8B 04 B5 ?? ?? ?? ?? 3B 04 B5 ?? ?? ?? ?? 74 ?? 50 89 04 B5", "RenderStateFlush");
+
+		if (addr_DeviceCacheReset == 0 ||
+			addr_SamplerCacheReset == 0 ||
+			addr_RenderStateFlush == 0) {
+			return;
+		}
+
+		g_Addresses.VertexShaderPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x11);
+		g_Addresses.PixelShaderPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x17);
+		g_Addresses.VertexDeclarationPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x1D);
+		g_Addresses.StreamSourcesPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x34);
+		g_Addresses.PixelShaderConstantsPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x45);
+		g_Addresses.VertexShaderConstantsPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x5C);
+		g_Addresses.SamplerStatesPtr = MemoryHelper::ReadMemory<int>(addr_SamplerCacheReset + 0x8);
+		g_Addresses.RenderStatesPtr = MemoryHelper::ReadMemory<int>(addr_RenderStateFlush + 0xA);
+	}
+
 	if (ImprovedAntiAliasingMode == AA_SSAA)
 	{
 		ApplySupersampling();
@@ -463,6 +537,7 @@ static void ApplyImprovedAntiAliasing()
 	{
 		// Replace the whole edge blur pass with SMAA
 		DWORD addr_ScreenEdgeAA_RenderImmediate = MemoryHelper::ResolveRelativeAddress(addr_ScreenEdgeAA_Render, 0x2C);
+		g_Addresses.FrameCopyValidPtr = MemoryHelper::ReadMemory<int>(MemoryHelper::ResolveRelativeAddress(addr_ScreenEdgeAA_RenderImmediate, 0x4) + 0x1);
 		ScreenEdgeAA_RenderImmediate = HookHelper::CreateHook((void*)addr_ScreenEdgeAA_RenderImmediate, &ScreenEdgeAA_RenderImmediate_Hook);
 	}
 

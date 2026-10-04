@@ -129,6 +129,15 @@ struct GameAddresses
 	DWORD FoundDS1SaveOffset = 0;
 	DWORD UnlockHandlerPtr = 0;
 	DWORD AAValsFlagsPtr = 0;
+	DWORD FrameCopyValidPtr = 0;
+	DWORD RenderStatesPtr = 0;
+	DWORD SamplerStatesPtr = 0;
+	DWORD VertexShaderPtr = 0;
+	DWORD PixelShaderPtr = 0;
+	DWORD VertexDeclarationPtr = 0;
+	DWORD StreamSourcesPtr = 0;
+	DWORD VertexShaderConstantsPtr = 0;
+	DWORD PixelShaderConstantsPtr = 0;
 	DWORD PresentParamsPtr = 0;
 	DWORD HangingMinYawPtr = 0;
 	DWORD HangingMaxYawPtr = 0;
