@@ -49,6 +49,7 @@ struct GlobalState
 	bool isXInverted = false;
 	bool isYInverted = false;
 	uintptr_t mouseDeviceState = 0;
+	bool isMouseCursorVisible = false;
 
 	// Raw input state
 	std::atomic<LONG> rawMouseDeltaX{ 0 };
@@ -223,6 +224,7 @@ bool UseSDLControllerInput = false;
 bool BlockDirectInputDevices = false;
 bool DisableKeyboardHook = false;
 bool ExtraMouseButtonBinding = false;
+bool AutoHideMouseCursor = false;
 bool GyroEnabled = false;
 float GyroSensitivity = 0.0f;
 float GyroSmoothing = 0.0f;

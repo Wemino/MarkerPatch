@@ -184,6 +184,7 @@
     <ClInclude Include="..\src\Features\Display\FOVScaling.cpp" />
     <ClInclude Include="..\src\Features\Input\RawMouseInput.cpp" />
     <ClInclude Include="..\src\Features\Input\ExtraMouseButtonBinding.cpp" />
+    <ClInclude Include="..\src\Features\Input\AutoHideMouseCursor.cpp" />
     <ClInclude Include="..\src\Features\Input\FilterInputDevices.cpp" />
     <ClInclude Include="..\src\Features\Input\UseSDLControllerInput.cpp" />
     <ClInclude Include="..\src\Features\Graphics\TextureFiltering.cpp" />

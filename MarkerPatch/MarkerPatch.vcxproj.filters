@@ -149,6 +149,9 @@
     <ClInclude Include="..\src\Features\Input\ExtraMouseButtonBinding.cpp">
       <Filter>src\Features\Input</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Input\AutoHideMouseCursor.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\Input\FilterInputDevices.cpp">
       <Filter>src\Features\Input</Filter>
     </ClInclude>

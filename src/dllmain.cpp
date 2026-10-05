@@ -42,6 +42,7 @@
 
 #include "Features/Input/DisableKeyboardHook.cpp"
 #include "Features/Input/ExtraMouseButtonBinding.cpp"
+#include "Features/Input/AutoHideMouseCursor.cpp"
 #include "Features/Input/RawMouseInput.cpp"
 #include "Features/Input/FilterInputDevices.cpp"
 #include "Features/Input/UseSDLControllerInput.cpp"

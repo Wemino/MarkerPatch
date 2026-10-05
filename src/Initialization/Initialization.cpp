@@ -57,6 +57,7 @@ static void ReadConfig()
 	BlockDirectInputDevices = IniHelper::ReadInteger("Input", "BlockDirectInputDevices", 1) == 1;
 	DisableKeyboardHook = IniHelper::ReadInteger("Input", "DisableKeyboardHook", 1) == 1;
 	ExtraMouseButtonBinding = IniHelper::ReadInteger("Input", "ExtraMouseButtonBinding", 1) == 1;
+	AutoHideMouseCursor = IniHelper::ReadInteger("Input", "AutoHideMouseCursor", 1) == 1;
 	GyroEnabled = IniHelper::ReadInteger("Input", "GyroEnabled", 0) == 1;
 	GyroSensitivity = IniHelper::ReadFloat("Input", "GyroSensitivity", 1.0f);
 	GyroSmoothing = IniHelper::ReadFloat("Input", "GyroSmoothing", 0.016f);
@@ -164,6 +165,7 @@ static void Init()
 	ApplyFilterInputDevices();
 	ApplyDisableKeyboardHook();
 	ApplyExtraMouseButtonBinding();
+	ApplyAutoHideMouseCursor();
 	ApplyUseSDLControllerInput();
 
 	// Graphics
