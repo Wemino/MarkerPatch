@@ -168,7 +168,7 @@ static void ApplyExtraMouseButtonBinding()
 	}
 
 	// Version 1.0 only reads the first three mouse buttons and numbers the wheel right after them
-	if (MemoryHelper::ReadMemory<uint8_t>(addr_MouseDeviceUpdate + 0x17F) <= 0xF0) return;
+	if (MemoryHelper::ReadMemory<uint8_t>(addr_MouseDeviceUpdate + 0x17F) < 8) return;
 
 	RemapVisitMappingHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_RemapVisitMapping), OnRemapVisitMapping);
 	MouseDeviceUpdateHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_MouseDeviceUpdate), OnMouseDeviceUpdate);
