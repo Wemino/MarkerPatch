@@ -30,6 +30,8 @@ static void ReadConfig()
 	PreloadStreamedTextures = IniHelper::ReadInteger("Fixes", "PreloadStreamedTextures", 1) == 1;
 	FixInputHistory = IniHelper::ReadInteger("Fixes", "FixInputHistory", 1) == 1;
 	FixImpalingProjectiles = IniHelper::ReadInteger("Fixes", "FixImpalingProjectiles", 1) == 1;
+	FixExplosionDamage = IniHelper::ReadInteger("Fixes", "FixExplosionDamage", 1) == 1;
+	FixOffscreenEffects = IniHelper::ReadInteger("Fixes", "FixOffscreenEffects", 1) == 1;
 
 	// General
 	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
@@ -141,6 +143,8 @@ static void Init()
 	ApplyFixAudioSyncStall();
 	ApplyFixInputHistory();
 	ApplyFixImpalingProjectiles();
+	ApplyFixExplosionDamage();
+	ApplyFixOffscreenEffects();
 
 	// General
 	ApplyAchievementSupport();

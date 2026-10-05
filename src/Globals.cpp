@@ -196,6 +196,8 @@ bool FixAudioSyncStall = false;
 bool PreloadStreamedTextures = false;
 bool FixInputHistory = false;
 bool FixImpalingProjectiles = false;
+bool FixExplosionDamage = false;
+bool FixOffscreenEffects = false;
 
 // General
 bool AchievementSupport = false;

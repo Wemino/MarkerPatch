@@ -107,6 +107,12 @@
     <ClInclude Include="..\src\Features\Fixes\FixImpalingProjectiles.cpp">
       <Filter>src\Features\Fixes</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixExplosionDamage.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixOffscreenEffects.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\General\AchievementSupport.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>

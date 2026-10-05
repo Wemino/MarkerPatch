@@ -74,6 +74,8 @@ Fixes several issues that only appear at framerates above 30 FPS:
 - **Movement**: At high framerates, Isaac could stop for a moment when turning while moving, as the game recognizes movement from a short history of recent inputs that turning with the mouse fills up in a few milliseconds.
 - **Solar Array Elevator**: Fixes the elevator's door becoming stuck in Chapter 7 after a checkpoint is reloaded above 30 FPS, which can leave the player unable to progress. At higher framerates the door's position isn't set correctly before the elevator moves, and this fix sets it properly so the elevator works as intended.
 - **Menus**: Makes the menus animate at the same speed at any framerate. The menu lists count their scrolling in frames, and the camera of the menus eases toward the cursor once per frame, so above 30 FPS the save list scrolls almost instantly and the camera jumps to the corners.
+- **Explosions**: Explosions that stay active for a moment hit everything in their range on every frame, so above 30 FPS they deal more damage and push bodies harder. This fix keeps those hits at 30 per second, the rate the game was designed around.
+- **Effects out of view**: The game stops effects that haven't been drawn for 30 frames, one second at 30 FPS, so above 30 FPS fire, steam and explosions behind the camera stopped after a fraction of a second. This fix counts those frames as time so they keep running for one second.
 
 ## Skip Artificial Loading Delay
 
