@@ -22,6 +22,9 @@ static safetyhook::MidHook StationaryShootingAim{};
 static safetyhook::MidHook DecompressionAim{};
 static safetyhook::MidHook HangingAim{};
 
+static float(__cdecl* SensitivityInterp)(float, float, float) = nullptr;
+static float(__cdecl* PlayerSpeedSettings_GetGunModifier)() = nullptr;
+
 // Arguments of an AimingData::UpdateAim call
 struct AimUpdate
 {
@@ -51,8 +54,16 @@ static bool GetAimRotation(float gamePitch, float gameYaw, float& pitch, float& 
 		return true;
 	}
 
-	GetMouseRotation(750.0f, pitch, yaw);
+	GetMouseRotation(1500.0f, pitch, yaw);
 	return true;
+}
+
+static float GetAimSpeedModifier(DWORD setting)
+{
+	DWORD address = g_Addresses.PlayerSpeedSettingsPtr + setting;
+	float speed = MemoryHelper::ReadMemory<float>(address);
+	float modifier = SensitivityInterp(MemoryHelper::ReadMemory<float>(address + 72), speed, MemoryHelper::ReadMemory<float>(address + 108)) / speed;
+	return modifier * PlayerSpeedSettings_GetGunModifier();
 }
 
 static void RecordMouseAim(uintptr_t aim, float pitchDelta, float yawDelta)
@@ -75,8 +86,7 @@ static int __stdcall ApplyControlConfiguration_Hook(int a1)
 	// Get the current mouse sensitivity
 	g_State.isXInverted = *(BYTE*)(a1);
 	g_State.isYInverted = *(BYTE*)(a1 + 1);
-	g_State.mouseSens = *(float*)(a1 + 12);
-	if (g_State.mouseSens == 0.0f) g_State.mouseSens = 0.005f; // we still want to use the mouse
+	g_State.mouseSens = *(float*)(a1 + 12) * 1.8f + 0.1f;
 	ControllerHelper::SetGyroInvertX(g_State.isXInverted);
 	ControllerHelper::SetGyroInvertY(g_State.isYInverted);
 	return ApplyControlConfiguration.stdcall<int>(a1);
@@ -139,7 +149,7 @@ static int __fastcall PlayerZGJumpSM_ProcessAimingControls_Hook(int thisp, float
 	}
 
 	float pitch, yaw;
-	GetMouseRotation(625.0f, pitch, yaw);
+	GetMouseRotation(1250.0f, pitch, yaw);
 
 	// Convert to angular velocity (radians per second)
 	const float SENSITIVITY = 20.0f;
@@ -186,7 +196,10 @@ static void OnRE4ChaseCameraAim(safetyhook::Context& ctx)
 
 	AimUpdate* update = reinterpret_cast<AimUpdate*>(ctx.esp);
 	float pitch, yaw;
-	GetMouseRotation(625.0f, pitch, yaw);
+	GetMouseRotation(1250.0f, pitch, yaw);
+
+	yaw *= *(float*)(ctx.esp + 0x38) / MemoryHelper::ReadMemory<float>(g_Addresses.PlayerSpeedSettingsPtr + 16);
+	pitch *= *(float*)(ctx.esp + 0x60) / MemoryHelper::ReadMemory<float>(g_Addresses.PlayerSpeedSettingsPtr + 28);
 
 	float currentPitch = *(float*)ctx.ecx;
 	update->deltaPitch = std::clamp(currentPitch + pitch, -PITCH_LIMIT_NORMAL, PITCH_LIMIT_NORMAL) - currentPitch;
@@ -199,6 +212,12 @@ static void OnGroundAim(safetyhook::Context& ctx)
 	float pitch, yaw;
 	if (!GetAimRotation(update->deltaPitch, update->deltaYaw, pitch, yaw)) return;
 
+	if (!g_State.isControllerActive)
+	{
+		pitch *= GetAimSpeedModifier(32);
+		yaw *= GetAimSpeedModifier(36);
+	}
+
 	float currentPitch = *(float*)ctx.ecx;
 	update->deltaPitch = std::clamp(currentPitch + pitch, PITCH_LIMIT_AIM_DOWN, PITCH_LIMIT_NORMAL) - currentPitch;
 	update->deltaYaw = yaw;
@@ -210,7 +229,8 @@ static void OnGroundAimPitch(safetyhook::Context& ctx)
 
 	AimUpdate* update = reinterpret_cast<AimUpdate*>(ctx.esp);
 	float pitch, yaw;
-	GetMouseRotation(750.0f, pitch, yaw);
+	GetMouseRotation(1500.0f, pitch, yaw);
+	pitch *= GetAimSpeedModifier(32);
 
 	float currentPitch = *(float*)ctx.ecx;
 	update->deltaPitch = std::clamp(currentPitch + pitch, PITCH_LIMIT_AIM_DOWN, PITCH_LIMIT_NORMAL) - currentPitch;
@@ -438,4 +458,9 @@ static void ApplyRawMouseInput()
 	g_Addresses.HangingMaxPitchPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x1CA);
 	g_Addresses.HangingYawFactorPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x214);
 	g_Addresses.ResponseCurvePtr = MemoryHelper::ReadMemory<int>(addr_PlayerZGJumpSM_ProcessAimingControls + 0x11F);
+	g_Addresses.PlayerSpeedSettingsPtr = MemoryHelper::ReadMemory<int>(addr_RE4ChaseCamera_UpdateState + 0x52A);
+
+	DWORD addr_GE2Aiming_Update = MemoryHelper::ResolveRelativeAddress(addr_PlayerFPSAimSM_ProcessGroundAiming, 0x62);
+	SensitivityInterp = reinterpret_cast<decltype(SensitivityInterp)>(MemoryHelper::ResolveRelativeAddress(addr_GE2Aiming_Update, 0x1CC));
+	PlayerSpeedSettings_GetGunModifier = reinterpret_cast<decltype(PlayerSpeedSettings_GetGunModifier)>(MemoryHelper::ResolveRelativeAddress(addr_GE2Aiming_Update, 0x1D8));
 }

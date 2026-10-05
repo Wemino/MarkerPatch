@@ -145,6 +145,7 @@ struct GameAddresses
 	DWORD HangingMaxPitchPtr = 0;
 	DWORD HangingYawFactorPtr = 0;
 	DWORD ResponseCurvePtr = 0;
+	DWORD PlayerSpeedSettingsPtr = 0;
 	DWORD SoundProviderPtr = 0;
 	DWORD PresentModePtr = 0;
 	DWORD PresentIntervalsPtr = 0;
