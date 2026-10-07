@@ -11,7 +11,6 @@ safetyhook::InlineHook UpdateMenuCursor;
 safetyhook::InlineHook RE4ChaseCamera_Update;
 safetyhook::InlineHook OrbitCamera_Update;
 safetyhook::InlineHook PlayerZGJumpSM_ProcessAimingControls;
-safetyhook::InlineHook hkGetRawInputData;
 
 static safetyhook::MidHook ZeroGravityRotation{};
 static safetyhook::MidHook RE4ChaseCameraAim{};
@@ -21,6 +20,7 @@ static safetyhook::MidHook DraggedAim{};
 static safetyhook::MidHook StationaryShootingAim{};
 static safetyhook::MidHook DecompressionAim{};
 static safetyhook::MidHook HangingAim{};
+static safetyhook::MidHook MouseGetDeviceState{};
 
 static float(__cdecl* SensitivityInterp)(float, float, float) = nullptr;
 static float(__cdecl* PlayerSpeedSettings_GetGunModifier)() = nullptr;
@@ -32,6 +32,15 @@ struct AimUpdate
 	float deltaYaw;
 	float deltaRoll;
 	int type;
+};
+
+// DIMOUSESTATE2 filled by the game's IDirectInputDevice8::GetDeviceState call
+struct MouseState
+{
+	LONG lX;
+	LONG lY;
+	LONG lZ;
+	BYTE rgbButtons[8];
 };
 
 static void GetMouseRotation(float divisor, float& pitch, float& yaw)
@@ -376,31 +385,19 @@ static void OnHangingAim(safetyhook::Context& ctx)
 	update->deltaRoll = swayRoll;
 }
 
-static UINT WINAPI GetRawInputData_Hook(HRAWINPUT hRawInput, UINT uiCommand, LPVOID pData, PUINT pcbSize, UINT cbSizeHeader)
+static void OnMouseGetDeviceState(safetyhook::Context& ctx)
 {
-	UINT result = hkGetRawInputData.unsafe_stdcall<UINT>(hRawInput, uiCommand, pData, pcbSize, cbSizeHeader);
+	MouseState* state = reinterpret_cast<MouseState*>(ctx.esp + 0x18);
 
-	if (result != (UINT)-1 && uiCommand == RID_INPUT && pData != NULL)
+	if (AchievementOverlay::IsVisible())
 	{
-		RAWINPUT* raw = (RAWINPUT*)pData;
-		if (raw->header.dwType == RIM_TYPEMOUSE)
-		{
-			if (AchievementOverlay::IsVisible())
-			{
-				// Overlay open: hide movement and clicks from the game
-				raw->data.mouse.lLastX = 0;
-				raw->data.mouse.lLastY = 0;
-				raw->data.mouse.usButtonFlags = 0;
-			}
-			else
-			{
-				g_State.rawMouseDeltaX += raw->data.mouse.lLastX;
-				g_State.rawMouseDeltaY += raw->data.mouse.lLastY;
-			}
-		}
+		// Overlay open: hide movement, wheel and clicks from the game
+		memset(state, 0, sizeof(MouseState));
+		return;
 	}
 
-	return result;
+	g_State.frameRawX += state->lX;
+	g_State.frameRawY += state->lY;
 }
 
 static void ApplyRawMouseInput()
@@ -426,7 +423,7 @@ static void ApplyRawMouseInput()
 	DecompressionAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::PlayerDecompressionReactComponent_AdjustCameraAndAim)), OnDecompressionAim);
 	HangingAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::PlayerHangingSM_UpdateAim)), OnHangingAim);
 
-	hkGetRawInputData = HookHelper::CreateHookAPI(L"user32.dll", "GetRawInputData", &GetRawInputData_Hook);
+	MouseGetDeviceState = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::MouseGetDeviceState)), OnMouseGetDeviceState);
 
 	g_Addresses.InputDeviceManagerPtr = GetAddress(Addr::InputDeviceManagerPtr);
 	g_Addresses.HangingMinYawPtr = GetAddress(Addr::HangingMinYawPtr);

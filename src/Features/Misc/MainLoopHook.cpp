@@ -28,8 +28,8 @@ static int __cdecl MainLoop_Hook()
 
 	if (RawMouseInput)
 	{
-		g_State.frameRawX = g_State.rawMouseDeltaX.exchange(0);
-		g_State.frameRawY = g_State.rawMouseDeltaY.exchange(0);
+		g_State.frameRawX = 0;
+		g_State.frameRawY = 0;
 		ControllerHelper::GetProcessedGyroDelta(g_State.frameGyroYaw, g_State.frameGyroPitch);
 		g_State.mouseAimData = 0;
 	}

@@ -53,8 +53,6 @@ struct GlobalState
 	bool isMouseCursorVisible = false;
 
 	// Raw input state
-	std::atomic<LONG> rawMouseDeltaX{ 0 };
-	std::atomic<LONG> rawMouseDeltaY{ 0 };
 	LONG frameRawX = 0;
 	LONG frameRawY = 0;
 	float frameGyroYaw = 0.0f;
