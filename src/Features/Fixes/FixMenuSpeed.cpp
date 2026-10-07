@@ -130,14 +130,10 @@ static void ApplyFixMenuSpeed()
 {
 	if (!FixMenuSpeed) return;
 
-	DWORD addr_AptUpdate = GetAddress(Addr::AptUpdate);
-	DWORD addr_UIMenuBase_MenuControlThread = GetAddress(Addr::UIMenuBase_MenuControlThread);
-	DWORD addr_PlayerTweakCameraModifier_Update = GetAddress(Addr::PlayerTweakCameraModifier_Update);
-
 	g_Addresses.FrameTimeSecPtr = GetAddress(Addr::FrameTimeSecPtr);
 
-	AptUpdate = safetyhook::create_mid(reinterpret_cast<void*>(addr_AptUpdate + 0x35), OnAptUpdate);
+	AptUpdate = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::AptUpdate)), OnAptUpdate);
 
-	UIMenuBase_MenuControlThread = HookHelper::CreateHook((void*)addr_UIMenuBase_MenuControlThread, &UIMenuBase_MenuControlThread_Hook);
-	PlayerTweakCameraModifier_Update = HookHelper::CreateHook((void*)addr_PlayerTweakCameraModifier_Update, &PlayerTweakCameraModifier_Update_Hook);
+	UIMenuBase_MenuControlThread = HookHelper::CreateHook((void*)GetAddress(Addr::UIMenuBase_MenuControlThread), &UIMenuBase_MenuControlThread_Hook);
+	PlayerTweakCameraModifier_Update = HookHelper::CreateHook((void*)GetAddress(Addr::PlayerTweakCameraModifier_Update), &PlayerTweakCameraModifier_Update_Hook);
 }

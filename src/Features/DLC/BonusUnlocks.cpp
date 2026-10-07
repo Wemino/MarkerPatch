@@ -112,29 +112,19 @@ static int __fastcall PlayerStore_AddItem_Hook(int thisPtr, int, DWORD* entry)
 
 static void ApplyHackerDLC()
 {
-	DWORD addr_PlayerStoreSM_AddStoreListItemsToStore = GetAddress(Addr::PlayerStoreSM_AddStoreListItemsToStore);
-	DWORD addr_PlayerStore_AddItem = GetAddress(Addr::PlayerStore_AddItem);
-	DWORD addr_UnlockedContent_IsUnlocked = GetAddress(Addr::UnlockedContent_IsUnlocked);
-	DWORD addr_AchievementManager_IsAchievementCompleteByPlatformId = GetAddress(Addr::AchievementManager_IsAchievementCompleteByPlatformId);
-
-	PlayerStoreSM_AddStoreListItemsToStore = HookHelper::CreateHook((void*)addr_PlayerStoreSM_AddStoreListItemsToStore, &PlayerStoreSM_AddStoreListItemsToStore_Hook);
-	PlayerStore_AddItem = HookHelper::CreateHook((void*)addr_PlayerStore_AddItem, &PlayerStore_AddItem_Hook);
-	UnlockedContent_IsUnlocked = HookHelper::CreateHook((void*)addr_UnlockedContent_IsUnlocked, &UnlockedContent_IsUnlocked_Hook);
-	AchievementManager_IsAchievementCompleteByPlatformId = HookHelper::CreateHook((void*)(addr_AchievementManager_IsAchievementCompleteByPlatformId + 0x8), &AchievementManager_IsAchievementCompleteByPlatformId_Hook);
+	PlayerStoreSM_AddStoreListItemsToStore = HookHelper::CreateHook((void*)GetAddress(Addr::PlayerStoreSM_AddStoreListItemsToStore), &PlayerStoreSM_AddStoreListItemsToStore_Hook);
+	PlayerStore_AddItem = HookHelper::CreateHook((void*)GetAddress(Addr::PlayerStore_AddItem), &PlayerStore_AddItem_Hook);
+	UnlockedContent_IsUnlocked = HookHelper::CreateHook((void*)GetAddress(Addr::UnlockedContent_IsUnlocked), &UnlockedContent_IsUnlocked_Hook);
+	AchievementManager_IsAchievementCompleteByPlatformId = HookHelper::CreateHook((void*)GetAddress(Addr::AchievementManager_IsAchievementCompleteByPlatformId), &AchievementManager_IsAchievementCompleteByPlatformId_Hook);
 }
 
 static void ApplyBonusUnlocks()
 {
-	DWORD addr_SaveManagerBootCheck = GetAddress(Addr::SaveManagerBootCheck);
-	DWORD addr_UnlockedContent_ClearUnlocked = GetAddress(Addr::UnlockedContent_ClearUnlocked);
-	DWORD addr_IgnitionDoorSpawn = GetAddress(Addr::IgnitionDoorSpawn);
-	DWORD addr_IgnitionDoorEntitlement = GetAddress(Addr::IgnitionDoorEntitlement);
-
 	g_Addresses.UnlockHandlerPtr = GetAddress(Addr::UnlockHandlerPtr);
 	UnlockedContent_ForceUnlocked = reinterpret_cast<decltype(UnlockedContent_ForceUnlocked)>(GetAddress(Addr::UnlockedContent_ForceUnlocked));
-	UnlockedContent_ClearUnlocked = reinterpret_cast<decltype(UnlockedContent_ClearUnlocked)>(addr_UnlockedContent_ClearUnlocked);
+	UnlockedContent_ClearUnlocked = reinterpret_cast<decltype(UnlockedContent_ClearUnlocked)>(GetAddress(Addr::UnlockedContent_ClearUnlocked));
 
-	SaveManagerBootCheck = safetyhook::create_mid(reinterpret_cast<void*>(addr_SaveManagerBootCheck), OnSaveManagerBootCheck);
+	SaveManagerBootCheck = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::SaveManagerBootCheck)), OnSaveManagerBootCheck);
 
 	if (EnableHackerDLC)
 	{
@@ -144,6 +134,6 @@ static void ApplyBonusUnlocks()
 	if (!EnableIgnitionRooms) return;
 
 	// The PC version always locks the Ignition doors instead of checking the flag
-	MemoryHelper::WriteMemory<uint8_t>(addr_IgnitionDoorSpawn + 0x1F, 0);
-	MemoryHelper::WriteMemory<uint8_t>(addr_IgnitionDoorEntitlement + 0x12, 0);
+	MemoryHelper::WriteMemory<uint8_t>(GetAddress(Addr::IgnitionDoorSpawn), 0);
+	MemoryHelper::WriteMemory<uint8_t>(GetAddress(Addr::IgnitionDoorEntitlement), 0);
 }

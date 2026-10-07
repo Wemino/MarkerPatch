@@ -407,33 +407,24 @@ static void ApplyRawMouseInput()
 {
 	if (!RawMouseInput) return;
 
-	DWORD addr_ApplyControlConfiguration = GetAddress(Addr::ApplyControlConfiguration);
-	DWORD addr_UpdateMenuCursor = GetAddress(Addr::UpdateMenuCursor);
-	DWORD addr_RE4ChaseCamera_Update = GetAddress(Addr::RE4ChaseCamera_Update);
-	DWORD addr_RE4ChaseCamera_UpdateState = GetAddress(Addr::RE4ChaseCamera_UpdateState);
-	DWORD addr_OrbitCamera_Update = GetAddress(Addr::OrbitCamera_Update);
 	DWORD addr_PlayerZGJumpSM_ProcessAimingControls = GetAddress(Addr::PlayerZGJumpSM_ProcessAimingControls);
 	DWORD addr_PlayerFPSAimSM_ProcessGroundAiming = GetAddress(Addr::PlayerFPSAimSM_ProcessGroundAiming);
-	DWORD addr_PlayerDraggedSM_AdjustAim = GetAddress(Addr::PlayerDraggedSM_AdjustAim);
-	DWORD addr_PlayerStationaryShootingSM_AdjustAim = GetAddress(Addr::PlayerStationaryShootingSM_AdjustAim);
-	DWORD addr_PlayerDecompressionReactComponent_AdjustCameraAndAim = GetAddress(Addr::PlayerDecompressionReactComponent_AdjustCameraAndAim);
-	DWORD addr_PlayerHangingSM_UpdateAim = GetAddress(Addr::PlayerHangingSM_UpdateAim);
 
-	ApplyControlConfiguration = HookHelper::CreateHook((void*)addr_ApplyControlConfiguration, &ApplyControlConfiguration_Hook);
-	UpdateMenuCursor = HookHelper::CreateHook((void*)addr_UpdateMenuCursor, &UpdateMenuCursor_Hook);
-	RE4ChaseCamera_Update = HookHelper::CreateHook((void*)addr_RE4ChaseCamera_Update, &RE4ChaseCamera_Update_Hook);
-	OrbitCamera_Update = HookHelper::CreateHook((void*)addr_OrbitCamera_Update, &OrbitCamera_Update_Hook);
+	ApplyControlConfiguration = HookHelper::CreateHook((void*)GetAddress(Addr::ApplyControlConfiguration), &ApplyControlConfiguration_Hook);
+	UpdateMenuCursor = HookHelper::CreateHook((void*)GetAddress(Addr::UpdateMenuCursor), &UpdateMenuCursor_Hook);
+	RE4ChaseCamera_Update = HookHelper::CreateHook((void*)GetAddress(Addr::RE4ChaseCamera_Update), &RE4ChaseCamera_Update_Hook);
+	OrbitCamera_Update = HookHelper::CreateHook((void*)GetAddress(Addr::OrbitCamera_Update), &OrbitCamera_Update_Hook);
 	PlayerZGJumpSM_ProcessAimingControls = HookHelper::CreateHook((void*)addr_PlayerZGJumpSM_ProcessAimingControls, &PlayerZGJumpSM_ProcessAimingControls_Hook);
 
 	ZeroGravityRotation = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerZGJumpSM_ProcessAimingControls + 0x305), OnZeroGravityRotation);
 
-	RE4ChaseCameraAim = safetyhook::create_mid(reinterpret_cast<void*>(addr_RE4ChaseCamera_UpdateState + 0x7AE), OnRE4ChaseCameraAim);
+	RE4ChaseCameraAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::RE4ChaseCamera_UpdateState)), OnRE4ChaseCameraAim);
 	GroundAim = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerFPSAimSM_ProcessGroundAiming + 0xEE), OnGroundAim);
 	GroundAimPitch = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerFPSAimSM_ProcessGroundAiming + 0x18F), OnGroundAimPitch);
-	DraggedAim = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerDraggedSM_AdjustAim + 0x4E0), OnDraggedAim);
-	StationaryShootingAim = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerStationaryShootingSM_AdjustAim + 0x206), OnStationaryShootingAim);
-	DecompressionAim = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerDecompressionReactComponent_AdjustCameraAndAim + 0x2DC), OnDecompressionAim);
-	HangingAim = safetyhook::create_mid(reinterpret_cast<void*>(addr_PlayerHangingSM_UpdateAim + 0x244), OnHangingAim);
+	DraggedAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::PlayerDraggedSM_AdjustAim)), OnDraggedAim);
+	StationaryShootingAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::PlayerStationaryShootingSM_AdjustAim)), OnStationaryShootingAim);
+	DecompressionAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::PlayerDecompressionReactComponent_AdjustCameraAndAim)), OnDecompressionAim);
+	HangingAim = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::PlayerHangingSM_UpdateAim)), OnHangingAim);
 
 	hkGetRawInputData = HookHelper::CreateHookAPI(L"user32.dll", "GetRawInputData", &GetRawInputData_Hook);
 

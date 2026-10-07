@@ -32,8 +32,6 @@ static void ApplyFixStreamingBudget()
 {
 	if (!FixStreamingBudget) return;
 
-	DWORD addr_TimeSlicer_GetTimeRemainingBeforeVBlank = GetAddress(Addr::TimeSlicer_GetTimeRemainingBeforeVBlank);
-
 	g_Addresses.FrameLimiterEnabledPtr = GetAddress(Addr::FrameLimiterEnabledPtr);
 	g_Addresses.TargetFrameTimeMsPtr = GetAddress(Addr::TargetFrameTimeMsPtr);
 	g_Addresses.PresentModePtr = GetAddress(Addr::PresentModePtr);
@@ -44,5 +42,5 @@ static void ApplyFixStreamingBudget()
 
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 
-	TimeSlicer_GetTimeRemainingBeforeVBlank = HookHelper::CreateHook((void*)addr_TimeSlicer_GetTimeRemainingBeforeVBlank, &TimeSlicer_GetTimeRemainingBeforeVBlank_Hook);
+	TimeSlicer_GetTimeRemainingBeforeVBlank = HookHelper::CreateHook((void*)GetAddress(Addr::TimeSlicer_GetTimeRemainingBeforeVBlank), &TimeSlicer_GetTimeRemainingBeforeVBlank_Hook);
 }

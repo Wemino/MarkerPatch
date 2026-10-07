@@ -22,7 +22,5 @@ static void ApplyFixShadowBlur()
 {
 	if (!FixShadowBlur) return;
 
-	DWORD addr_BlurAttenuationBuffer = GetAddress(Addr::BlurAttenuationBuffer);
-
-	BlurAttenuationBuffer = HookHelper::CreateHook((void*)(addr_BlurAttenuationBuffer - 0xB), &BlurAttenuationBuffer_Hook);
+	BlurAttenuationBuffer = HookHelper::CreateHook((void*)GetAddress(Addr::BlurAttenuationBuffer), &BlurAttenuationBuffer_Hook);
 }

@@ -72,14 +72,11 @@ static void ApplyFixMainLoopSpin()
 {
 	if (!FixMainLoopSpin) return;
 
-	DWORD addr_SoundProviderRWAC2_IsReadyForFrame = GetAddress(Addr::SoundProviderRWAC2_IsReadyForFrame);
-	DWORD addr_Time_GetCurTimeInMSec = GetAddress(Addr::Time_GetCurTimeInMSec);
-
 	g_Addresses.SoundProviderPtr = GetAddress(Addr::SoundProviderPtr);
 
 	timeBeginPeriod(1);
 	g_State.mainLoopTimer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
 
-	SoundProviderRWAC2_IsReadyForFrame = HookHelper::CreateHook((void*)addr_SoundProviderRWAC2_IsReadyForFrame, &SoundProviderRWAC2_IsReadyForFrame_Hook);
-	Time_GetCurTimeInMSec = HookHelper::CreateHook((void*)addr_Time_GetCurTimeInMSec, &Time_GetCurTimeInMSec_Hook);
+	SoundProviderRWAC2_IsReadyForFrame = HookHelper::CreateHook((void*)GetAddress(Addr::SoundProviderRWAC2_IsReadyForFrame), &SoundProviderRWAC2_IsReadyForFrame_Hook);
+	Time_GetCurTimeInMSec = HookHelper::CreateHook((void*)GetAddress(Addr::Time_GetCurTimeInMSec), &Time_GetCurTimeInMSec_Hook);
 }

@@ -35,10 +35,7 @@ static void ApplyFixSolarArrayElevator()
 {
 	if (!FixSolarArrayElevator) return;
 
-	DWORD addr_EventScheduler_SendDelayedMsgToEventHandler = GetAddress(Addr::EventScheduler_SendDelayedMsgToEventHandler);
-	DWORD addr_ElevatorFlushHook = GetAddress(Addr::ElevatorFlushHook);
+	EventScheduler_SendDelayedMsgToEventHandler = HookHelper::CreateHook((void*)GetAddress(Addr::EventScheduler_SendDelayedMsgToEventHandler), &EventScheduler_SendDelayedMsgToEventHandler_Hook);
 
-	EventScheduler_SendDelayedMsgToEventHandler = HookHelper::CreateHook((void*)addr_EventScheduler_SendDelayedMsgToEventHandler, &EventScheduler_SendDelayedMsgToEventHandler_Hook);
-
-	ElevatorFlushHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_ElevatorFlushHook), OnElevatorFlush);
+	ElevatorFlushHook = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::ElevatorFlushHook)), OnElevatorFlush);
 }

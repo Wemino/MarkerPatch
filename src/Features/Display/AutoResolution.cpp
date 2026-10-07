@@ -26,7 +26,5 @@ static void ApplyAutoResolution()
 {
 	if (!AutoResolution) return;
 
-	DWORD addr_GetConfigInt = GetAddress(Addr::GetConfigInt);
-
-	GetConfigInt = HookHelper::CreateHook((void*)addr_GetConfigInt, &GetConfigInt_Hook);
+	GetConfigInt = HookHelper::CreateHook((void*)GetAddress(Addr::GetConfigInt), &GetConfigInt_Hook);
 }

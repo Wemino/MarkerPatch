@@ -78,15 +78,11 @@ static void ApplyFixAutomaticWeaponFireRate()
 {
 	if (!FixAutomaticWeaponFireRate) return;
 
-	DWORD addr_TimeManager_HandleEvents = GetAddress(Addr::TimeManager_HandleEvents);
-	DWORD addr_Item_IsReadyToUse = GetAddress(Addr::Item_IsReadyToUse);
-	DWORD addr_Item_ResetUseTimer = GetAddress(Addr::Item_ResetUseTimer);
-
 	g_Addresses.FrameTimeSecPtr = GetAddress(Addr::FrameTimeSecPtr);
 	g_Addresses.SimTimeElapsedMSecPtr = GetAddress(Addr::SimTimeElapsedMSecPtr);
 	g_State.frameTime = TARGET_FRAME_TIME;
 
-	TimeManager_HandleEvents = HookHelper::CreateHook((void*)addr_TimeManager_HandleEvents, &TimeManager_HandleEvents_Hook);
-	Item_IsReadyToUse = HookHelper::CreateHook((void*)addr_Item_IsReadyToUse, &Item_IsReadyToUse_Hook);
-	Item_ResetUseTimer = HookHelper::CreateHook((void*)addr_Item_ResetUseTimer, &Item_ResetUseTimer_Hook);
+	TimeManager_HandleEvents = HookHelper::CreateHook((void*)GetAddress(Addr::TimeManager_HandleEvents), &TimeManager_HandleEvents_Hook);
+	Item_IsReadyToUse = HookHelper::CreateHook((void*)GetAddress(Addr::Item_IsReadyToUse), &Item_IsReadyToUse_Hook);
+	Item_ResetUseTimer = HookHelper::CreateHook((void*)GetAddress(Addr::Item_ResetUseTimer), &Item_ResetUseTimer_Hook);
 }

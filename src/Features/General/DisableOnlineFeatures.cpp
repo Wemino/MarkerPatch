@@ -22,11 +22,7 @@ static void ApplyDisableOnlineFeatures()
 {
 	if (!DisableOnlineFeatures) return;
 
-	DWORD addr_UIComponentManager_ShowScreen_Nucleus_Connecting = GetAddress(Addr::UIComponentManager_ShowScreen_Nucleus_Connecting);
-	DWORD addr_StartNucleusLogin = GetAddress(Addr::StartNucleusLogin);
-	DWORD addr_ShopOfflineMessage = GetAddress(Addr::ShopOfflineMessage);
-
-	UIComponentManager_ShowScreen_Nucleus_Connecting = HookHelper::CreateHook((void*)addr_UIComponentManager_ShowScreen_Nucleus_Connecting, &UIComponentManager_ShowScreen_Nucleus_Connecting_Hook);
-	MemoryHelper::MakeNOP(addr_StartNucleusLogin, 2);
-	MemoryHelper::MakeNOP(addr_ShopOfflineMessage, 2);
+	UIComponentManager_ShowScreen_Nucleus_Connecting = HookHelper::CreateHook((void*)GetAddress(Addr::UIComponentManager_ShowScreen_Nucleus_Connecting), &UIComponentManager_ShowScreen_Nucleus_Connecting_Hook);
+	MemoryHelper::MakeNOP(GetAddress(Addr::StartNucleusLogin), 2);
+	MemoryHelper::MakeNOP(GetAddress(Addr::ShopOfflineMessage), 2);
 }

@@ -51,7 +51,5 @@ static void ApplyMainLoopHook()
 {
 	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport && !FixMainLoopSpin && !PreloadStreamedTextures) return;
 
-	DWORD addr_MainLoop = GetAddress(Addr::MainLoop);
-
-	MainLoop = HookHelper::CreateHook((void*)addr_MainLoop, &MainLoop_Hook);
+	MainLoop = HookHelper::CreateHook((void*)GetAddress(Addr::MainLoop), &MainLoop_Hook);
 }

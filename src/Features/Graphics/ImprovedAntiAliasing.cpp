@@ -426,21 +426,18 @@ static void ApplySupersampling()
 	if (SSAAScale == 1.0f) return;
 
 	DWORD addr_ModeMatch = GetAddress(Addr::ModeMatch);
-	DWORD addr_SetDisplayModeThunk = GetAddress(Addr::SetDisplayModeThunk);
 	DWORD addr_WindowResize = GetAddress(Addr::WindowResize);
 	DWORD addr_CursorUpdate = GetAddress(Addr::CursorUpdate);
 	DWORD addr_CursorRestore = GetAddress(Addr::CursorRestore);
 	DWORD addr_CursorClip = GetAddress(Addr::CursorClip);
 	DWORD addr_DisplayModeGetters = GetAddress(Addr::DisplayModeGetters);
-	DWORD addr_MenuCursorDelta = GetAddress(Addr::MenuCursorDelta);
-	DWORD addr_CopyToBackBuffer = GetAddress(Addr::CopyToBackBuffer);
 
 	g_Addresses.PresentParamsPtr = GetAddress(Addr::PresentParamsPtr);
 
 	ModeMatchStart = safetyhook::create_mid(reinterpret_cast<void*>(addr_ModeMatch), OnModeMatchStart);
 	ModeMatchEnd = safetyhook::create_mid(reinterpret_cast<void*>(addr_ModeMatch + 0x199), OnModeMatchEnd);
 
-	SetDisplayMode = HookHelper::CreateHook((void*)addr_SetDisplayModeThunk, &SetDisplayMode_Hook);
+	SetDisplayMode = HookHelper::CreateHook((void*)GetAddress(Addr::SetDisplayModeThunk), &SetDisplayMode_Hook);
 
 	// The window, cursor and settings menu code expects the back buffer to be as large as the frame, use the back buffer size instead
 	DWORD backBufferWidthPtr = g_Addresses.PresentParamsPtr;
@@ -459,10 +456,10 @@ static void ApplySupersampling()
 	MemoryHelper::WriteMemory<DWORD>(addr_DisplayModeGetters + 0x12, backBufferWidthPtr);
 	MemoryHelper::WriteMemory<DWORD>(addr_DisplayModeGetters + 0x22, backBufferHeightPtr);
 
-	MenuCursorDelta = safetyhook::create_mid(reinterpret_cast<void*>(addr_MenuCursorDelta), OnMenuCursorDelta);
+	MenuCursorDelta = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::MenuCursorDelta)), OnMenuCursorDelta);
 
 	// Downsample the frame into the back buffer instead of copying it
-	MemoryHelper::MakeCALL(addr_CopyToBackBuffer + 0x15, reinterpret_cast<uintptr_t>(&CopyToBackBuffer_Hook));
+	MemoryHelper::MakeCALL(GetAddress(Addr::CopyToBackBuffer), reinterpret_cast<uintptr_t>(&CopyToBackBuffer_Hook));
 
 	g_State.isSupersampling = true;
 }
@@ -489,8 +486,6 @@ static void ApplyImprovedAntiAliasing()
 		return;
 	}
 
-	DWORD addr_ScreenEdgeAA_Render = GetAddress(Addr::ScreenEdgeAA_Render);
-
 	if (ImprovedAntiAliasingMode == AA_FXAA)
 	{
 		// Replace the depth and normal based edge blur with FXAA
@@ -505,12 +500,11 @@ static void ApplyImprovedAntiAliasing()
 	else
 	{
 		// Replace the whole edge blur pass with SMAA
-		DWORD addr_ScreenEdgeAA_RenderImmediate = GetAddress(Addr::ScreenEdgeAA_RenderImmediate);
 		g_Addresses.FrameCopyValidPtr = GetAddress(Addr::FrameCopyValidPtr);
-		ScreenEdgeAA_RenderImmediate = HookHelper::CreateHook((void*)addr_ScreenEdgeAA_RenderImmediate, &ScreenEdgeAA_RenderImmediate_Hook);
+		ScreenEdgeAA_RenderImmediate = HookHelper::CreateHook((void*)GetAddress(Addr::ScreenEdgeAA_RenderImmediate), &ScreenEdgeAA_RenderImmediate_Hook);
 	}
 
 	g_Addresses.AAValsFlagsPtr = GetAddress(Addr::AAValsFlagsPtr);
 
-	ScreenEdgeAARender = safetyhook::create_mid(reinterpret_cast<void*>(addr_ScreenEdgeAA_Render + 0x1A), OnScreenEdgeAARender);
+	ScreenEdgeAARender = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::ScreenEdgeAA_Render)), OnScreenEdgeAARender);
 }

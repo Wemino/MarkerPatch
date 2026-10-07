@@ -155,17 +155,12 @@ static void ApplyExtraMouseButtonBinding()
 {
 	if (!ExtraMouseButtonBinding) return;
 
-	DWORD addr_RemapVisitMapping = GetAddress(Addr::RemapVisitMapping);
-	DWORD addr_ApplyActionBinding = GetAddress(Addr::ApplyActionBinding);
-	DWORD addr_EvaluateKeyboardKeys = GetAddress(Addr::EvaluateKeyboardKeys);
-	DWORD addr_MouseDeviceUpdate = GetAddress(Addr::MouseDeviceUpdate);
-
 	// Version 1.0 only reads the first three mouse buttons and numbers the wheel right after them
 	if (Addresses::GetBuild() == GameBuild::V1_0) return;
 
-	RemapVisitMappingHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_RemapVisitMapping), OnRemapVisitMapping);
-	MouseDeviceUpdateHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_MouseDeviceUpdate), OnMouseDeviceUpdate);
+	RemapVisitMappingHook = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::RemapVisitMapping)), OnRemapVisitMapping);
+	MouseDeviceUpdateHook = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::MouseDeviceUpdate)), OnMouseDeviceUpdate);
 
-	ApplyActionBinding = HookHelper::CreateHook((void*)addr_ApplyActionBinding, &ApplyActionBinding_Hook);
-	EvaluateKeyboardKeys = HookHelper::CreateHook((void*)addr_EvaluateKeyboardKeys, &EvaluateKeyboardKeys_Hook);
+	ApplyActionBinding = HookHelper::CreateHook((void*)GetAddress(Addr::ApplyActionBinding), &ApplyActionBinding_Hook);
+	EvaluateKeyboardKeys = HookHelper::CreateHook((void*)GetAddress(Addr::EvaluateKeyboardKeys), &EvaluateKeyboardKeys_Hook);
 }

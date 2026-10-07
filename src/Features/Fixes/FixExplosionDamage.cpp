@@ -60,12 +60,8 @@ static void ApplyFixExplosionDamage()
 {
 	if (!FixExplosionDamage) return;
 
-	DWORD addr_TEffectEFE_Constructor = GetAddress(Addr::TEffectEFE_Constructor);
-	DWORD addr_TEffectEFE_Simulate = GetAddress(Addr::TEffectEFE_Simulate);
-	DWORD addr_TEffectEFE_HitEntity = GetAddress(Addr::TEffectEFE_HitEntity);
+	TEffectEFE_Constructor = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::TEffectEFE_Constructor)), OnTEffectEFE_Constructor);
 
-	TEffectEFE_Constructor = safetyhook::create_mid(reinterpret_cast<void*>(addr_TEffectEFE_Constructor), OnTEffectEFE_Constructor);
-
-	TEffectEFE_Simulate = HookHelper::CreateHook((void*)addr_TEffectEFE_Simulate, &TEffectEFE_Simulate_Hook);
-	TEffectEFE_HitEntity = HookHelper::CreateHook((void*)addr_TEffectEFE_HitEntity, &TEffectEFE_HitEntity_Hook);
+	TEffectEFE_Simulate = HookHelper::CreateHook((void*)GetAddress(Addr::TEffectEFE_Simulate), &TEffectEFE_Simulate_Hook);
+	TEffectEFE_HitEntity = HookHelper::CreateHook((void*)GetAddress(Addr::TEffectEFE_HitEntity), &TEffectEFE_HitEntity_Hook);
 }

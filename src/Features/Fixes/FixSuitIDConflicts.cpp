@@ -30,7 +30,5 @@ static void ApplyFixSuitIDConflicts()
 {
 	if (!FixSuitIDConflicts) return;
 
-	DWORD addr_PickupItem_SpawnInit = GetAddress(Addr::PickupItem_SpawnInit);
-
-	PickupItem_SpawnInit = HookHelper::CreateHook((void*)addr_PickupItem_SpawnInit, &PickupItem_SpawnInit_Hook);
+	PickupItem_SpawnInit = HookHelper::CreateHook((void*)GetAddress(Addr::PickupItem_SpawnInit), &PickupItem_SpawnInit_Hook);
 }

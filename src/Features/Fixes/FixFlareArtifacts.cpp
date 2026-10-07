@@ -137,15 +137,10 @@ static void ApplyFixFlareArtifacts()
 {
 	if (!FixFlareArtifacts) return;
 
-	DWORD addr_AddCoronaModulatedQuad = GetAddress(Addr::AddCoronaModulatedQuad);
-	DWORD addr_FlareSnapshot = GetAddress(Addr::FlareSnapshot);
-	DWORD addr_FlareTextureSubst = GetAddress(Addr::FlareTextureSubst);
-	DWORD addr_DeviceCleanupPre = GetAddress(Addr::DeviceCleanupPre);
-
-	AddCoronaModulatedQuad = HookHelper::CreateHook((void*)addr_AddCoronaModulatedQuad, &AddCoronaModulatedQuad_Hook);
+	AddCoronaModulatedQuad = HookHelper::CreateHook((void*)GetAddress(Addr::AddCoronaModulatedQuad), &AddCoronaModulatedQuad_Hook);
 	AddCoronaModulatedQuad_Trampoline = AddCoronaModulatedQuad.trampoline().address();
 
-	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareSnapshot + 0x2B), OnFlareSnapshot);
-	FlareTextureSubst = safetyhook::create_mid(reinterpret_cast<void*>(addr_FlareTextureSubst + 0x1B), OnFlareTextureSubst);
-	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(addr_DeviceCleanupPre - 0x3B), OnDeviceCleanupPre);
+	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareSnapshot)), OnFlareSnapshot);
+	FlareTextureSubst = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareTextureSubst)), OnFlareTextureSubst);
+	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::DeviceCleanupPre)), OnDeviceCleanupPre);
 }

@@ -115,7 +115,6 @@ enum class Addr
 	// FixAudioSyncStall
 	System_IsCommandComplete,
 	Dac_GetSamplesToMix,
-	DacThread_NextWakeTime,
 	DacThread_Sleep,
 
 	// FixInputHistory
@@ -307,8 +306,8 @@ namespace Addresses
 		/* CPUFix                                                     */ { 0x833BD3, 0x834353 },
 
 		// ThreadAffinityFix
-		/* PresentationThreadAffinity                                 */ { 0x81C0A0, 0x81C740 },
-		/* MainThreadAffinity                                         */ { 0x81C6B2, 0x81CD52 },
+		/* PresentationThreadAffinity                                 */ { 0x81C0B6, 0x81C756 },
+		/* MainThreadAffinity                                         */ { 0x81C6C5, 0x81CD65 },
 		/* PresentationThreadCore                                     */ { 0x205A264, 0x205B264 },
 		/* MainThreadCore                                             */ { 0x205A260, 0x205B260 },
 
@@ -346,24 +345,24 @@ namespace Addresses
 		// FixBlurResolution
 		/* ScreenGaussianBlur_RenderImmediate                         */ { 0x6E5CB0, 0x6E6350 },
 		/* AlchemyZoomBlurShader_SetSizeAndCenterZoom                 */ { 0x6FCD00, 0x6FD3A0 },
-		/* ScreenBloomBlur                                            */ { 0x6ECA5E, 0x6ED0FE },
-		/* ScreenDofBlur                                              */ { 0x6E7729, 0x6E7DC9 },
-		/* ScreenGlowBlur                                             */ { 0x6F1397, 0x6F1A37 },
-		/* ScreenDistortBlur                                          */ { 0x6E3D2F, 0x6E43CF },
+		/* ScreenBloomBlur                                            */ { 0x6ECA69, 0x6ED109 },
+		/* ScreenDofBlur                                              */ { 0x6E7731, 0x6E7DD1 },
+		/* ScreenGlowBlur                                             */ { 0x6F139E, 0x6F1A3E },
+		/* ScreenDistortBlur                                          */ { 0x6E3D3D, 0x6E43DD },
 
 		// FixShadowBlur
-		/* BlurAttenuationBuffer                                      */ { 0x79672B, 0x796DCB },
+		/* BlurAttenuationBuffer                                      */ { 0x796720, 0x796DC0 },
 
 		// FixFlareArtifacts
 		/* AddCoronaModulatedQuad                                     */ { 0x6A7620, 0x6A7CC0 },
-		/* FlareSnapshot                                              */ { 0x6AAED2, 0x6AB572 },
-		/* FlareTextureSubst                                          */ { 0x13D7E39, 0x13D86D9 },
-		/* DeviceCleanupPre                                           */ { 0x13C92BB, 0x13C9B5B },
+		/* FlareSnapshot                                              */ { 0x6AAEFD, 0x6AB59D },
+		/* FlareTextureSubst                                          */ { 0x13D7E54, 0x13D86F4 },
+		/* DeviceCleanupPre                                           */ { 0x13C9280, 0x13C9B20 },
 
 		// FixVertexNormals
 		/* ShaderTable                                                */ { 0x1C59240, 0x1C5A240 },
-		/* ScreenShaderTable                                          */ { 0x1EB5D78, 0x1EB6D78 },
-		/* MotionBlurShaderTable                                      */ { 0x1F59F24, 0x1F5AF24 },
+		/* ScreenShaderTable                                          */ { 0x1EBA140, 0x1EBB140 },
+		/* MotionBlurShaderTable                                      */ { 0x1F5A6BC, 0x1F5B6BC },
 
 		// FixClothPhysics
 		/* VerletIntegrate                                            */ { 0x10738D0, 0x1074020 },
@@ -371,10 +370,10 @@ namespace Addresses
 		/* ClothComponent_Teleport                                    */ { 0x1074E30, 0x1075580 },
 		/* ClothRelaxation                                            */ { 0x1073870, 0x1073FC0 },
 		/* CapeRelaxation                                             */ { 0x1073B50, 0x10742A0 },
-		/* RagdollComponent_DriveRigidBodies                          */ { 0xB94C01, 0xB95351 },
+		/* RagdollComponent_DriveRigidBodies                          */ { 0xB94C05, 0xB95355 },
 
 		// FixMenuSpeed
-		/* AptUpdate                                                  */ { 0x707015, 0x7076B5 },
+		/* AptUpdate                                                  */ { 0x70704A, 0x7076EA },
 		/* UIMenuBase_MenuControlThread                               */ { 0x15EA270, 0x15EAB10 },
 		/* PlayerTweakCameraModifier_Update                           */ { 0x1093CC0, 0x1094410 },
 
@@ -394,7 +393,6 @@ namespace Addresses
 		// FixAudioSyncStall
 		/* System_IsCommandComplete                                   */ { 0x536670, 0x536D10 },
 		/* Dac_GetSamplesToMix                                        */ { 0x519FA0, 0x51A640 },
-		/* DacThread_NextWakeTime                                     */ { 0x524412, 0x524AB2 },
 		/* DacThread_Sleep                                            */ { 0x52447F, 0x524B1F },
 
 		// FixInputHistory
@@ -428,7 +426,7 @@ namespace Addresses
 		/* EnemyLifetimeManager_Ctor                                  */ { 0x1003230, 0x1003980 },
 
 		// IncreasedDecalPersistence
-		/* DecalVertexBuffer                                          */ { 0x6F075E, 0x6F0DFE },
+		/* DecalVertexBuffer                                          */ { 0x6F0762, 0x6F0E02 },
 		/* CreateVertexBuffer1                                        */ { 0x13D2CA9, 0x13D3549 },
 		/* CreateVertexBuffer2                                        */ { 0x13D2D9E, 0x13D363E },
 		/* VertexBufferSize                                           */ { 0x13D2471, 0x13D2D11 },
@@ -460,14 +458,14 @@ namespace Addresses
 		/* ApplyControlConfiguration                                  */ { 0x1096F20, 0x1097670 },
 		/* UpdateMenuCursor                                           */ { 0xA5F820, 0xA5FF70 },
 		/* RE4ChaseCamera_Update                                      */ { 0xF7A610, 0xF7AD60 },
-		/* RE4ChaseCamera_UpdateState                                 */ { 0xF6DA20, 0xF6E170 },
+		/* RE4ChaseCamera_UpdateState                                 */ { 0xF6E1CE, 0xF6E91E },
 		/* OrbitCamera_Update                                         */ { 0xF79600, 0xF79D50 },
 		/* PlayerZGJumpSM_ProcessAimingControls                       */ { 0x886F70, 0x887720 },
 		/* PlayerFPSAimSM_ProcessGroundAiming                         */ { 0x898820, 0x898FD0 },
-		/* PlayerDraggedSM_AdjustAim                                  */ { 0x86DF00, 0x86E6A0 },
-		/* PlayerStationaryShootingSM_AdjustAim                       */ { 0x10ADC3E, 0x10AE3FE },
-		/* PlayerDecompressionReactComponent_AdjustCameraAndAim       */ { 0xB9E040, 0xB9E790 },
-		/* PlayerHangingSM_UpdateAim                                  */ { 0xE913C0, 0xE91B10 },
+		/* PlayerDraggedSM_AdjustAim                                  */ { 0x86E3E0, 0x86EB80 },
+		/* PlayerStationaryShootingSM_AdjustAim                       */ { 0x10ADE44, 0x10AE604 },
+		/* PlayerDecompressionReactComponent_AdjustCameraAndAim       */ { 0xB9E31C, 0xB9EA6C },
+		/* PlayerHangingSM_UpdateAim                                  */ { 0xE91604, 0xE91D54 },
 		/* SensitivityInterp                                          */ { 0x861B50, 0x8622D0 },
 		/* PlayerSpeedSettings_GetGunModifier                         */ { 0x86C820, 0x86CFA0 },
 		/* InputDeviceManagerPtr                                      */ { 0x201B0A8, 0x201C0A8 },
@@ -493,7 +491,7 @@ namespace Addresses
 		/* MouseDeviceUpdate                                          */ { 0x82D250, 0x82D9D0 },
 
 		// AutoHideMouseCursor
-		/* UpdateMenuCursorCall                                       */ { 0xA7802F, 0xA7877F },
+		/* UpdateMenuCursorCall                                       */ { 0xA78039, 0xA78789 },
 
 		// TextureFiltering
 		/* TX_ChangeOptions_d3d                                       */ { 0x13D7880, 0x13D8120 },
@@ -511,7 +509,7 @@ namespace Addresses
 		/* SamplerStatesPtr                                           */ { 0x2127BE0, 0x2128C00 },
 		/* RenderStatesPtr                                            */ { 0x211D180, 0x211E1A0 },
 		/* PSTable                                                    */ { 0x1EBA850, 0x1EBB850 },
-		/* ScreenEdgeAA_Render                                        */ { 0x6E6F50, 0x6E75F0 },
+		/* ScreenEdgeAA_Render                                        */ { 0x6E6F6A, 0x6E760A },
 		/* ScreenEdgeAA_RenderImmediate                               */ { 0x6E6C00, 0x6E72A0 },
 		/* FrameCopyValidPtr                                          */ { 0x2031E81, 0x2032E81 },
 		/* AAValsFlagsPtr                                             */ { 0x20339C0, 0x20349C0 },
@@ -525,7 +523,7 @@ namespace Addresses
 		/* CursorClip                                                 */ { 0x44BC79, 0x44C2F9 },
 		/* DisplayModeGetters                                         */ { 0x13C9090, 0x13C9930 },
 		/* MenuCursorDelta                                            */ { 0xA5FAD8, 0xA60228 },
-		/* CopyToBackBuffer                                           */ { 0x13C9634, 0x13C9ED4 },
+		/* CopyToBackBuffer                                           */ { 0x13C9649, 0x13C9EE9 },
 		/* PresentParamsPtr                                           */ { 0x211B734, 0x211C754 },
 
 		// ArchiveStreamHook
@@ -534,14 +532,14 @@ namespace Addresses
 		// BonusUnlocks
 		/* SaveManagerBootCheck                                       */ { 0xA72A27, 0xA73177 },
 		/* UnlockedContent_ClearUnlocked                              */ { 0x13539A0, 0x13541C0 },
-		/* IgnitionDoorSpawn                                          */ { 0xDC5668, 0xDC5DB8 },
-		/* IgnitionDoorEntitlement                                    */ { 0xDD9B3B, 0xDDA28B },
+		/* IgnitionDoorSpawn                                          */ { 0xDC5687, 0xDC5DD7 },
+		/* IgnitionDoorEntitlement                                    */ { 0xDD9B4D, 0xDDA29D },
 		/* UnlockHandlerPtr                                           */ { 0x20203B0, 0x20213B0 },
 		/* UnlockedContent_ForceUnlocked                              */ { 0x1353960, 0x1354180 },
 		/* PlayerStoreSM_AddStoreListItemsToStore                     */ { 0xE9F900, 0xEA0050 },
 		/* PlayerStore_AddItem                                        */ { 0xBB51D0, 0xBB5920 },
 		/* UnlockedContent_IsUnlocked                                 */ { 0x1353800, 0x1354020 },
-		/* AchievementManager_IsAchievementCompleteByPlatformId       */ { 0x1398958, 0x13991F8 },
+		/* AchievementManager_IsAchievementCompleteByPlatformId       */ { 0x1398960, 0x1399200 },
 
 		// MainLoopHook
 		/* MainLoop                                                   */ { 0x44A220, 0x44A8A0 },

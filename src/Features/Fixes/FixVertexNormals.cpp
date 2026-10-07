@@ -28,12 +28,10 @@ static void ApplyFixVertexNormals()
 	if (!FixVertexNormals) return;
 
 	DWORD addr_ShaderTable = GetAddress(Addr::ShaderTable);
-	DWORD addr_ScreenShaderTable = GetAddress(Addr::ScreenShaderTable);
-	DWORD addr_MotionBlurShaderTable = GetAddress(Addr::MotionBlurShaderTable);
 
 	ReplaceVertexShader(addr_ShaderTable + 0x144, g_GlassReflectionVS);
 	ReplaceVertexShader(addr_ShaderTable + 0x414, g_FlashlightOverlayVS);
 	ReplaceVertexShader(addr_ShaderTable + 0x654, g_MeshParticleVS);
-	ReplaceVertexShader(addr_ScreenShaderTable + 0x43C8, g_ScreenMeshVS);
-	ReplaceVertexShader(addr_MotionBlurShaderTable + 0x798, g_MotionBlurVelocityVS);
+	ReplaceVertexShader(GetAddress(Addr::ScreenShaderTable), g_ScreenMeshVS);
+	ReplaceVertexShader(GetAddress(Addr::MotionBlurShaderTable), g_MotionBlurVelocityVS);
 }

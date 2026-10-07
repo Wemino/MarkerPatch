@@ -54,7 +54,5 @@ static void ApplyFixOffscreenEffects()
 {
 	if (!FixOffscreenEffects) return;
 
-	DWORD addr_TFXSequencer_Simulate = GetAddress(Addr::TFXSequencer_Simulate);
-
-	TFXSequencer_Simulate = HookHelper::CreateHook((void*)addr_TFXSequencer_Simulate, &TFXSequencer_Simulate_Hook);
+	TFXSequencer_Simulate = HookHelper::CreateHook((void*)GetAddress(Addr::TFXSequencer_Simulate), &TFXSequencer_Simulate_Hook);
 }

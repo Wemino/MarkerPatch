@@ -37,9 +37,6 @@ static void ApplySkipIntro()
 {
 	if (!SkipIntro) return;
 
-	DWORD addr_UIScreenManager_ShowScreen = GetAddress(Addr::UIScreenManager_ShowScreen);
-	DWORD addr_RtMoviePlayer_Play = GetAddress(Addr::RtMoviePlayer_Play);
-
-	UIScreenManager_ShowScreen = HookHelper::CreateHook((void*)addr_UIScreenManager_ShowScreen, &UIScreenManager_ShowScreen_Hook);
-	RtMoviePlayer_Play = HookHelper::CreateHook((void*)addr_RtMoviePlayer_Play, &RtMoviePlayer_Play_Hook);
+	UIScreenManager_ShowScreen = HookHelper::CreateHook((void*)GetAddress(Addr::UIScreenManager_ShowScreen), &UIScreenManager_ShowScreen_Hook);
+	RtMoviePlayer_Play = HookHelper::CreateHook((void*)GetAddress(Addr::RtMoviePlayer_Play), &RtMoviePlayer_Play_Hook);
 }

@@ -65,18 +65,11 @@ static void ApplyFixBlurResolution()
 {
 	if (!FixBlurResolution) return;
 
-	DWORD addr_ScreenGaussianBlur_RenderImmediate = GetAddress(Addr::ScreenGaussianBlur_RenderImmediate);
-	DWORD addr_AlchemyZoomBlurShader_SetSizeAndCenterZoom = GetAddress(Addr::AlchemyZoomBlurShader_SetSizeAndCenterZoom);
-	DWORD addr_ScreenBloomBlur = GetAddress(Addr::ScreenBloomBlur);
-	DWORD addr_ScreenDofBlur = GetAddress(Addr::ScreenDofBlur);
-	DWORD addr_ScreenGlowBlur = GetAddress(Addr::ScreenGlowBlur);
-	DWORD addr_ScreenDistortBlur = GetAddress(Addr::ScreenDistortBlur);
+	ScreenGaussianBlur_RenderImmediate = HookHelper::CreateHook((void*)GetAddress(Addr::ScreenGaussianBlur_RenderImmediate), &ScreenGaussianBlur_RenderImmediate_Hook);
+	AlchemyZoomBlurShader_SetSizeAndCenterZoom = HookHelper::CreateHook((void*)GetAddress(Addr::AlchemyZoomBlurShader_SetSizeAndCenterZoom), &AlchemyZoomBlurShader_SetSizeAndCenterZoom_Hook);
 
-	ScreenGaussianBlur_RenderImmediate = HookHelper::CreateHook((void*)(addr_ScreenGaussianBlur_RenderImmediate), &ScreenGaussianBlur_RenderImmediate_Hook);
-	AlchemyZoomBlurShader_SetSizeAndCenterZoom = HookHelper::CreateHook((void*)(addr_AlchemyZoomBlurShader_SetSizeAndCenterZoom), &AlchemyZoomBlurShader_SetSizeAndCenterZoom_Hook);
-
-	ScreenBloomBlur = safetyhook::create_mid(reinterpret_cast<void*>(addr_ScreenBloomBlur + 0xB), OnScreenBloomBlur);
-	ScreenDofBlur = safetyhook::create_mid(reinterpret_cast<void*>(addr_ScreenDofBlur + 0x8), OnScreenDofBlur);
-	ScreenGlowBlur = safetyhook::create_mid(reinterpret_cast<void*>(addr_ScreenGlowBlur + 0x7), OnSinglePassBlur);
-	ScreenDistortBlur = safetyhook::create_mid(reinterpret_cast<void*>(addr_ScreenDistortBlur + 0xE), OnSinglePassBlur);
+	ScreenBloomBlur = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::ScreenBloomBlur)), OnScreenBloomBlur);
+	ScreenDofBlur = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::ScreenDofBlur)), OnScreenDofBlur);
+	ScreenGlowBlur = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::ScreenGlowBlur)), OnSinglePassBlur);
+	ScreenDistortBlur = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::ScreenDistortBlur)), OnSinglePassBlur);
 }

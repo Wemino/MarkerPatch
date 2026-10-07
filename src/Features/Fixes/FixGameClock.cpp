@@ -30,10 +30,8 @@ static void ApplyFixGameClock()
 {
 	if (!FixGameClock) return;
 
-	DWORD addr_GetCurTimeInMSec = GetAddress(Addr::GetCurTimeInMSec);
-
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 	timeBeginPeriod(1);
 
-	GetCurTimeInMSec = safetyhook::create_mid(reinterpret_cast<void*>(addr_GetCurTimeInMSec), OnGetCurTimeInMSec);
+	GetCurTimeInMSec = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::GetCurTimeInMSec)), OnGetCurTimeInMSec);
 }

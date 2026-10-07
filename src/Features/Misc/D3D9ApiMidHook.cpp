@@ -52,13 +52,10 @@ static void ApplyD3D9ApiMidHook()
 
 	if (!AchievementSupport) return;
 
-	DWORD addr_Present1 = GetAddress(Addr::Present1);
-	DWORD addr_Present2 = GetAddress(Addr::Present2);
-
 	AchievementOverlay::Init(g_Addresses.DevicePtr, GetAddress(Addr::RenderStatesPtr));
 
-	Present1 = safetyhook::create_mid(reinterpret_cast<void*>(addr_Present1), OnPresentSite);
-	Present2 = safetyhook::create_mid(reinterpret_cast<void*>(addr_Present2), OnPresentSite);
+	Present1 = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::Present1)), OnPresentSite);
+	Present2 = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::Present2)), OnPresentSite);
 	ResetSite1Post = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite1 + 0x5), OnResetSitePost);
 	ResetSite2Post = safetyhook::create_mid(reinterpret_cast<void*>(addr_ResetSite2 + 0x10), OnResetSitePost);
 }

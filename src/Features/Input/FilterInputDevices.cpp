@@ -39,10 +39,7 @@ static void ApplyFilterInputDevices()
 {
 	if (!BlockDirectInputDevices) return;
 
-	DWORD addr_IsXInputDevice = GetAddress(Addr::IsXInputDevice);
-	DWORD addr_InitializeInputDevice = GetAddress(Addr::InitializeInputDevice);
+	IsXInputDevice = HookHelper::CreateHook((void*)GetAddress(Addr::IsXInputDevice), &IsXInputDevice_hook);
 
-	IsXInputDevice = HookHelper::CreateHook((void*)addr_IsXInputDevice, &IsXInputDevice_hook);
-
-	InputDeviceTypeFilter = safetyhook::create_mid(reinterpret_cast<void*>(addr_InitializeInputDevice), OnInputDeviceTypeFilter);
+	InputDeviceTypeFilter = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::InitializeInputDevice)), OnInputDeviceTypeFilter);
 }

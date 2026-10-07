@@ -437,18 +437,11 @@ static void ApplyFixClothPhysics()
 {
 	if (!FixClothPhysics) return;
 
-	DWORD addr_VerletIntegrate = GetAddress(Addr::VerletIntegrate);
-	DWORD addr_ClothComponent_ApplyWindForce = GetAddress(Addr::ClothComponent_ApplyWindForce);
-	DWORD addr_ClothComponent_Teleport = GetAddress(Addr::ClothComponent_Teleport);
-	DWORD addr_ClothRelaxation = GetAddress(Addr::ClothRelaxation);
-	DWORD addr_CapeRelaxation = GetAddress(Addr::CapeRelaxation);
-	DWORD addr_RagdollComponent_DriveRigidBodies = GetAddress(Addr::RagdollComponent_DriveRigidBodies);
+	MemoryHelper::WriteMemory<uintptr_t>(GetAddress(Addr::RagdollComponent_DriveRigidBodies), reinterpret_cast<uintptr_t>(&g_ragdollMaxInvFrameTime));
 
-	MemoryHelper::WriteMemory<uintptr_t>(addr_RagdollComponent_DriveRigidBodies + 0x4, reinterpret_cast<uintptr_t>(&g_ragdollMaxInvFrameTime));
-
-	VerletIntegrate = HookHelper::CreateHook((void*)addr_VerletIntegrate, &VerletIntegrate_Hook);
-	ClothComponent_Teleport = HookHelper::CreateHook((void*)addr_ClothComponent_Teleport, &ClothComponent_Teleport_Hook);
-	ClothRelaxation = HookHelper::CreateHook((void*)addr_ClothRelaxation, &ClothRelaxation_Hook);
-	CapeRelaxation = HookHelper::CreateHook((void*)addr_CapeRelaxation, &CapeRelaxation_Hook);
-	ClothComponent_ApplyWindForce = HookHelper::CreateHook((void*)addr_ClothComponent_ApplyWindForce, &ClothComponent_ApplyWindForce_Hook);
+	VerletIntegrate = HookHelper::CreateHook((void*)GetAddress(Addr::VerletIntegrate), &VerletIntegrate_Hook);
+	ClothComponent_Teleport = HookHelper::CreateHook((void*)GetAddress(Addr::ClothComponent_Teleport), &ClothComponent_Teleport_Hook);
+	ClothRelaxation = HookHelper::CreateHook((void*)GetAddress(Addr::ClothRelaxation), &ClothRelaxation_Hook);
+	CapeRelaxation = HookHelper::CreateHook((void*)GetAddress(Addr::CapeRelaxation), &CapeRelaxation_Hook);
+	ClothComponent_ApplyWindForce = HookHelper::CreateHook((void*)GetAddress(Addr::ClothComponent_ApplyWindForce), &ClothComponent_ApplyWindForce_Hook);
 }

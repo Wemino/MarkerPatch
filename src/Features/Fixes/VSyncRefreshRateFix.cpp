@@ -18,8 +18,6 @@ static void ApplyVSyncRefreshRateFix()
 {
 	if (!VSyncRefreshRateFix) return;
 
-	DWORD addr_SetHz = GetAddress(Addr::SetHz);
-
-	SetHz = HookHelper::CreateHook((void*)addr_SetHz, &SetHz_Hook);
+	SetHz = HookHelper::CreateHook((void*)GetAddress(Addr::SetHz), &SetHz_Hook);
 	g_Addresses.TargetFrameTimeMsPtr = GetAddress(Addr::TargetFrameTimeMsPtr);
 }

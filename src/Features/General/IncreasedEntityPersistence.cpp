@@ -33,7 +33,6 @@ static void ApplyIncreasedEntityPersistence()
 {
 	if (!IncreasedEntityPersistence) return;
 
-	DWORD addr_EnemyLifetimeManager_ResetPopLimit = GetAddress(Addr::EnemyLifetimeManager_ResetPopLimit);
 	DWORD addr_EnemyLifetimeManager_Ctor = GetAddress(Addr::EnemyLifetimeManager_Ctor);
 
 	if (IncreasedEntityPersistenceBodies != 0)
@@ -48,5 +47,5 @@ static void ApplyIncreasedEntityPersistence()
 		MemoryHelper::WriteMemory<int>(addr_EnemyLifetimeManager_Ctor + 0x91, IncreasedEntityPersistenceLimbs);
 	}
 
-	EnemyLifetimeManager_ResetPopLimit = HookHelper::CreateHook((void*)addr_EnemyLifetimeManager_ResetPopLimit, &EnemyLifetimeManager_ResetPopLimit_Hook);
+	EnemyLifetimeManager_ResetPopLimit = HookHelper::CreateHook((void*)GetAddress(Addr::EnemyLifetimeManager_ResetPopLimit), &EnemyLifetimeManager_ResetPopLimit_Hook);
 }

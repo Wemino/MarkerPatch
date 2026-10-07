@@ -19,7 +19,5 @@ static void ApplyHighCoreCPUFix()
 {
 	if (!HighCoreCPUFix) return;
 
-	DWORD CPUFix = GetAddress(Addr::CPUFix);
-
-	CPUCrashFix = safetyhook::create_mid(reinterpret_cast<void*>(CPUFix), OnCPUCrashFix);
+	CPUCrashFix = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::CPUFix)), OnCPUCrashFix);
 }

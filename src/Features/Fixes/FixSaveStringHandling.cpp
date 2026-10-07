@@ -62,9 +62,6 @@ static void ApplyFixSaveStringHandling()
 {
 	if (!FixSaveStringHandling) return;
 
-	DWORD addr_LoadSaveFileList = GetAddress(Addr::LoadSaveFileList);
-	DWORD addr_CopyStringFromSave = GetAddress(Addr::CopyStringFromSave);
-
-	LoadSaveFileList = HookHelper::CreateHook((void*)addr_LoadSaveFileList, &LoadSaveFileList_Hook);
-	CopyStringFromSave = HookHelper::CreateHook((void*)addr_CopyStringFromSave, &CopyStringFromSave_Hook);
+	LoadSaveFileList = HookHelper::CreateHook((void*)GetAddress(Addr::LoadSaveFileList), &LoadSaveFileList_Hook);
+	CopyStringFromSave = HookHelper::CreateHook((void*)GetAddress(Addr::CopyStringFromSave), &CopyStringFromSave_Hook);
 }

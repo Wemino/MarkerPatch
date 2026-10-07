@@ -77,19 +77,11 @@ static void ApplyFOVScaling()
 {
 	if (FOVScale == 1.0f) return;
 
-	DWORD addr_CameraManager_SetRenderCamera = GetAddress(Addr::CameraManager_SetRenderCamera);
-	DWORD addr_CameraManager_GetActiveCamFov = GetAddress(Addr::CameraManager_GetActiveCamFov);
-	DWORD addr_PlayerFallSM_PushTrapCam = GetAddress(Addr::PlayerFallSM_PushTrapCam);
-	DWORD addr_PlayerTransitionToGravitySM_PushLandingCam = GetAddress(Addr::PlayerTransitionToGravitySM_PushLandingCam);
-	DWORD addr_Sentient_SpawnObserverPoleCamera = GetAddress(Addr::Sentient_SpawnObserverPoleCamera);
-	DWORD addr_PairedAttackCoordinatorSM_PushCamera = GetAddress(Addr::PairedAttackCoordinatorSM_PushCamera);
-	DWORD addr_PoleCamera_Init = GetAddress(Addr::PoleCamera_Init);
-
-	CameraManager_SetRenderCamera = HookHelper::CreateHook((void*)addr_CameraManager_SetRenderCamera, &CameraManager_SetRenderCamera_Hook);
-	CameraManager_GetActiveCamFov = HookHelper::CreateHook((void*)addr_CameraManager_GetActiveCamFov, &CameraManager_GetActiveCamFov_Hook);
-	PlayerFallSM_PushTrapCam = HookHelper::CreateHook((void*)addr_PlayerFallSM_PushTrapCam, &PlayerFallSM_PushTrapCam_Hook);
-	PlayerTransitionToGravitySM_PushLandingCam = HookHelper::CreateHook((void*)addr_PlayerTransitionToGravitySM_PushLandingCam, &PlayerTransitionToGravitySM_PushLandingCam_Hook);
-	Sentient_SpawnObserverPoleCamera = HookHelper::CreateHook((void*)addr_Sentient_SpawnObserverPoleCamera, &Sentient_SpawnObserverPoleCamera_Hook);
-	PairedAttackCoordinatorSM_PushCamera = HookHelper::CreateHook((void*)addr_PairedAttackCoordinatorSM_PushCamera, &PairedAttackCoordinatorSM_PushCamera_Hook);
-	PoleCamera_Init = HookHelper::CreateHook((void*)addr_PoleCamera_Init, &PoleCamera_Init_Hook);
+	CameraManager_SetRenderCamera = HookHelper::CreateHook((void*)GetAddress(Addr::CameraManager_SetRenderCamera), &CameraManager_SetRenderCamera_Hook);
+	CameraManager_GetActiveCamFov = HookHelper::CreateHook((void*)GetAddress(Addr::CameraManager_GetActiveCamFov), &CameraManager_GetActiveCamFov_Hook);
+	PlayerFallSM_PushTrapCam = HookHelper::CreateHook((void*)GetAddress(Addr::PlayerFallSM_PushTrapCam), &PlayerFallSM_PushTrapCam_Hook);
+	PlayerTransitionToGravitySM_PushLandingCam = HookHelper::CreateHook((void*)GetAddress(Addr::PlayerTransitionToGravitySM_PushLandingCam), &PlayerTransitionToGravitySM_PushLandingCam_Hook);
+	Sentient_SpawnObserverPoleCamera = HookHelper::CreateHook((void*)GetAddress(Addr::Sentient_SpawnObserverPoleCamera), &Sentient_SpawnObserverPoleCamera_Hook);
+	PairedAttackCoordinatorSM_PushCamera = HookHelper::CreateHook((void*)GetAddress(Addr::PairedAttackCoordinatorSM_PushCamera), &PairedAttackCoordinatorSM_PushCamera_Hook);
+	PoleCamera_Init = HookHelper::CreateHook((void*)GetAddress(Addr::PoleCamera_Init), &PoleCamera_Init_Hook);
 }

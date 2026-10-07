@@ -252,7 +252,5 @@ static void ApplyArchiveStreamHook()
 {
 	if (!DumpArchiveAssets && !LoadModFiles) return;
 
-	DWORD addr_UStreamer_DispatchChunk = GetAddress(Addr::UStreamer_DispatchChunk);
-
-	ArchiveStream::UStreamer_DispatchChunk = HookHelper::CreateHook(reinterpret_cast<void*>(addr_UStreamer_DispatchChunk), &ArchiveStream::UStreamer_DispatchChunk_Hook);
+	ArchiveStream::UStreamer_DispatchChunk = HookHelper::CreateHook(reinterpret_cast<void*>(GetAddress(Addr::UStreamer_DispatchChunk)), &ArchiveStream::UStreamer_DispatchChunk_Hook);
 }

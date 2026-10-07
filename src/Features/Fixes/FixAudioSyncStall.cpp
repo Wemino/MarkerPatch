@@ -73,9 +73,6 @@ static void ApplyFixAudioSyncStall()
 {
 	if (!FixAudioSyncStall) return;
 
-	DWORD addr_System_IsCommandComplete = GetAddress(Addr::System_IsCommandComplete);
-	DWORD addr_Dac_GetSamplesToMix = GetAddress(Addr::Dac_GetSamplesToMix);
-	DWORD addr_DacThread_NextWakeTime = GetAddress(Addr::DacThread_NextWakeTime);
 	DWORD addr_DacThread_Sleep = GetAddress(Addr::DacThread_Sleep);
 
 	g_State.dacWakeEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
@@ -85,6 +82,6 @@ static void ApplyFixAudioSyncStall()
 	MemoryHelper::MakeCALL(addr_DacThread_Sleep + 0x7, reinterpret_cast<uintptr_t>(&DacThread_Sleep_Hook));
 	MemoryHelper::MakeNOP(addr_DacThread_Sleep + 0xC, 1);
 
-	Dac_GetSamplesToMix = HookHelper::CreateHook((void*)addr_Dac_GetSamplesToMix, &Dac_GetSamplesToMix_Hook);
-	System_IsCommandComplete = HookHelper::CreateHook((void*)addr_System_IsCommandComplete, &System_IsCommandComplete_Hook);
+	Dac_GetSamplesToMix = HookHelper::CreateHook((void*)GetAddress(Addr::Dac_GetSamplesToMix), &Dac_GetSamplesToMix_Hook);
+	System_IsCommandComplete = HookHelper::CreateHook((void*)GetAddress(Addr::System_IsCommandComplete), &System_IsCommandComplete_Hook);
 }

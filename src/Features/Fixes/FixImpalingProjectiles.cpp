@@ -51,9 +51,7 @@ static void ApplyFixImpalingProjectiles()
 {
 	if (!FixImpalingProjectiles) return;
 
-	DWORD addr_ImpalingProjectile_ProjectileTick = GetAddress(Addr::ImpalingProjectile_ProjectileTick);
-
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 
-	ImpalingProjectile_ProjectileTick = HookHelper::CreateHook((void*)addr_ImpalingProjectile_ProjectileTick, &ImpalingProjectile_ProjectileTick_Hook);
+	ImpalingProjectile_ProjectileTick = HookHelper::CreateHook((void*)GetAddress(Addr::ImpalingProjectile_ProjectileTick), &ImpalingProjectile_ProjectileTick_Hook);
 }

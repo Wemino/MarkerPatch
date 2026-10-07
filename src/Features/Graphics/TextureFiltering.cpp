@@ -30,7 +30,5 @@ static void ApplyTextureFiltering()
 {
 	if (MaxAnisotropy == 0) return;
 
-	DWORD addr_TX_ChangeOptions_d3d = GetAddress(Addr::TX_ChangeOptions_d3d);
-
-	TX_ChangeOptions_d3d = HookHelper::CreateHook((void*)addr_TX_ChangeOptions_d3d, &TX_ChangeOptions_d3d_Hook);
+	TX_ChangeOptions_d3d = HookHelper::CreateHook((void*)GetAddress(Addr::TX_ChangeOptions_d3d), &TX_ChangeOptions_d3d_Hook);
 }

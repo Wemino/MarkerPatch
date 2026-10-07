@@ -45,7 +45,5 @@ static void ApplyFixInputHistory()
 {
 	if (!FixInputHistory) return;
 
-	DWORD addr_ControllerManager_UpdateOneController = GetAddress(Addr::ControllerManager_UpdateOneController);
-
-	ControllerManager_UpdateOneController = HookHelper::CreateHook((void*)addr_ControllerManager_UpdateOneController, &ControllerManager_UpdateOneController_Hook);
+	ControllerManager_UpdateOneController = HookHelper::CreateHook((void*)GetAddress(Addr::ControllerManager_UpdateOneController), &ControllerManager_UpdateOneController_Hook);
 }

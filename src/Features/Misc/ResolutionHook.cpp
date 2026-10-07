@@ -40,9 +40,6 @@ static void ApplyResolutionHook()
 {
 	if (!FixBlurResolution && !FixShadowBlur && !VSyncRefreshRateFix && !g_State.isSupersampling) return;
 
-	DWORD addr_UpdateDisplaySettings = GetAddress(Addr::UpdateDisplaySettings);
-	DWORD addr_SetResolution = GetAddress(Addr::SetResolution);
-
-	UpdateDisplaySettings = HookHelper::CreateHook((void*)addr_UpdateDisplaySettings, &UpdateDisplaySettings_Hook);
-	SetResolution = HookHelper::CreateHook((void*)addr_SetResolution, &SetResolution_Hook);
+	UpdateDisplaySettings = HookHelper::CreateHook((void*)GetAddress(Addr::UpdateDisplaySettings), &UpdateDisplaySettings_Hook);
+	SetResolution = HookHelper::CreateHook((void*)GetAddress(Addr::SetResolution), &SetResolution_Hook);
 }

@@ -80,15 +80,9 @@ static void ApplyAchievementSupport()
 {
 	if (!AchievementSupport) return;
 
-	DWORD addr_GetGameLanguage = GetAddress(Addr::GetGameLanguage);
-	DWORD addr_AchievementImpl_HandleEvents = GetAddress(Addr::AchievementImpl_HandleEvents);
-	DWORD addr_AchievementManager_UnlockAchievement = GetAddress(Addr::AchievementManager_UnlockAchievement);
-	DWORD addr_UpdateObtainedTrophy = GetAddress(Addr::UpdateObtainedTrophy);
-	DWORD addr_AchievementImpl_PersistableRestore = GetAddress(Addr::AchievementImpl_PersistableRestore);
-
-	GetGameLanguage = HookHelper::CreateHook((void*)addr_GetGameLanguage, &GetGameLanguage_Hook);
-	AchievementImpl_HandleEvents = HookHelper::CreateHook((void*)addr_AchievementImpl_HandleEvents, &AchievementImpl_HandleEvents_Hook);
-	AchievementManager_UnlockAchievement = HookHelper::CreateHook((void*)addr_AchievementManager_UnlockAchievement, &AchievementManager_UnlockAchievement_Hook);
-	UpdateObtainedTrophy = HookHelper::CreateHook((void*)addr_UpdateObtainedTrophy, &UpdateObtainedTrophy_Hook);
-	AchievementImpl_PersistableRestore = HookHelper::CreateHook((void*)addr_AchievementImpl_PersistableRestore, &AchievementImpl_PersistableRestore_Hook);
+	GetGameLanguage = HookHelper::CreateHook((void*)GetAddress(Addr::GetGameLanguage), &GetGameLanguage_Hook);
+	AchievementImpl_HandleEvents = HookHelper::CreateHook((void*)GetAddress(Addr::AchievementImpl_HandleEvents), &AchievementImpl_HandleEvents_Hook);
+	AchievementManager_UnlockAchievement = HookHelper::CreateHook((void*)GetAddress(Addr::AchievementManager_UnlockAchievement), &AchievementManager_UnlockAchievement_Hook);
+	UpdateObtainedTrophy = HookHelper::CreateHook((void*)GetAddress(Addr::UpdateObtainedTrophy), &UpdateObtainedTrophy_Hook);
+	AchievementImpl_PersistableRestore = HookHelper::CreateHook((void*)GetAddress(Addr::AchievementImpl_PersistableRestore), &AchievementImpl_PersistableRestore_Hook);
 }

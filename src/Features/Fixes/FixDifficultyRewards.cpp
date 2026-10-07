@@ -31,9 +31,7 @@ static void ApplyFixDifficultyRewards()
 {
 	if (!FixDifficultyRewards) return;
 
-	DWORD addr_UIOptions_PersistableRestore = GetAddress(Addr::UIOptions_PersistableRestore);
-
 	g_Addresses.UIFrontendManagerPtr = GetAddress(Addr::UIFrontendManagerPtr);
 	g_Addresses.OptionsDifficultyPtr = GetAddress(Addr::OptionsDifficultyPtr);
-	UIOptions_PersistableRestore = HookHelper::CreateHook((void*)addr_UIOptions_PersistableRestore, &UIOptions_PersistableRestore_Hook);
+	UIOptions_PersistableRestore = HookHelper::CreateHook((void*)GetAddress(Addr::UIOptions_PersistableRestore), &UIOptions_PersistableRestore_Hook);
 }

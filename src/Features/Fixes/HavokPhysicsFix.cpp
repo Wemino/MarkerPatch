@@ -1338,33 +1338,21 @@ static void ApplyHavokPhysicsFix()
 {
 	if (!HavokPhysicsFix) return;
 
-	DWORD addr_hkpWorld_stepDeltaTime = GetAddress(Addr::hkpWorld_stepDeltaTime);
-	DWORD addr_hkpConstraintSolverSetup_solve = GetAddress(Addr::hkpConstraintSolverSetup_solve);
-	DWORD addr_hkpConstraintSolverSetup_oneStepIntegrate = GetAddress(Addr::hkpConstraintSolverSetup_oneStepIntegrate);
-	DWORD addr_hkRigidMotionUtilApplyForcesAndStep = GetAddress(Addr::hkRigidMotionUtilApplyForcesAndStep);
-	DWORD addr_hkpContinuousSimulation_simulateToi = GetAddress(Addr::hkpContinuousSimulation_simulateToi);
-	DWORD addr_hkpContinuousSimulation_collideIslandNarrowPhaseContinuous = GetAddress(Addr::hkpContinuousSimulation_collideIslandNarrowPhaseContinuous);
-	DWORD addr_hkpWorldCallbackUtil_fireContactPointAdded = GetAddress(Addr::hkpWorldCallbackUtil_fireContactPointAdded);
-	DWORD addr_hkpConstraintQueryIn_set = GetAddress(Addr::hkpConstraintQueryIn_set);
-	DWORD addr_hkpEntityAabbUtil_entityBatchRecalcAabb = GetAddress(Addr::hkpEntityAabbUtil_entityBatchRecalcAabb);
-	DWORD addr_HavokManager_CloseHavok = GetAddress(Addr::HavokManager_CloseHavok);
 	DWORD addr_hkpMotion_setLinearVelocity = GetAddress(Addr::hkpMotion_setLinearVelocity);
-	DWORD addr_hkpMotion_applyLinearImpulse = GetAddress(Addr::hkpMotion_applyLinearImpulse);
-	DWORD addr_PlayerFireTKSM_ApplyKeyframeToTarget = GetAddress(Addr::PlayerFireTKSM_ApplyKeyframeToTarget);
 
-	hkpConstraintQueryIn_set = reinterpret_cast<decltype(hkpConstraintQueryIn_set)>(addr_hkpConstraintQueryIn_set);
-	hkpEntityAabbUtil_entityBatchRecalcAabb = reinterpret_cast<decltype(hkpEntityAabbUtil_entityBatchRecalcAabb)>(addr_hkpEntityAabbUtil_entityBatchRecalcAabb);
+	hkpConstraintQueryIn_set = reinterpret_cast<decltype(hkpConstraintQueryIn_set)>(GetAddress(Addr::hkpConstraintQueryIn_set));
+	hkpEntityAabbUtil_entityBatchRecalcAabb = reinterpret_cast<decltype(hkpEntityAabbUtil_entityBatchRecalcAabb)>(GetAddress(Addr::hkpEntityAabbUtil_entityBatchRecalcAabb));
 
-	hkpWorld_stepDeltaTime = HookHelper::CreateHook((void*)addr_hkpWorld_stepDeltaTime, &hkpWorld_stepDeltaTime_Hook);
-	hkpConstraintSolverSetup_solve = HookHelper::CreateHook((void*)addr_hkpConstraintSolverSetup_solve, &hkpConstraintSolverSetup_solve_Hook);
-	hkpConstraintSolverSetup_oneStepIntegrate = HookHelper::CreateHook((void*)addr_hkpConstraintSolverSetup_oneStepIntegrate, &hkpConstraintSolverSetup_oneStepIntegrate_Hook);
-	hkRigidMotionUtilApplyForcesAndStep = HookHelper::CreateHook((void*)addr_hkRigidMotionUtilApplyForcesAndStep, &hkRigidMotionUtilApplyForcesAndStep_Hook);
-	hkpContinuousSimulation_simulateToi = HookHelper::CreateHook((void*)addr_hkpContinuousSimulation_simulateToi, &hkpContinuousSimulation_simulateToi_Hook);
-	hkpContinuousSimulation_collideIslandNarrowPhaseContinuous = HookHelper::CreateHook((void*)addr_hkpContinuousSimulation_collideIslandNarrowPhaseContinuous, &hkpContinuousSimulation_collideIslandNarrowPhaseContinuous_Hook);
-	hkpWorldCallbackUtil_fireContactPointAdded = HookHelper::CreateHook((void*)addr_hkpWorldCallbackUtil_fireContactPointAdded, &hkpWorldCallbackUtil_fireContactPointAdded_Hook);
-	HavokManager_CloseHavok = HookHelper::CreateHook((void*)addr_HavokManager_CloseHavok, &HavokManager_CloseHavok_Hook);
-	PlayerFireTKSM_ApplyKeyframeToTarget = HookHelper::CreateHook((void*)addr_PlayerFireTKSM_ApplyKeyframeToTarget, &PlayerFireTKSM_ApplyKeyframeToTarget_Hook);
+	hkpWorld_stepDeltaTime = HookHelper::CreateHook((void*)GetAddress(Addr::hkpWorld_stepDeltaTime), &hkpWorld_stepDeltaTime_Hook);
+	hkpConstraintSolverSetup_solve = HookHelper::CreateHook((void*)GetAddress(Addr::hkpConstraintSolverSetup_solve), &hkpConstraintSolverSetup_solve_Hook);
+	hkpConstraintSolverSetup_oneStepIntegrate = HookHelper::CreateHook((void*)GetAddress(Addr::hkpConstraintSolverSetup_oneStepIntegrate), &hkpConstraintSolverSetup_oneStepIntegrate_Hook);
+	hkRigidMotionUtilApplyForcesAndStep = HookHelper::CreateHook((void*)GetAddress(Addr::hkRigidMotionUtilApplyForcesAndStep), &hkRigidMotionUtilApplyForcesAndStep_Hook);
+	hkpContinuousSimulation_simulateToi = HookHelper::CreateHook((void*)GetAddress(Addr::hkpContinuousSimulation_simulateToi), &hkpContinuousSimulation_simulateToi_Hook);
+	hkpContinuousSimulation_collideIslandNarrowPhaseContinuous = HookHelper::CreateHook((void*)GetAddress(Addr::hkpContinuousSimulation_collideIslandNarrowPhaseContinuous), &hkpContinuousSimulation_collideIslandNarrowPhaseContinuous_Hook);
+	hkpWorldCallbackUtil_fireContactPointAdded = HookHelper::CreateHook((void*)GetAddress(Addr::hkpWorldCallbackUtil_fireContactPointAdded), &hkpWorldCallbackUtil_fireContactPointAdded_Hook);
+	HavokManager_CloseHavok = HookHelper::CreateHook((void*)GetAddress(Addr::HavokManager_CloseHavok), &HavokManager_CloseHavok_Hook);
+	PlayerFireTKSM_ApplyKeyframeToTarget = HookHelper::CreateHook((void*)GetAddress(Addr::PlayerFireTKSM_ApplyKeyframeToTarget), &PlayerFireTKSM_ApplyKeyframeToTarget_Hook);
 	hkpMotion_setLinearVelocity = HookHelper::CreateHook((void*)addr_hkpMotion_setLinearVelocity, &hkpMotion_setLinearVelocity_Hook);
 	hkpMotion_setAngularVelocity = HookHelper::CreateHook((void*)(addr_hkpMotion_setLinearVelocity + 0x20), &hkpMotion_setAngularVelocity_Hook);
-	hkpMotion_applyLinearImpulse = HookHelper::CreateHook((void*)addr_hkpMotion_applyLinearImpulse, &hkpMotion_applyLinearImpulse_Hook);
+	hkpMotion_applyLinearImpulse = HookHelper::CreateHook((void*)GetAddress(Addr::hkpMotion_applyLinearImpulse), &hkpMotion_applyLinearImpulse_Hook);
 }

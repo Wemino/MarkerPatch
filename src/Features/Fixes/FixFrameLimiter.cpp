@@ -67,8 +67,6 @@ static void ApplyFixFrameLimiter()
 {
 	if (!FixFrameLimiter) return;
 
-	DWORD addr_fpsLimiter = GetAddress(Addr::fpsLimiter);
-
 	g_Addresses.FrameLimiterEnabledPtr = GetAddress(Addr::FrameLimiterEnabledPtr);
 	g_Addresses.TargetFrameTimeMsPtr = GetAddress(Addr::TargetFrameTimeMsPtr);
 
@@ -77,5 +75,5 @@ static void ApplyFixFrameLimiter()
 
 	g_State.frameLimiterTimer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
 
-	FrameLimiter = HookHelper::CreateHook((void*)addr_fpsLimiter, &FrameLimiter_Hook);
+	FrameLimiter = HookHelper::CreateHook((void*)GetAddress(Addr::fpsLimiter), &FrameLimiter_Hook);
 }

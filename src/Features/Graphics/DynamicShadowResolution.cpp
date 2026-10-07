@@ -22,7 +22,5 @@ static void ApplyDynamicShadowResolution()
 {
 	if (DynamicShadowResolution <= 1920) return;
 
-	DWORD addr_ShadowRes = GetAddress(Addr::ShadowRes);
-
-	SetDynamicShadowMapResolution = HookHelper::CreateHook((void*)addr_ShadowRes, &SetDynamicShadowMapResolution_Hook);
+	SetDynamicShadowMapResolution = HookHelper::CreateHook((void*)GetAddress(Addr::ShadowRes), &SetDynamicShadowMapResolution_Hook);
 }
