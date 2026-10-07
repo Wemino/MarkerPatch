@@ -22,15 +22,9 @@ static void ApplyDisableOnlineFeatures()
 {
 	if (!DisableOnlineFeatures) return;
 
-	DWORD addr_UIComponentManager_ShowScreen_Nucleus_Connecting = ScanModuleSignature(g_State.GameModule, "83 EC 0C 83 3D ?? ?? ?? ?? ?? 74 5A", "UIComponentManager_ShowScreen_Nucleus_Connecting");
-	DWORD addr_StartNucleusLogin = ScanModuleSignature(g_State.GameModule, "75 0E 8B CF E8 ?? ?? ?? ?? 5F 5E 5B 83", "StartNucleusLogin");
-	DWORD addr_ShopOfflineMessage = ScanModuleSignature(g_State.GameModule, "74 25 8B 86 F8 0A 00 00", "ShopOfflineMessage");
-
-	if (addr_UIComponentManager_ShowScreen_Nucleus_Connecting == 0 ||
-		addr_StartNucleusLogin == 0 ||
-		addr_ShopOfflineMessage == 0) {
-		return;
-	}
+	DWORD addr_UIComponentManager_ShowScreen_Nucleus_Connecting = GetAddress(Addr::UIComponentManager_ShowScreen_Nucleus_Connecting);
+	DWORD addr_StartNucleusLogin = GetAddress(Addr::StartNucleusLogin);
+	DWORD addr_ShopOfflineMessage = GetAddress(Addr::ShopOfflineMessage);
 
 	UIComponentManager_ShowScreen_Nucleus_Connecting = HookHelper::CreateHook((void*)addr_UIComponentManager_ShowScreen_Nucleus_Connecting, &UIComponentManager_ShowScreen_Nucleus_Connecting_Hook);
 	MemoryHelper::MakeNOP(addr_StartNucleusLogin, 2);

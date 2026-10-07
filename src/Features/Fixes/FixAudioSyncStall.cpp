@@ -73,17 +73,10 @@ static void ApplyFixAudioSyncStall()
 {
 	if (!FixAudioSyncStall) return;
 
-	DWORD addr_System_IsCommandComplete = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 3B 81 00 01 00 00 1B C0 F7 D8 C2 04 00", "System_IsCommandComplete");
-	DWORD addr_Dac_GetSamplesToMix = ScanModuleSignature(g_State.GameModule, "83 EC 10 83 3D ?? ?? ?? ?? 00 56 8B F1 75 07 33 C0 5E 83 C4 10 C3 80 BE 9F 00 00 00 00", "Dac_GetSamplesToMix");
-	DWORD addr_DacThread_NextWakeTime = ScanModuleSignature(g_State.GameModule, "8B 7C 24 1C 83 C7 0A 89 7C 24 1C FF 15 ?? ?? ?? ?? 2B F8", "DacThread_NextWakeTime");
-	DWORD addr_DacThread_Sleep = ScanModuleSignature(g_State.GameModule, "89 15 ?? ?? ?? ?? 57 FF 15 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 00", "DacThread_Sleep");
-
-	if (addr_System_IsCommandComplete == 0 ||
-		addr_Dac_GetSamplesToMix == 0 ||
-		addr_DacThread_NextWakeTime == 0 ||
-		addr_DacThread_Sleep == 0) {
-		return;
-	}
+	DWORD addr_System_IsCommandComplete = GetAddress(Addr::System_IsCommandComplete);
+	DWORD addr_Dac_GetSamplesToMix = GetAddress(Addr::Dac_GetSamplesToMix);
+	DWORD addr_DacThread_NextWakeTime = GetAddress(Addr::DacThread_NextWakeTime);
+	DWORD addr_DacThread_Sleep = GetAddress(Addr::DacThread_Sleep);
 
 	g_State.dacWakeEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
 	if (!g_State.dacWakeEvent) return;

@@ -137,17 +137,10 @@ static void ApplyFixFlareArtifacts()
 {
 	if (!FixFlareArtifacts) return;
 
-	DWORD addr_AddCoronaModulatedQuad = ScanModuleSignature(g_State.GameModule, "56 8B F0 8B 06 57 BF 01 00 00 00 23 C7", "AddCoronaModulatedQuad");
-	DWORD addr_FlareSnapshot = ScanModuleSignature(g_State.GameModule, "83 C0 28 88 4E 1E 2B D5 8B 36 3B D3 0F 85", "FlareSnapshot");
-	DWORD addr_FlareTextureSubst = ScanModuleSignature(g_State.GameModule, "8B 10 51 6A 04 53 50 8B 82 14 01 00 00 FF D0", "FlareTextureSubst");
-	DWORD addr_DeviceCleanupPre = ScanModuleSignature(g_State.GameModule, "85 C0 74 12 8B 08 8B 51 08 50 FF D2 C7 05 ?? ?? ?? ?? ?? ?? ?? ?? E9", "DeviceCleanupPre");
-
-	if (addr_AddCoronaModulatedQuad == 0 ||
-		addr_FlareSnapshot == 0 ||
-		addr_FlareTextureSubst == 0 ||
-		addr_DeviceCleanupPre == 0) {
-		return;
-	}
+	DWORD addr_AddCoronaModulatedQuad = GetAddress(Addr::AddCoronaModulatedQuad);
+	DWORD addr_FlareSnapshot = GetAddress(Addr::FlareSnapshot);
+	DWORD addr_FlareTextureSubst = GetAddress(Addr::FlareTextureSubst);
+	DWORD addr_DeviceCleanupPre = GetAddress(Addr::DeviceCleanupPre);
 
 	AddCoronaModulatedQuad = HookHelper::CreateHook((void*)addr_AddCoronaModulatedQuad, &AddCoronaModulatedQuad_Hook);
 	AddCoronaModulatedQuad_Trampoline = AddCoronaModulatedQuad.trampoline().address();

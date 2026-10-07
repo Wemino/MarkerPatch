@@ -51,9 +51,7 @@ static void ApplyFixImpalingProjectiles()
 {
 	if (!FixImpalingProjectiles) return;
 
-	DWORD addr_ImpalingProjectile_ProjectileTick = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 44 53 56 57 8B F9 8B 9F C0 02 00 00 C1 EB 07 80 E3 01 E8", "ImpalingProjectile_ProjectileTick");
-
-	if (addr_ImpalingProjectile_ProjectileTick == 0) return;
+	DWORD addr_ImpalingProjectile_ProjectileTick = GetAddress(Addr::ImpalingProjectile_ProjectileTick);
 
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 

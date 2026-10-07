@@ -188,6 +188,18 @@ static void Init()
 	ApplyASILoader();
 }
 
+static bool IsBuildDate(uintptr_t base, uintptr_t address, const char* date)
+{
+	IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)(base);
+	IMAGE_NT_HEADERS* nt = (IMAGE_NT_HEADERS*)(base + dos->e_lfanew);
+
+	uintptr_t offset = address - 0x400000;
+	size_t length = strlen(date) + 1;
+	if (offset + length > nt->OptionalHeader.SizeOfImage) return false;
+
+	return memcmp(reinterpret_cast<const void*>(base + offset), date, length) == 0;
+}
+
 safetyhook::InlineHook regOpenKeyHook;
 static LSTATUS WINAPI RegOpenKeyExW_Hook(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult)
 {
@@ -197,6 +209,26 @@ static LSTATUS WINAPI RegOpenKeyExW_Hook(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOp
 		g_State.isInit = true; // Make sure to never enter this condition again
 		g_State.GameModule = GetModuleHandleA(NULL);
 		(void)regOpenKeyHook.disable();
+
+		// The DRM strips the timestamp, so check the __DATE__ string that each build keeps in .rdata
+		uintptr_t base = (uintptr_t)g_State.GameModule;
+		GameBuild build = GameBuild::Unknown;
+
+		if (IsBuildDate(base, 0x1B92078, "Feb 24 2011")) // Current Steam/EA App version
+		{
+			build = GameBuild::Current;
+		}
+		else if (IsBuildDate(base, 0x1B91040, "Dec 14 2010"))
+		{
+			build = GameBuild::V1_0;
+		}
+		else
+		{
+			MessageBoxA(NULL, "This .exe is not supported.", "MarkerPatch", MB_ICONERROR);
+			return regOpenKeyHook.stdcall<LSTATUS>(hKey, lpSubKey, ulOptions, samDesired, phkResult);
+		}
+
+		Addresses::SetBuild(build, base);
 		Init();
 	}
 

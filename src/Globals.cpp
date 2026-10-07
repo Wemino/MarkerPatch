@@ -20,6 +20,7 @@
 
 #include "dllmain.hpp"
 #include "helper.cpp"
+#include "Addresses.hpp"
 
 #include "AchievementOverlay.hpp"
 
@@ -126,8 +127,6 @@ struct GameAddresses
 	DWORD FrameTimeSecPtr = 0;
 	DWORD SimTimeElapsedMSecPtr = 0;
 	DWORD FrameLimiterEnabledPtr = 0;
-	DWORD FoundIgnitionSaveOffset = 0;
-	DWORD FoundDS1SaveOffset = 0;
 	DWORD UnlockHandlerPtr = 0;
 	DWORD AAValsFlagsPtr = 0;
 	DWORD FrameCopyValidPtr = 0;
@@ -252,20 +251,6 @@ bool EnableZealotDLC = false;
 bool EnableRivetGunDLC = false;
 bool EnableIgnitionRooms = false;
 bool EnableOriginalPlasmaCutter = false;
-
-static DWORD ScanModuleSignature(HMODULE Module, std::string_view Signature, const char* PatchName, int FunctionStartCheckCount = -1, bool ShowError = true)
-{
-	DWORD Address = MemoryHelper::FindSignatureAddress(Module, Signature, FunctionStartCheckCount);
-
-	if (Address == 0 && ShowError)
-	{
-		std::string ErrorMessage = "Error: Unable to find signature for patch: ";
-		ErrorMessage += PatchName;
-		MessageBoxA(NULL, ErrorMessage.c_str(), "MarkerPatch", MB_ICONERROR);
-	}
-
-	return Address;
-}
 
 static std::filesystem::path BuildLongPath(const std::string& root, const std::string& relativePath)
 {

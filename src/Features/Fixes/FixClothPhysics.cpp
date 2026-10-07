@@ -63,7 +63,7 @@ struct ClothState
 	bool isTranslated = false;
 };
 
-static float g_clothWindFade = 0.0f;
+static constexpr float CLOTH_WIND_FADE = 0.75f;
 
 static float g_ragdollMaxInvFrameTime = 1000.0f;
 static std::unordered_map<uintptr_t, float> g_clothWindTimes;
@@ -406,7 +406,7 @@ static void __fastcall ClothComponent_ApplyWindForce_Hook(uintptr_t thisp)
 
 	for (int i = 0; i < 4; i++)
 	{
-		wind[i] = savedWind[i] / g_clothWindFade;
+		wind[i] = savedWind[i] / CLOTH_WIND_FADE;
 	}
 
 	windSteps = std::max(savedWindSteps, 1);
@@ -437,25 +437,12 @@ static void ApplyFixClothPhysics()
 {
 	if (!FixClothPhysics) return;
 
-	DWORD addr_VerletIntegrate = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 18 F3 0F 10 0D ?? ?? ?? ?? 56 8B 75 08 F3 0F 10 86 B4 00 00 00 33 C9 F3 0F 5E C8", "VerletIntegrate");
-	DWORD addr_ClothComponent_ApplyWindForce = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 64 53 56 8B F1 8B 06 8B 50 30 57 FF D2 83 7E 1C 00", "ClothComponent_ApplyWindForce");
-	DWORD addr_ClothWindFade = ScanModuleSignature(g_State.GameModule, "F3 0F 10 05 ?? ?? ?? ?? 0F 28 4E 60 0F C6 C0 00 0F 59 C1 0F 29 46 60", "ClothWindFade");
-	DWORD addr_ClothComponent_Teleport = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 8B 41 1C 83 EC 08 56 33 F6 57 39 B0 BC 00 00 00 76 ?? 8B 7D 08", "ClothComponent_Teleport");
-	DWORD addr_ClothRelaxation = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 08 8B 86 30 01 00 00 85 C0 7E ?? 57 8B F8 6A 00 6A 00 56 E8", "ClothRelaxation");
-	DWORD addr_CapeRelaxation = ScanModuleSignature(g_State.GameModule, "83 EC 0C 56 8B 74 24 14 80 BE 78 01 00 00 00 0F 84", "CapeRelaxation");
-	DWORD addr_RagdollComponent_DriveRigidBodies = ScanModuleSignature(g_State.GameModule, "F3 0F 10 05 ?? ?? ?? ?? F3 0F 10 4D 08 0F 2F C8 76 05 F3 0F 11 45 08", "RagdollComponent_DriveRigidBodies");
-
-	if (addr_VerletIntegrate == 0 ||
-		addr_ClothComponent_ApplyWindForce == 0 ||
-		addr_ClothWindFade == 0 ||
-		addr_ClothComponent_Teleport == 0 ||
-		addr_ClothRelaxation == 0 ||
-		addr_CapeRelaxation == 0 ||
-		addr_RagdollComponent_DriveRigidBodies == 0) {
-		return;
-	}
-
-	g_clothWindFade = MemoryHelper::ReadMemory<float>(MemoryHelper::ReadMemory<DWORD>(addr_ClothWindFade + 0x4));
+	DWORD addr_VerletIntegrate = GetAddress(Addr::VerletIntegrate);
+	DWORD addr_ClothComponent_ApplyWindForce = GetAddress(Addr::ClothComponent_ApplyWindForce);
+	DWORD addr_ClothComponent_Teleport = GetAddress(Addr::ClothComponent_Teleport);
+	DWORD addr_ClothRelaxation = GetAddress(Addr::ClothRelaxation);
+	DWORD addr_CapeRelaxation = GetAddress(Addr::CapeRelaxation);
+	DWORD addr_RagdollComponent_DriveRigidBodies = GetAddress(Addr::RagdollComponent_DriveRigidBodies);
 
 	MemoryHelper::WriteMemory<uintptr_t>(addr_RagdollComponent_DriveRigidBodies + 0x4, reinterpret_cast<uintptr_t>(&g_ragdollMaxInvFrameTime));
 

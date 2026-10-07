@@ -54,9 +54,7 @@ static void ApplyFixOffscreenEffects()
 {
 	if (!FixOffscreenEffects) return;
 
-	DWORD addr_TFXSequencer_Simulate = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 24 53 56 8B F1 89 35 ?? ?? ?? ?? 8B 46 10 F7 40 14 00 00 00 04 57 74 2F 8A 86 B0 00 00 00", "TFXSequencer_Simulate");
-
-	if (addr_TFXSequencer_Simulate == 0) return;
+	DWORD addr_TFXSequencer_Simulate = GetAddress(Addr::TFXSequencer_Simulate);
 
 	TFXSequencer_Simulate = HookHelper::CreateHook((void*)addr_TFXSequencer_Simulate, &TFXSequencer_Simulate_Hook);
 }

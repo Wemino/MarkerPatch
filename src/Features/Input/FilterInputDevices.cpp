@@ -39,13 +39,8 @@ static void ApplyFilterInputDevices()
 {
 	if (!BlockDirectInputDevices) return;
 
-	DWORD addr_IsXInputDevice = ScanModuleSignature(g_State.GameModule, "81 EC 84 00 00 00 53 56 57 33 DB 6A 4C", "IsXInputDevice");
-	DWORD addr_InitializeInputDevice = ScanModuleSignature(g_State.GameModule, "85 C0 0F 84 6F 01 00 00 8B 40 04 85 C0", "InputDeviceTypeFilter");
-
-	if (addr_IsXInputDevice == 0 ||
-		addr_InitializeInputDevice == 0) {
-		return;
-	}
+	DWORD addr_IsXInputDevice = GetAddress(Addr::IsXInputDevice);
+	DWORD addr_InitializeInputDevice = GetAddress(Addr::InitializeInputDevice);
 
 	IsXInputDevice = HookHelper::CreateHook((void*)addr_IsXInputDevice, &IsXInputDevice_hook);
 

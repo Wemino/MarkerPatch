@@ -1338,35 +1338,19 @@ static void ApplyHavokPhysicsFix()
 {
 	if (!HavokPhysicsFix) return;
 
-	DWORD addr_hkpWorld_stepDeltaTime = ScanModuleSignature(g_State.GameModule, "51 56 8B F1 E8 ?? ?? ?? ?? D9 44 24 0C 8B 4E 08 8B 01 8B 50 0C 51 D9 1C 24 FF D2", "hkpWorld_stepDeltaTime");
-	DWORD addr_hkpConstraintSolverSetup_solve = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 54 04 00 00 8B 4D 14 8B 41 0C 53 8B 5D 1C", "hkpConstraintSolverSetup_solve");
-	DWORD addr_hkpConstraintSolverSetup_oneStepIntegrate = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 94 00 00 00 53 56 33 F6 39 75 18 57 0F 8E ?? ?? ?? ?? 8B 7D 14 8B 04 B7", "hkpConstraintSolverSetup_oneStepIntegrate");
-	DWORD addr_hkRigidMotionUtilApplyForcesAndStep = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC F4 00 00 00 8B 4D 18 53 56 B8 FF FF FF 7F", "hkRigidMotionUtilApplyForcesAndStep");
-	DWORD addr_hkpContinuousSimulation_simulateToi = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 44 03 00 00 80 3D ?? ?? ?? ?? 00 53 56 57 8B F9", "hkpContinuousSimulation_simulateToi");
-	DWORD addr_hkpContinuousSimulation_collideIslandNarrowPhaseContinuous = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 B8 B4 30 00 00 E8 ?? ?? ?? ?? A1 ?? ?? ?? ?? 53 56 57 50 89 4C 24 28", "hkpContinuousSimulation_collideIslandNarrowPhaseContinuous");
-	DWORD addr_hkpWorldCallbackUtil_fireContactPointAdded = ScanModuleSignature(g_State.GameModule, "51 8B 44 24 0C 53 8B 5C 24 0C 81 C3 8C 01 00 00 57 C7 40 0C 00 00 00 00", "hkpWorldCallbackUtil_fireContactPointAdded");
-	DWORD addr_hkpConstraintQueryIn_set = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 D9 80 0C 01 00 00 D9 19", "hkpConstraintQueryIn_set");
-	DWORD addr_hkpEntityAabbUtil_entityBatchRecalcAabb = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 14 07 00 00 83 7D 10 00 53 56 8B 75 08", "hkpEntityAabbUtil_entityBatchRecalcAabb");
-	DWORD addr_HavokManager_CloseHavok = ScanModuleSignature(g_State.GameModule, "56 8B F1 8B 46 50 8B 4E 24 57 50 E8 ?? ?? ?? ?? 8B 4E 50 85 C9 74 08", "HavokManager_CloseHavok");
-	DWORD addr_hkpMotion_setLinearVelocity = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 8B 45 08 0F 28 00 0F 29 81 D0 00 00 00 8B E5 5D C2 04 00 CC CC CC CC CC CC CC 55 8B EC 83 E4 F0 8B 45 08 0F 28 00 0F 29 81 E0 00 00 00", "hkpMotion_setLinearVelocity");
-	DWORD addr_hkpMotion_applyLinearImpulse = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 0F 28 81 C0 00 00 00 8B 45 08 0F C6 C0 FF 0F 28 C8", "hkpMotion_applyLinearImpulse");
-	DWORD addr_PlayerFireTKSM_ApplyKeyframeToTarget = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC F4 00 00 00 53 56 57 8B 3D ?? ?? ?? ?? 8B 47 0C 8B F1 89 44 24 68 8B 86 04 01 00 00", "PlayerFireTKSM_ApplyKeyframeToTarget");
-
-	if (addr_hkpWorld_stepDeltaTime == 0 ||
-		addr_hkpConstraintSolverSetup_solve == 0 ||
-		addr_hkpConstraintSolverSetup_oneStepIntegrate == 0 ||
-		addr_hkRigidMotionUtilApplyForcesAndStep == 0 ||
-		addr_hkpContinuousSimulation_simulateToi == 0 ||
-		addr_hkpContinuousSimulation_collideIslandNarrowPhaseContinuous == 0 ||
-		addr_hkpWorldCallbackUtil_fireContactPointAdded == 0 ||
-		addr_hkpConstraintQueryIn_set == 0 ||
-		addr_hkpEntityAabbUtil_entityBatchRecalcAabb == 0 ||
-		addr_HavokManager_CloseHavok == 0 ||
-		addr_hkpMotion_setLinearVelocity == 0 ||
-		addr_hkpMotion_applyLinearImpulse == 0 ||
-		addr_PlayerFireTKSM_ApplyKeyframeToTarget == 0) {
-		return;
-	}
+	DWORD addr_hkpWorld_stepDeltaTime = GetAddress(Addr::hkpWorld_stepDeltaTime);
+	DWORD addr_hkpConstraintSolverSetup_solve = GetAddress(Addr::hkpConstraintSolverSetup_solve);
+	DWORD addr_hkpConstraintSolverSetup_oneStepIntegrate = GetAddress(Addr::hkpConstraintSolverSetup_oneStepIntegrate);
+	DWORD addr_hkRigidMotionUtilApplyForcesAndStep = GetAddress(Addr::hkRigidMotionUtilApplyForcesAndStep);
+	DWORD addr_hkpContinuousSimulation_simulateToi = GetAddress(Addr::hkpContinuousSimulation_simulateToi);
+	DWORD addr_hkpContinuousSimulation_collideIslandNarrowPhaseContinuous = GetAddress(Addr::hkpContinuousSimulation_collideIslandNarrowPhaseContinuous);
+	DWORD addr_hkpWorldCallbackUtil_fireContactPointAdded = GetAddress(Addr::hkpWorldCallbackUtil_fireContactPointAdded);
+	DWORD addr_hkpConstraintQueryIn_set = GetAddress(Addr::hkpConstraintQueryIn_set);
+	DWORD addr_hkpEntityAabbUtil_entityBatchRecalcAabb = GetAddress(Addr::hkpEntityAabbUtil_entityBatchRecalcAabb);
+	DWORD addr_HavokManager_CloseHavok = GetAddress(Addr::HavokManager_CloseHavok);
+	DWORD addr_hkpMotion_setLinearVelocity = GetAddress(Addr::hkpMotion_setLinearVelocity);
+	DWORD addr_hkpMotion_applyLinearImpulse = GetAddress(Addr::hkpMotion_applyLinearImpulse);
+	DWORD addr_PlayerFireTKSM_ApplyKeyframeToTarget = GetAddress(Addr::PlayerFireTKSM_ApplyKeyframeToTarget);
 
 	hkpConstraintQueryIn_set = reinterpret_cast<decltype(hkpConstraintQueryIn_set)>(addr_hkpConstraintQueryIn_set);
 	hkpEntityAabbUtil_entityBatchRecalcAabb = reinterpret_cast<decltype(hkpEntityAabbUtil_entityBatchRecalcAabb)>(addr_hkpEntityAabbUtil_entityBatchRecalcAabb);

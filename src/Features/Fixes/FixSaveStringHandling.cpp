@@ -62,13 +62,8 @@ static void ApplyFixSaveStringHandling()
 {
 	if (!FixSaveStringHandling) return;
 
-	DWORD addr_LoadSaveFileList = ScanModuleSignature(g_State.GameModule, "83 EC 18 53 56 57 33 DB 6A 2C 53 8B F1", "LoadSaveFileList");
-	DWORD addr_CopyStringFromSave = ScanModuleSignature(g_State.GameModule, "8B 44 24 08 85 C0 74 14 50 8B 44 24 08 68 80 00", "CopyStringFromSave");
-
-	if (addr_LoadSaveFileList == 0 ||
-		addr_CopyStringFromSave == 0) {
-		return;
-	}
+	DWORD addr_LoadSaveFileList = GetAddress(Addr::LoadSaveFileList);
+	DWORD addr_CopyStringFromSave = GetAddress(Addr::CopyStringFromSave);
 
 	LoadSaveFileList = HookHelper::CreateHook((void*)addr_LoadSaveFileList, &LoadSaveFileList_Hook);
 	CopyStringFromSave = HookHelper::CreateHook((void*)addr_CopyStringFromSave, &CopyStringFromSave_Hook);

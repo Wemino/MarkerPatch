@@ -27,11 +27,9 @@ static void ApplyFixVertexNormals()
 {
 	if (!FixVertexNormals) return;
 
-	DWORD addr_ShaderTable = ScanModuleSignature(g_State.GameModule, "00 00 0F 80 01 00 00 02 00 08 2F 80 00 00 55 A0", "ShaderTable");
-	DWORD addr_ScreenShaderTable = ScanModuleSignature(g_State.GameModule, "00 00 E4 80 02 00 E4 80 01 00 00 02 00 08 28 80 03 00 00 A0 FF FF 00 00", "ScreenShaderTable");
-	DWORD addr_MotionBlurShaderTable = ScanModuleSignature(g_State.GameModule, "05 00 55 A0 42 00 00 03 04 00 0F 80 03 00 E4 80", "MotionBlurShaderTable");
-
-	if (addr_ShaderTable == 0 || addr_ScreenShaderTable == 0 || addr_MotionBlurShaderTable == 0) return;
+	DWORD addr_ShaderTable = GetAddress(Addr::ShaderTable);
+	DWORD addr_ScreenShaderTable = GetAddress(Addr::ScreenShaderTable);
+	DWORD addr_MotionBlurShaderTable = GetAddress(Addr::MotionBlurShaderTable);
 
 	ReplaceVertexShader(addr_ShaderTable + 0x144, g_GlassReflectionVS);
 	ReplaceVertexShader(addr_ShaderTable + 0x414, g_FlashlightOverlayVS);

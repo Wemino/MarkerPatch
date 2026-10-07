@@ -37,13 +37,8 @@ static void ApplySkipIntro()
 {
 	if (!SkipIntro) return;
 
-	DWORD addr_UIScreenManager_ShowScreen = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 08 56 E8 ?? ?? ?? ?? 56 E8 ?? ?? ?? ?? 8B C8", "UIScreenManager_ShowScreen");
-	DWORD addr_RtMoviePlayer_Play = ScanModuleSignature(g_State.GameModule, "83 EC 10 53 55 56 33 DB 57 8B F1 88 5C 24 13 E8", "RtMoviePlayer_Play");
-
-	if (addr_UIScreenManager_ShowScreen == 0 ||
-		addr_RtMoviePlayer_Play == 0) {
-		return;
-	}
+	DWORD addr_UIScreenManager_ShowScreen = GetAddress(Addr::UIScreenManager_ShowScreen);
+	DWORD addr_RtMoviePlayer_Play = GetAddress(Addr::RtMoviePlayer_Play);
 
 	UIScreenManager_ShowScreen = HookHelper::CreateHook((void*)addr_UIScreenManager_ShowScreen, &UIScreenManager_ShowScreen_Hook);
 	RtMoviePlayer_Play = HookHelper::CreateHook((void*)addr_RtMoviePlayer_Play, &RtMoviePlayer_Play_Hook);

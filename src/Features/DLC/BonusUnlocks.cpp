@@ -38,12 +38,12 @@ static void OnSaveManagerBootCheck(safetyhook::Context& ctx)
 {
 	if (EnableIgnitionRooms)
 	{
-		MemoryHelper::WriteMemory<bool>(ctx.edi + g_Addresses.FoundIgnitionSaveOffset, true, false);
+		MemoryHelper::WriteMemory<bool>(ctx.edi + 0x641B1, true, false);
 	}
 
 	if (EnableOriginalPlasmaCutter)
 	{
-		MemoryHelper::WriteMemory<bool>(ctx.edi + g_Addresses.FoundDS1SaveOffset, true, false);
+		MemoryHelper::WriteMemory<bool>(ctx.edi + 0x641B2, true, false);
 	}
 
 	uintptr_t unlockHandler = *reinterpret_cast<uintptr_t*>(g_Addresses.UnlockHandlerPtr);
@@ -112,17 +112,10 @@ static int __fastcall PlayerStore_AddItem_Hook(int thisPtr, int, DWORD* entry)
 
 static void ApplyHackerDLC()
 {
-	DWORD addr_PlayerStoreSM_AddStoreListItemsToStore = ScanModuleSignature(g_State.GameModule, "51 53 8B D9 83 BB F8 0A 00 00 00 89 5C 24 04 0F", "PlayerStoreSM_AddStoreListItemsToStore");
-	DWORD addr_PlayerStore_AddItem = ScanModuleSignature(g_State.GameModule, "83 EC 28 53 55 56 8B 74 24 38 8B 06 57 8B F9 85", "PlayerStore_AddItem");
-	DWORD addr_UnlockedContent_IsUnlocked = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 50 E8 ?? ?? ?? 00 33 C9 83 F8 FF", "UnlockedContent_IsUnlocked");
-	DWORD addr_AchievementManager_IsAchievementCompleteByPlatformId = ScanModuleSignature(g_State.GameModule, "CC CC CC CC CC CC CC CC 8B 54 24 04 32 C0 3B 91 18 03 00 00", "AchievementManager_IsAchievementCompleteByPlatformId");
-
-	if (addr_PlayerStoreSM_AddStoreListItemsToStore == 0 ||
-		addr_PlayerStore_AddItem == 0 ||
-		addr_UnlockedContent_IsUnlocked == 0 ||
-		addr_AchievementManager_IsAchievementCompleteByPlatformId == 0) {
-		return;
-	}
+	DWORD addr_PlayerStoreSM_AddStoreListItemsToStore = GetAddress(Addr::PlayerStoreSM_AddStoreListItemsToStore);
+	DWORD addr_PlayerStore_AddItem = GetAddress(Addr::PlayerStore_AddItem);
+	DWORD addr_UnlockedContent_IsUnlocked = GetAddress(Addr::UnlockedContent_IsUnlocked);
+	DWORD addr_AchievementManager_IsAchievementCompleteByPlatformId = GetAddress(Addr::AchievementManager_IsAchievementCompleteByPlatformId);
 
 	PlayerStoreSM_AddStoreListItemsToStore = HookHelper::CreateHook((void*)addr_PlayerStoreSM_AddStoreListItemsToStore, &PlayerStoreSM_AddStoreListItemsToStore_Hook);
 	PlayerStore_AddItem = HookHelper::CreateHook((void*)addr_PlayerStore_AddItem, &PlayerStore_AddItem_Hook);
@@ -132,23 +125,13 @@ static void ApplyHackerDLC()
 
 static void ApplyBonusUnlocks()
 {
-	DWORD addr_SaveManagerBootCheck = ScanModuleSignature(g_State.GameModule, "56 8B 35 ?? ?? ?? ?? 85 F6 74 ?? 80 BF ?? ?? ?? ?? 00 74 ?? 6A 00 6A 07 8B CE E8 ?? ?? ?? ?? 80 BF ?? ?? ?? ?? 00", "SaveManagerBootCheck");
-	DWORD addr_UnlockedContent_ClearUnlocked = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 56 50 8B F1 E8 ?? ?? ?? ?? 85 C0 7C ?? 8B 8E 1C 09 00 00", "UnlockedContent_ClearUnlocked");
-	DWORD addr_IgnitionDoorSpawn = ScanModuleSignature(g_State.GameModule, "80 BF A4 03 00 00 00 74 28 68 ?? ?? ?? ?? 8B CE E8 ?? ?? ?? ?? 33 C0 8B CE C6 86 ?? ?? ?? ?? 01", "IgnitionDoorSpawn");
-	DWORD addr_IgnitionDoorEntitlement = ScanModuleSignature(g_State.GameModule, "80 BF A4 03 00 00 00 74 11 8B 06 8B 90 ?? ?? ?? ?? 6A 01", "IgnitionDoorEntitlement");
+	DWORD addr_SaveManagerBootCheck = GetAddress(Addr::SaveManagerBootCheck);
+	DWORD addr_UnlockedContent_ClearUnlocked = GetAddress(Addr::UnlockedContent_ClearUnlocked);
+	DWORD addr_IgnitionDoorSpawn = GetAddress(Addr::IgnitionDoorSpawn);
+	DWORD addr_IgnitionDoorEntitlement = GetAddress(Addr::IgnitionDoorEntitlement);
 
-	if (addr_SaveManagerBootCheck == 0 ||
-		addr_UnlockedContent_ClearUnlocked == 0 ||
-		addr_IgnitionDoorSpawn == 0 ||
-		addr_IgnitionDoorEntitlement == 0) {
-		return;
-	}
-
-	g_Addresses.FoundIgnitionSaveOffset = MemoryHelper::ReadMemory<int>(addr_SaveManagerBootCheck + 0xD);
-	g_Addresses.FoundDS1SaveOffset = MemoryHelper::ReadMemory<int>(addr_SaveManagerBootCheck + 0x21);
-
-	g_Addresses.UnlockHandlerPtr = MemoryHelper::ReadMemory<int>(addr_SaveManagerBootCheck + 0x3F);
-	UnlockedContent_ForceUnlocked = reinterpret_cast<decltype(UnlockedContent_ForceUnlocked)>(MemoryHelper::ResolveRelativeAddress(addr_SaveManagerBootCheck, 0x49));
+	g_Addresses.UnlockHandlerPtr = GetAddress(Addr::UnlockHandlerPtr);
+	UnlockedContent_ForceUnlocked = reinterpret_cast<decltype(UnlockedContent_ForceUnlocked)>(GetAddress(Addr::UnlockedContent_ForceUnlocked));
 	UnlockedContent_ClearUnlocked = reinterpret_cast<decltype(UnlockedContent_ClearUnlocked)>(addr_UnlockedContent_ClearUnlocked);
 
 	SaveManagerBootCheck = safetyhook::create_mid(reinterpret_cast<void*>(addr_SaveManagerBootCheck), OnSaveManagerBootCheck);

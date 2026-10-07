@@ -407,31 +407,17 @@ static void ApplyRawMouseInput()
 {
 	if (!RawMouseInput) return;
 
-	DWORD addr_ApplyControlConfiguration = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 08 0F B6 06 50 E8", "ApplyControlConfiguration");
-	DWORD addr_UpdateMenuCursor = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 64 53 56 8B F1 F7 46 20 00 00 01 00", "UpdateMenuCursor");
-	DWORD addr_RE4ChaseCamera_Update = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 F3 0F 10 45 08 D9 45 08", "RE4ChaseCamera_Update");
-	DWORD addr_RE4ChaseCamera_UpdateState = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 34 01 00 00 53 8B D9 8B 43 74", "RE4ChaseCamera_UpdateState");
-	DWORD addr_OrbitCamera_Update = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 F3 0F 10 45 08 F3 0F 59 05 ?? ?? ?? ?? 81 EC A4 01 00 00", "OrbitCamera_Update");
-	DWORD addr_PlayerZGJumpSM_ProcessAimingControls = ScanModuleSignature(g_State.GameModule, "83 EC 14 53 8B D9 80 BB 94 01 00 00 00", "PlayerZGJumpSM_ProcessAimingControls");
-	DWORD addr_PlayerFPSAimSM_ProcessGroundAiming = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 64 01 00 00 A1 ?? ?? ?? ?? D9 45 0C 53 8B D9", "PlayerFPSAimSM_ProcessGroundAiming");
-	DWORD addr_PlayerDraggedSM_AdjustAim = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 74 53 56 8B F1 8B 46 74", "PlayerDraggedSM_AdjustAim");
-	DWORD addr_PlayerStationaryShootingSM_AdjustAim = ScanModuleSignature(g_State.GameModule, "C3 CC 83 EC 20 D9 05 ?? ?? ?? ?? 53 56 D9 5C 24 08", "PlayerStationaryShootingSM_AdjustAim");
-	DWORD addr_PlayerDecompressionReactComponent_AdjustCameraAndAim = ScanModuleSignature(g_State.GameModule, "83 EC 30 56 8B F1 8B 46 14 85 C0 0F 84", "PlayerDecompressionReactComponent_AdjustCameraAndAim");
-	DWORD addr_PlayerHangingSM_UpdateAim = ScanModuleSignature(g_State.GameModule, "83 EC 08 F3 0F 10 05 ?? ?? ?? ?? 53 56 57 8B F9", "PlayerHangingSM_UpdateAim");
-
-	if (addr_ApplyControlConfiguration == 0 ||
-		addr_UpdateMenuCursor == 0 ||
-		addr_RE4ChaseCamera_Update == 0 ||
-		addr_RE4ChaseCamera_UpdateState == 0 ||
-		addr_OrbitCamera_Update == 0 ||
-		addr_PlayerZGJumpSM_ProcessAimingControls == 0 ||
-		addr_PlayerFPSAimSM_ProcessGroundAiming == 0 ||
-		addr_PlayerDraggedSM_AdjustAim == 0 ||
-		addr_PlayerStationaryShootingSM_AdjustAim == 0 ||
-		addr_PlayerDecompressionReactComponent_AdjustCameraAndAim == 0 ||
-		addr_PlayerHangingSM_UpdateAim == 0) {
-		return;
-	}
+	DWORD addr_ApplyControlConfiguration = GetAddress(Addr::ApplyControlConfiguration);
+	DWORD addr_UpdateMenuCursor = GetAddress(Addr::UpdateMenuCursor);
+	DWORD addr_RE4ChaseCamera_Update = GetAddress(Addr::RE4ChaseCamera_Update);
+	DWORD addr_RE4ChaseCamera_UpdateState = GetAddress(Addr::RE4ChaseCamera_UpdateState);
+	DWORD addr_OrbitCamera_Update = GetAddress(Addr::OrbitCamera_Update);
+	DWORD addr_PlayerZGJumpSM_ProcessAimingControls = GetAddress(Addr::PlayerZGJumpSM_ProcessAimingControls);
+	DWORD addr_PlayerFPSAimSM_ProcessGroundAiming = GetAddress(Addr::PlayerFPSAimSM_ProcessGroundAiming);
+	DWORD addr_PlayerDraggedSM_AdjustAim = GetAddress(Addr::PlayerDraggedSM_AdjustAim);
+	DWORD addr_PlayerStationaryShootingSM_AdjustAim = GetAddress(Addr::PlayerStationaryShootingSM_AdjustAim);
+	DWORD addr_PlayerDecompressionReactComponent_AdjustCameraAndAim = GetAddress(Addr::PlayerDecompressionReactComponent_AdjustCameraAndAim);
+	DWORD addr_PlayerHangingSM_UpdateAim = GetAddress(Addr::PlayerHangingSM_UpdateAim);
 
 	ApplyControlConfiguration = HookHelper::CreateHook((void*)addr_ApplyControlConfiguration, &ApplyControlConfiguration_Hook);
 	UpdateMenuCursor = HookHelper::CreateHook((void*)addr_UpdateMenuCursor, &UpdateMenuCursor_Hook);
@@ -451,16 +437,15 @@ static void ApplyRawMouseInput()
 
 	hkGetRawInputData = HookHelper::CreateHookAPI(L"user32.dll", "GetRawInputData", &GetRawInputData_Hook);
 
-	g_Addresses.InputDeviceManagerPtr = MemoryHelper::ReadMemory<int>(addr_UpdateMenuCursor + 0x29);
-	g_Addresses.HangingMinYawPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x18C);
-	g_Addresses.HangingMaxYawPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x1A8);
-	g_Addresses.HangingMinPitchPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x1BD);
-	g_Addresses.HangingMaxPitchPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x1CA);
-	g_Addresses.HangingYawFactorPtr = MemoryHelper::ReadMemory<int>(addr_PlayerHangingSM_UpdateAim + 0x214);
-	g_Addresses.ResponseCurvePtr = MemoryHelper::ReadMemory<int>(addr_PlayerZGJumpSM_ProcessAimingControls + 0x11F);
-	g_Addresses.PlayerSpeedSettingsPtr = MemoryHelper::ReadMemory<int>(addr_RE4ChaseCamera_UpdateState + 0x52A);
+	g_Addresses.InputDeviceManagerPtr = GetAddress(Addr::InputDeviceManagerPtr);
+	g_Addresses.HangingMinYawPtr = GetAddress(Addr::HangingMinYawPtr);
+	g_Addresses.HangingMaxYawPtr = GetAddress(Addr::HangingMaxYawPtr);
+	g_Addresses.HangingMinPitchPtr = GetAddress(Addr::HangingMinPitchPtr);
+	g_Addresses.HangingMaxPitchPtr = GetAddress(Addr::HangingMaxPitchPtr);
+	g_Addresses.HangingYawFactorPtr = GetAddress(Addr::HangingYawFactorPtr);
+	g_Addresses.ResponseCurvePtr = GetAddress(Addr::ResponseCurvePtr);
+	g_Addresses.PlayerSpeedSettingsPtr = GetAddress(Addr::PlayerSpeedSettingsPtr);
 
-	DWORD addr_GE2Aiming_Update = MemoryHelper::ResolveRelativeAddress(addr_PlayerFPSAimSM_ProcessGroundAiming, 0x62);
-	SensitivityInterp = reinterpret_cast<decltype(SensitivityInterp)>(MemoryHelper::ResolveRelativeAddress(addr_GE2Aiming_Update, 0x1CC));
-	PlayerSpeedSettings_GetGunModifier = reinterpret_cast<decltype(PlayerSpeedSettings_GetGunModifier)>(MemoryHelper::ResolveRelativeAddress(addr_GE2Aiming_Update, 0x1D8));
+	SensitivityInterp = reinterpret_cast<decltype(SensitivityInterp)>(GetAddress(Addr::SensitivityInterp));
+	PlayerSpeedSettings_GetGunModifier = reinterpret_cast<decltype(PlayerSpeedSettings_GetGunModifier)>(GetAddress(Addr::PlayerSpeedSettings_GetGunModifier));
 }

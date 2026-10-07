@@ -144,6 +144,7 @@
     <ClInclude Include="..\include\safetyhook\safetyhook.hpp" />
     <ClInclude Include="..\include\safetyhook\Zydis.h" />
     <ClInclude Include="..\src\dllmain.hpp" />
+    <ClInclude Include="..\src\Addresses.hpp" />
     <ClInclude Include="..\src\Globals.cpp" />
     <ClInclude Include="..\src\helper.cpp" />
     <ClInclude Include="..\src\Initialization\Initialization.cpp" />

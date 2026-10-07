@@ -58,13 +58,11 @@ static void ApplyAutoHideMouseCursor()
 {
 	if (!AutoHideMouseCursor) return;
 
-	DWORD addr_UpdateMenuCursorCall = ScanModuleSignature(g_State.GameModule, "D9 05 ?? ?? ?? ?? 51 D9 1C 24 E8 ?? ?? ?? ?? 5E C2 04 00", "UpdateMenuCursorCall");
+	DWORD addr_UpdateMenuCursorCall = GetAddress(Addr::UpdateMenuCursorCall);
 
-	if (addr_UpdateMenuCursorCall == 0) return;
-
-	DWORD addr_UpdateMenuCursor = MemoryHelper::ResolveRelativeAddress(addr_UpdateMenuCursorCall, 0xB);
+	DWORD addr_UpdateMenuCursor = GetAddress(Addr::UpdateMenuCursor);
 	UpdateMenuCursorFunc = reinterpret_cast<decltype(UpdateMenuCursorFunc)>(addr_UpdateMenuCursor);
-	g_Addresses.InputDeviceManagerPtr = MemoryHelper::ReadMemory<int>(addr_UpdateMenuCursor + 0x29);
+	g_Addresses.InputDeviceManagerPtr = GetAddress(Addr::InputDeviceManagerPtr);
 
 	MemoryHelper::MakeCALL(addr_UpdateMenuCursorCall + 0xA, reinterpret_cast<uintptr_t>(&UpdateMenuCursorCall_Hook));
 }

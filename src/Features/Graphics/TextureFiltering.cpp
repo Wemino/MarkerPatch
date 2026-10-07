@@ -30,9 +30,7 @@ static void ApplyTextureFiltering()
 {
 	if (MaxAnisotropy == 0) return;
 
-	DWORD addr_TX_ChangeOptions_d3d = ScanModuleSignature(g_State.GameModule, "8B 44 24 08 53 8B 58 10 8B CB 8B D3 81 E1 00 00", "TX_ChangeOptions_d3d");
-
-	if (addr_TX_ChangeOptions_d3d == 0) return;
+	DWORD addr_TX_ChangeOptions_d3d = GetAddress(Addr::TX_ChangeOptions_d3d);
 
 	TX_ChangeOptions_d3d = HookHelper::CreateHook((void*)addr_TX_ChangeOptions_d3d, &TX_ChangeOptions_d3d_Hook);
 }

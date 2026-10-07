@@ -130,17 +130,11 @@ static void ApplyFixMenuSpeed()
 {
 	if (!FixMenuSpeed) return;
 
-	DWORD addr_AptUpdate = ScanModuleSignature(g_State.GameModule, "D9 05 ?? ?? ?? ?? D8 0D ?? ?? ?? ?? D9 7C 24 14 0F B7 44 24 14 D8 05 ?? ?? ?? ?? 0D 00 0C 00 00 89 44 24 08 D9 6C 24 08 DF 7C 24 08 8B 54 24 08 52 D9 6C 24 18 E8", "AptUpdate");
-	DWORD addr_UIMenuBase_MenuControlThread = ScanModuleSignature(g_State.GameModule, "83 C1 5C E8 ?? ?? ?? ?? 33 C0 C3", "UIMenuBase_MenuControlThread");
-	DWORD addr_PlayerTweakCameraModifier_Update = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC D4 00 00 00 0F 57 C0 A1 ?? ?? ?? ?? 53 8B 1D ?? ?? ?? ?? 56 8B F1", "PlayerTweakCameraModifier_Update");
+	DWORD addr_AptUpdate = GetAddress(Addr::AptUpdate);
+	DWORD addr_UIMenuBase_MenuControlThread = GetAddress(Addr::UIMenuBase_MenuControlThread);
+	DWORD addr_PlayerTweakCameraModifier_Update = GetAddress(Addr::PlayerTweakCameraModifier_Update);
 
-	if (addr_AptUpdate == 0 ||
-		addr_UIMenuBase_MenuControlThread == 0 ||
-		addr_PlayerTweakCameraModifier_Update == 0) {
-		return;
-	}
-
-	g_Addresses.FrameTimeSecPtr = MemoryHelper::ReadMemory<int>(addr_AptUpdate + 0x2);
+	g_Addresses.FrameTimeSecPtr = GetAddress(Addr::FrameTimeSecPtr);
 
 	AptUpdate = safetyhook::create_mid(reinterpret_cast<void*>(addr_AptUpdate + 0x35), OnAptUpdate);
 

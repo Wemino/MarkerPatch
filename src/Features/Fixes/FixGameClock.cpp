@@ -30,9 +30,7 @@ static void ApplyFixGameClock()
 {
 	if (!FixGameClock) return;
 
-	DWORD addr_GetCurTimeInMSec = ScanModuleSignature(g_State.GameModule, "53 E8 ?? ?? ?? ?? 8B D8 E8 ?? ?? ?? ?? 0F 57 D2 84 C0 0F 84", "GetCurTimeInMSec");
-
-	if (addr_GetCurTimeInMSec == 0) return;
+	DWORD addr_GetCurTimeInMSec = GetAddress(Addr::GetCurTimeInMSec);
 
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 	timeBeginPeriod(1);

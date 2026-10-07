@@ -78,18 +78,12 @@ static void ApplyFixAutomaticWeaponFireRate()
 {
 	if (!FixAutomaticWeaponFireRate) return;
 
-	DWORD addr_TimeManager_HandleEvents = ScanModuleSignature(g_State.GameModule, "83 EC 10 55 56 57 8B F1 E8", "TimeManager_HandleEvents");
-	DWORD addr_Item_IsReadyToUse = ScanModuleSignature(g_State.GameModule, "51 8B 81 18 03 00 00 D9 05", "Item_IsReadyToUse");
-	DWORD addr_Item_ResetUseTimer = ScanModuleSignature(g_State.GameModule, "A1 ?? ?? ?? ?? 89 81 18 03 00 00 C3", "Item_ResetUseTimer");
+	DWORD addr_TimeManager_HandleEvents = GetAddress(Addr::TimeManager_HandleEvents);
+	DWORD addr_Item_IsReadyToUse = GetAddress(Addr::Item_IsReadyToUse);
+	DWORD addr_Item_ResetUseTimer = GetAddress(Addr::Item_ResetUseTimer);
 
-	if (addr_TimeManager_HandleEvents == 0 ||
-		addr_Item_IsReadyToUse == 0 ||
-		addr_Item_ResetUseTimer == 0) {
-		return;
-	}
-
-	g_Addresses.FrameTimeSecPtr = MemoryHelper::ReadMemory<int>(addr_TimeManager_HandleEvents + 0x265);
-	g_Addresses.SimTimeElapsedMSecPtr = MemoryHelper::ReadMemory<int>(addr_Item_ResetUseTimer + 0x1);
+	g_Addresses.FrameTimeSecPtr = GetAddress(Addr::FrameTimeSecPtr);
+	g_Addresses.SimTimeElapsedMSecPtr = GetAddress(Addr::SimTimeElapsedMSecPtr);
 	g_State.frameTime = TARGET_FRAME_TIME;
 
 	TimeManager_HandleEvents = HookHelper::CreateHook((void*)addr_TimeManager_HandleEvents, &TimeManager_HandleEvents_Hook);

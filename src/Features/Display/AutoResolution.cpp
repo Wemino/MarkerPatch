@@ -26,10 +26,7 @@ static void ApplyAutoResolution()
 {
 	if (!AutoResolution) return;
 
-	DWORD addr_GetConfigInt = ScanModuleSignature(g_State.GameModule, "68 00 04 00 00 D9 1D ?? ?? ?? ?? 68", "GetConfigInt");
-	addr_GetConfigInt = MemoryHelper::ResolveRelativeAddress(addr_GetConfigInt, 0x11);
-
-	if (addr_GetConfigInt == 0) return;
+	DWORD addr_GetConfigInt = GetAddress(Addr::GetConfigInt);
 
 	GetConfigInt = HookHelper::CreateHook((void*)addr_GetConfigInt, &GetConfigInt_Hook);
 }

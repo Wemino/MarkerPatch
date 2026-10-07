@@ -30,9 +30,7 @@ static void ApplyFixSuitIDConflicts()
 {
 	if (!FixSuitIDConflicts) return;
 
-	DWORD addr_PickupItem_SpawnInit = ScanModuleSignature(g_State.GameModule, "83 EC 08 55 56 8B F1 57 85 F6 74", "PickupItem_SpawnInit");
-
-	if (addr_PickupItem_SpawnInit == 0) return;
+	DWORD addr_PickupItem_SpawnInit = GetAddress(Addr::PickupItem_SpawnInit);
 
 	PickupItem_SpawnInit = HookHelper::CreateHook((void*)addr_PickupItem_SpawnInit, &PickupItem_SpawnInit_Hook);
 }

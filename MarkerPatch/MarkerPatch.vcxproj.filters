@@ -29,6 +29,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\dllmain.hpp" />
+    <ClInclude Include="..\src\Addresses.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Globals.cpp">
       <Filter>src</Filter>
     </ClInclude>

@@ -33,13 +33,8 @@ static void ApplyIncreasedEntityPersistence()
 {
 	if (!IncreasedEntityPersistence) return;
 
-	DWORD addr_EnemyLifetimeManager_ResetPopLimit = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 EC 14 55 56 8D 04 40 8D 2C C1 57", "EnemyLifetimeManager_ResetPopLimit");
-	DWORD addr_EnemyLifetimeManager_Ctor = ScanModuleSignature(g_State.GameModule, "51 53 33 DB 55 56 57 8B F9 89 3D", "EnemyLifetimeManager_Ctor");
-
-	if (addr_EnemyLifetimeManager_ResetPopLimit == 0 ||
-		addr_EnemyLifetimeManager_Ctor == 0) {
-		return;
-	}
+	DWORD addr_EnemyLifetimeManager_ResetPopLimit = GetAddress(Addr::EnemyLifetimeManager_ResetPopLimit);
+	DWORD addr_EnemyLifetimeManager_Ctor = GetAddress(Addr::EnemyLifetimeManager_Ctor);
 
 	if (IncreasedEntityPersistenceBodies != 0)
 	{

@@ -22,9 +22,7 @@ static void ApplyFixShadowBlur()
 {
 	if (!FixShadowBlur) return;
 
-	DWORD addr_BlurAttenuationBuffer = ScanModuleSignature(g_State.GameModule, "83 EC 44 53 56 57 83 F8 07 73 0A B8 07 00 00 00 A3", "BlurAttenuationBuffer");
-
-	if (addr_BlurAttenuationBuffer == 0) return;
+	DWORD addr_BlurAttenuationBuffer = GetAddress(Addr::BlurAttenuationBuffer);
 
 	BlurAttenuationBuffer = HookHelper::CreateHook((void*)(addr_BlurAttenuationBuffer - 0xB), &BlurAttenuationBuffer_Hook);
 }

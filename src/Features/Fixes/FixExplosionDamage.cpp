@@ -60,15 +60,9 @@ static void ApplyFixExplosionDamage()
 {
 	if (!FixExplosionDamage) return;
 
-	DWORD addr_TEffectEFE_Constructor = ScanModuleSignature(g_State.GameModule, "8B 44 24 08 56 8B F1 8B 4C 24 08 50 51 8B CE E8 ?? ?? ?? ?? 8B 4C 24 10 0F 57 C0 C7 06", "TEffectEFE_Constructor");
-	DWORD addr_TEffectEFE_Simulate = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 34 53 56 8B F1 8B 5E 10 F6 83 80 00 00 00 01 57", "TEffectEFE_Simulate");
-	DWORD addr_TEffectEFE_HitEntity = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 64 53 56 57 8B F1 89 74 24 24 8B 46 10 0F 28 40 70", "TEffectEFE_HitEntity");
-
-	if (addr_TEffectEFE_Constructor == 0 ||
-		addr_TEffectEFE_Simulate == 0 ||
-		addr_TEffectEFE_HitEntity == 0) {
-		return;
-	}
+	DWORD addr_TEffectEFE_Constructor = GetAddress(Addr::TEffectEFE_Constructor);
+	DWORD addr_TEffectEFE_Simulate = GetAddress(Addr::TEffectEFE_Simulate);
+	DWORD addr_TEffectEFE_HitEntity = GetAddress(Addr::TEffectEFE_HitEntity);
 
 	TEffectEFE_Constructor = safetyhook::create_mid(reinterpret_cast<void*>(addr_TEffectEFE_Constructor), OnTEffectEFE_Constructor);
 

@@ -65,19 +65,12 @@ static void ApplyFixBlurResolution()
 {
 	if (!FixBlurResolution) return;
 
-	DWORD addr_ScreenGaussianBlur_RenderImmediate = ScanModuleSignature(g_State.GameModule, "51 E8 ?? ?? ?? FF 50 8D 4C 24 04 E8", "ScreenGaussianBlur_RenderImmediate");
-	DWORD addr_AlchemyZoomBlurShader_SetSizeAndCenterZoom = ScanModuleSignature(g_State.GameModule, "8B 41 14 3B 81 CC 00 00 00 75 18", "AlchemyZoomBlurShader_SetSizeAndCenterZoom");
-	DWORD addr_ScreenBloomBlur = ScanModuleSignature(g_State.GameModule, "D9 5C 24 04 D9 44 24 34 D9 1C 24 53 E8", "ScreenBloomBlur");
-	DWORD addr_ScreenDofBlur = ScanModuleSignature(g_State.GameModule, "6A 00 50 51 D9 1C 24 56 E8", "ScreenDofBlur");
-	DWORD addr_ScreenGlowBlur = ScanModuleSignature(g_State.GameModule, "D9 1C 24 52 50 57 57 E8", "ScreenGlowBlur");
-	DWORD addr_ScreenDistortBlur = ScanModuleSignature(g_State.GameModule, "83 C4 04 50 53 E8 ?? ?? ?? ?? 83 C4 04 50 E8 ?? ?? ?? ?? 83 C4 24", "ScreenDistortBlur");
-
-	if (addr_ScreenGaussianBlur_RenderImmediate == 0 ||
-		addr_AlchemyZoomBlurShader_SetSizeAndCenterZoom == 0 ||
-		addr_ScreenBloomBlur == 0 ||
-		addr_ScreenDofBlur == 0 ||
-		addr_ScreenGlowBlur == 0 ||
-		addr_ScreenDistortBlur == 0) return;
+	DWORD addr_ScreenGaussianBlur_RenderImmediate = GetAddress(Addr::ScreenGaussianBlur_RenderImmediate);
+	DWORD addr_AlchemyZoomBlurShader_SetSizeAndCenterZoom = GetAddress(Addr::AlchemyZoomBlurShader_SetSizeAndCenterZoom);
+	DWORD addr_ScreenBloomBlur = GetAddress(Addr::ScreenBloomBlur);
+	DWORD addr_ScreenDofBlur = GetAddress(Addr::ScreenDofBlur);
+	DWORD addr_ScreenGlowBlur = GetAddress(Addr::ScreenGlowBlur);
+	DWORD addr_ScreenDistortBlur = GetAddress(Addr::ScreenDistortBlur);
 
 	ScreenGaussianBlur_RenderImmediate = HookHelper::CreateHook((void*)(addr_ScreenGaussianBlur_RenderImmediate), &ScreenGaussianBlur_RenderImmediate_Hook);
 	AlchemyZoomBlurShader_SetSizeAndCenterZoom = HookHelper::CreateHook((void*)(addr_AlchemyZoomBlurShader_SetSizeAndCenterZoom), &AlchemyZoomBlurShader_SetSizeAndCenterZoom_Hook);

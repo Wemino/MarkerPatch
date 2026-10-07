@@ -67,12 +67,10 @@ static void ApplyFixFrameLimiter()
 {
 	if (!FixFrameLimiter) return;
 
-	DWORD addr_fpsLimiter = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F8 83 EC 20 53 33 DB 56 38", "fpsLimiter");
+	DWORD addr_fpsLimiter = GetAddress(Addr::fpsLimiter);
 
-	if (addr_fpsLimiter == 0) return;
-
-	g_Addresses.FrameLimiterEnabledPtr = MemoryHelper::ReadMemory<int>(addr_fpsLimiter + 0xF);
-	g_Addresses.TargetFrameTimeMsPtr = MemoryHelper::ReadMemory<int>(addr_fpsLimiter + 0x37);
+	g_Addresses.FrameLimiterEnabledPtr = GetAddress(Addr::FrameLimiterEnabledPtr);
+	g_Addresses.TargetFrameTimeMsPtr = GetAddress(Addr::TargetFrameTimeMsPtr);
 
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 	timeBeginPeriod(1);

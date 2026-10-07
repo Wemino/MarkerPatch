@@ -31,17 +31,9 @@ static void ApplyFixDifficultyRewards()
 {
 	if (!FixDifficultyRewards) return;
 
-	DWORD addr_UIOptions_PersistableRestore = ScanModuleSignature(g_State.GameModule, "8B ?? 34 85 ?? 74 ?? 83 ?? 6C 09 00 00 03 75", "UIOptions_PersistableRestore", 3);
-	DWORD addr_UIFrontendManagerPtr = ScanModuleSignature(g_State.GameModule, "8B ?? 34 85 ?? 74 ?? 83 ?? 6C 09 00 00 03 75", "UIFrontendManagerPtr");
-	DWORD addr_OptionsDifficultyPtr = ScanModuleSignature(g_State.GameModule, "89 15 ?? ?? ?? ?? F3 0F 10 ?? 14", "OptionsDifficultyPtr");
+	DWORD addr_UIOptions_PersistableRestore = GetAddress(Addr::UIOptions_PersistableRestore);
 
-	if (addr_UIOptions_PersistableRestore == 0 ||
-		addr_UIFrontendManagerPtr == 0 ||
-		addr_OptionsDifficultyPtr == 0) {
-		return;
-	}
-
-	g_Addresses.UIFrontendManagerPtr = MemoryHelper::ReadMemory<int>(addr_UIFrontendManagerPtr - 0x4);
-	g_Addresses.OptionsDifficultyPtr = MemoryHelper::ReadMemory<int>(addr_OptionsDifficultyPtr + 0x2);
+	g_Addresses.UIFrontendManagerPtr = GetAddress(Addr::UIFrontendManagerPtr);
+	g_Addresses.OptionsDifficultyPtr = GetAddress(Addr::OptionsDifficultyPtr);
 	UIOptions_PersistableRestore = HookHelper::CreateHook((void*)addr_UIOptions_PersistableRestore, &UIOptions_PersistableRestore_Hook);
 }

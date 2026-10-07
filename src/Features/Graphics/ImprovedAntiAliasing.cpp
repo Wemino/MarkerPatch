@@ -425,36 +425,21 @@ static void ApplySupersampling()
 {
 	if (SSAAScale == 1.0f) return;
 
-	DWORD addr_ModeMatch = ScanModuleSignature(g_State.GameModule, "81 EC 74 01 00 00 80 BC 24 88 01 00 00 00 53 8B 9C 24 80 01 00 00", "ModeMatch");
-	DWORD addr_SetDisplayMode = ScanModuleSignature(g_State.GameModule, "88 51 11 0F B7 51 08 50 0F B7 41 04 52 50 E8", "SetDisplayMode");
-	DWORD addr_CreateDevice = ScanModuleSignature(g_State.GameModule, "BE ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 18 84 C0 75 05 E8", "CreateDevice");
-	DWORD addr_WindowResize = ScanModuleSignature(g_State.GameModule, "0F B7 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 99 F7 F9 66 0F EF C0", "WindowResize");
-	DWORD addr_CursorUpdate = ScanModuleSignature(g_State.GameModule, "66 8B 35 ?? ?? ?? ?? 66 8B 3D ?? ?? ?? ?? 85 C9 7C 16", "CursorUpdate");
-	DWORD addr_CursorRestore = ScanModuleSignature(g_State.GameModule, "0F B7 05 ?? ?? ?? ?? 0F B7 0D ?? ?? ?? ?? 48 49 F3 0F 2A C0", "CursorRestore");
-	DWORD addr_CursorClip = ScanModuleSignature(g_State.GameModule, "0F B7 05 ?? ?? ?? ?? 0F B7 0D ?? ?? ?? ?? 89 44 24 10 99", "CursorClip");
-	DWORD addr_DisplayModeGetters = ScanModuleSignature(g_State.GameModule, "66 A1 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC CC 66 A1 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC CC 66 A1 ?? ?? ?? ?? C3", "DisplayModeGetters");
-	DWORD addr_MenuCursorDelta = ScanModuleSignature(g_State.GameModule, "0F B7 0D ?? ?? ?? ?? F3 0F 10 15 ?? ?? ?? ?? F3 0F 10 44 24 18 F3 0F 58 44 24 0C", "MenuCursorDelta");
-	DWORD addr_CopyToBackBuffer = ScanModuleSignature(g_State.GameModule, "8B 4C 24 04 8B 14 24 6A 00 6A 01 6A 00 6A 00 51 6A 00 6A 00 52 E8", "CopyToBackBuffer");
+	DWORD addr_ModeMatch = GetAddress(Addr::ModeMatch);
+	DWORD addr_SetDisplayModeThunk = GetAddress(Addr::SetDisplayModeThunk);
+	DWORD addr_WindowResize = GetAddress(Addr::WindowResize);
+	DWORD addr_CursorUpdate = GetAddress(Addr::CursorUpdate);
+	DWORD addr_CursorRestore = GetAddress(Addr::CursorRestore);
+	DWORD addr_CursorClip = GetAddress(Addr::CursorClip);
+	DWORD addr_DisplayModeGetters = GetAddress(Addr::DisplayModeGetters);
+	DWORD addr_MenuCursorDelta = GetAddress(Addr::MenuCursorDelta);
+	DWORD addr_CopyToBackBuffer = GetAddress(Addr::CopyToBackBuffer);
 
-	if (addr_ModeMatch == 0 ||
-		addr_SetDisplayMode == 0 ||
-		addr_CreateDevice == 0 ||
-		addr_WindowResize == 0 ||
-		addr_CursorUpdate == 0 ||
-		addr_CursorRestore == 0 ||
-		addr_CursorClip == 0 ||
-		addr_DisplayModeGetters == 0 ||
-		addr_MenuCursorDelta == 0 ||
-		addr_CopyToBackBuffer == 0) {
-		return;
-	}
-
-	g_Addresses.PresentParamsPtr = MemoryHelper::ReadMemory<int>(addr_CreateDevice + 0x1);
+	g_Addresses.PresentParamsPtr = GetAddress(Addr::PresentParamsPtr);
 
 	ModeMatchStart = safetyhook::create_mid(reinterpret_cast<void*>(addr_ModeMatch), OnModeMatchStart);
 	ModeMatchEnd = safetyhook::create_mid(reinterpret_cast<void*>(addr_ModeMatch + 0x199), OnModeMatchEnd);
 
-	DWORD addr_SetDisplayModeThunk = MemoryHelper::ResolveRelativeAddress(addr_SetDisplayMode, 0xF);
 	SetDisplayMode = HookHelper::CreateHook((void*)addr_SetDisplayModeThunk, &SetDisplayMode_Hook);
 
 	// The window, cursor and settings menu code expects the back buffer to be as large as the frame, use the back buffer size instead
@@ -488,24 +473,14 @@ static void ApplyImprovedAntiAliasing()
 
 	if (ImprovedAntiAliasingMode != AA_FXAA)
 	{
-		DWORD addr_DeviceCacheReset = ScanModuleSignature(g_State.GameModule, "56 68 00 01 00 00 33 F6 6A FF 68 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? E8 ?? ?? ?? ?? 68 00 01 00 00 6A FF 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 68 00 10 00 00 6A FF 68 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? E8 ?? ?? ?? ?? 68 00 10 00 00 6A FF 68", "DeviceCacheReset");
-		DWORD addr_SamplerCacheReset = ScanModuleSignature(g_State.GameModule, "68 F0 00 00 00 6A FF 68 ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 C4 0C C3", "SamplerCacheReset");
-		DWORD addr_RenderStateFlush = ScanModuleSignature(g_State.GameModule, "8B 04 B5 ?? ?? ?? ?? 3B 04 B5 ?? ?? ?? ?? 74 ?? 50 89 04 B5", "RenderStateFlush");
-
-		if (addr_DeviceCacheReset == 0 ||
-			addr_SamplerCacheReset == 0 ||
-			addr_RenderStateFlush == 0) {
-			return;
-		}
-
-		g_Addresses.VertexShaderPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x11);
-		g_Addresses.PixelShaderPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x17);
-		g_Addresses.VertexDeclarationPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x1D);
-		g_Addresses.StreamSourcesPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x34);
-		g_Addresses.PixelShaderConstantsPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x45);
-		g_Addresses.VertexShaderConstantsPtr = MemoryHelper::ReadMemory<int>(addr_DeviceCacheReset + 0x5C);
-		g_Addresses.SamplerStatesPtr = MemoryHelper::ReadMemory<int>(addr_SamplerCacheReset + 0x8);
-		g_Addresses.RenderStatesPtr = MemoryHelper::ReadMemory<int>(addr_RenderStateFlush + 0xA);
+		g_Addresses.VertexShaderPtr = GetAddress(Addr::VertexShaderPtr);
+		g_Addresses.PixelShaderPtr = GetAddress(Addr::PixelShaderPtr);
+		g_Addresses.VertexDeclarationPtr = GetAddress(Addr::VertexDeclarationPtr);
+		g_Addresses.StreamSourcesPtr = GetAddress(Addr::StreamSourcesPtr);
+		g_Addresses.PixelShaderConstantsPtr = GetAddress(Addr::PixelShaderConstantsPtr);
+		g_Addresses.VertexShaderConstantsPtr = GetAddress(Addr::VertexShaderConstantsPtr);
+		g_Addresses.SamplerStatesPtr = GetAddress(Addr::SamplerStatesPtr);
+		g_Addresses.RenderStatesPtr = GetAddress(Addr::RenderStatesPtr);
 	}
 
 	if (ImprovedAntiAliasingMode == AA_SSAA)
@@ -514,18 +489,12 @@ static void ApplyImprovedAntiAliasing()
 		return;
 	}
 
-	DWORD addr_AlchemyEdgeAAShader_Load = ScanModuleSignature(g_State.GameModule, "A1 ?? ?? ?? ?? 8B 15 ?? ?? ?? ?? 56 50 8B F1 8B 0D ?? ?? ?? ?? 6A 10 51 68 ?? ?? ?? ?? 52 8B CE E8 ?? ?? ?? ?? 8B 46 14 89 86 AC 00 00 00 8B 0D", "AlchemyEdgeAAShader_Load");
-	DWORD addr_ScreenEdgeAA_Render = ScanModuleSignature(g_State.GameModule, "F3 0F 10 05 ?? ?? ?? ?? 0F 2F 05 ?? ?? ?? ?? 77 09 0F 2F 05 ?? ?? ?? ?? 76 0C F7 05 ?? ?? ?? ?? 00 00 40 00 74", "ScreenEdgeAA_Render");
-
-	if (addr_AlchemyEdgeAAShader_Load == 0 ||
-		addr_ScreenEdgeAA_Render == 0) {
-		return;
-	}
+	DWORD addr_ScreenEdgeAA_Render = GetAddress(Addr::ScreenEdgeAA_Render);
 
 	if (ImprovedAntiAliasingMode == AA_FXAA)
 	{
 		// Replace the depth and normal based edge blur with FXAA
-		DWORD addr_PSTable = MemoryHelper::ReadMemory<DWORD>(MemoryHelper::ReadMemory<DWORD>(addr_AlchemyEdgeAAShader_Load + 0x30));
+		DWORD addr_PSTable = GetAddress(Addr::PSTable);
 		uint32_t fxaaPSPtr = (uint32_t)(uintptr_t)g_FXAAPS;
 
 		MemoryHelper::WriteMemory<uint32_t>(addr_PSTable, fxaaPSPtr);
@@ -536,12 +505,12 @@ static void ApplyImprovedAntiAliasing()
 	else
 	{
 		// Replace the whole edge blur pass with SMAA
-		DWORD addr_ScreenEdgeAA_RenderImmediate = MemoryHelper::ResolveRelativeAddress(addr_ScreenEdgeAA_Render, 0x2C);
-		g_Addresses.FrameCopyValidPtr = MemoryHelper::ReadMemory<int>(MemoryHelper::ResolveRelativeAddress(addr_ScreenEdgeAA_RenderImmediate, 0x4) + 0x1);
+		DWORD addr_ScreenEdgeAA_RenderImmediate = GetAddress(Addr::ScreenEdgeAA_RenderImmediate);
+		g_Addresses.FrameCopyValidPtr = GetAddress(Addr::FrameCopyValidPtr);
 		ScreenEdgeAA_RenderImmediate = HookHelper::CreateHook((void*)addr_ScreenEdgeAA_RenderImmediate, &ScreenEdgeAA_RenderImmediate_Hook);
 	}
 
-	g_Addresses.AAValsFlagsPtr = MemoryHelper::ReadMemory<int>(addr_ScreenEdgeAA_Render + 0x1C);
+	g_Addresses.AAValsFlagsPtr = GetAddress(Addr::AAValsFlagsPtr);
 
 	ScreenEdgeAARender = safetyhook::create_mid(reinterpret_cast<void*>(addr_ScreenEdgeAA_Render + 0x1A), OnScreenEdgeAARender);
 }

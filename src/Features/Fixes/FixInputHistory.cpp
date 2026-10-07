@@ -45,9 +45,7 @@ static void ApplyFixInputHistory()
 {
 	if (!FixInputHistory) return;
 
-	DWORD addr_ControllerManager_UpdateOneController = ScanModuleSignature(g_State.GameModule, "83 EC 08 33 C0 89 04 24 89 44 24 04 0F B6 44 24 10 69 C0 68 01 00 00 53 56 8B D9 57 8B 7C 24 18 8D 74 18 10", "ControllerManager_UpdateOneController");
-
-	if (addr_ControllerManager_UpdateOneController == 0) return;
+	DWORD addr_ControllerManager_UpdateOneController = GetAddress(Addr::ControllerManager_UpdateOneController);
 
 	ControllerManager_UpdateOneController = HookHelper::CreateHook((void*)addr_ControllerManager_UpdateOneController, &ControllerManager_UpdateOneController_Hook);
 }

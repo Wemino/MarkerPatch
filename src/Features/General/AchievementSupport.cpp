@@ -80,19 +80,11 @@ static void ApplyAchievementSupport()
 {
 	if (!AchievementSupport) return;
 
-	DWORD addr_GetGameLanguage = ScanModuleSignature(g_State.GameModule, "56 8B 74 24 0C 57 8B 7C 24 0C 56 57 68", "GetGameLanguage");
-	DWORD addr_AchievementImpl_HandleEvents = ScanModuleSignature(g_State.GameModule, "8B 15 ?? ?? ?? ?? 83 EC 20 53 33 DB 56 8B F1", "AchievementImpl_HandleEvents");
-	DWORD addr_AchievementManager_UnlockAchievement = ScanModuleSignature(g_State.GameModule, "80 79 10 00 74 3A 8B 44 24 04", "AchievementManager_UnlockAchievement");
-	DWORD addr_UpdateObtainedTrophy = ScanModuleSignature(g_State.GameModule, "8B 44 24 04 83 F8 40 73 33 8D 44 40 06", "UpdateObtainedTrophy");
-	DWORD addr_AchievementImpl_PersistableRestore = ScanModuleSignature(g_State.GameModule, "83 7C 24 0C 00 75 18 68 98 00 00 00", "AchievementImpl_PersistableRestore");
-
-	if (addr_GetGameLanguage == 0 ||
-		addr_AchievementImpl_HandleEvents == 0 ||
-		addr_AchievementManager_UnlockAchievement == 0 ||
-		addr_UpdateObtainedTrophy == 0 ||
-		addr_AchievementImpl_PersistableRestore == 0) {
-		return;
-	}
+	DWORD addr_GetGameLanguage = GetAddress(Addr::GetGameLanguage);
+	DWORD addr_AchievementImpl_HandleEvents = GetAddress(Addr::AchievementImpl_HandleEvents);
+	DWORD addr_AchievementManager_UnlockAchievement = GetAddress(Addr::AchievementManager_UnlockAchievement);
+	DWORD addr_UpdateObtainedTrophy = GetAddress(Addr::UpdateObtainedTrophy);
+	DWORD addr_AchievementImpl_PersistableRestore = GetAddress(Addr::AchievementImpl_PersistableRestore);
 
 	GetGameLanguage = HookHelper::CreateHook((void*)addr_GetGameLanguage, &GetGameLanguage_Hook);
 	AchievementImpl_HandleEvents = HookHelper::CreateHook((void*)addr_AchievementImpl_HandleEvents, &AchievementImpl_HandleEvents_Hook);

@@ -72,17 +72,10 @@ static void ApplyFixMainLoopSpin()
 {
 	if (!FixMainLoopSpin) return;
 
-	DWORD addr_IsAudioReadyForFrame = ScanModuleSignature(g_State.GameModule, "8B 0D ?? ?? ?? ?? 85 C9 74 0A 8B 01 8B 90 C8 00 00 00 FF E2", "IsAudioReadyForFrame");
-	DWORD addr_SoundProviderRWAC2_IsReadyForFrame = ScanModuleSignature(g_State.GameModule, "80 B9 E1 09 00 00 00 BA 01 00 00 00 74 ?? 8B 81 CC 09 00 00 F2 0F 10 40 08 66 0F 2E 81 F0 09 00 00", "SoundProviderRWAC2_IsReadyForFrame");
-	DWORD addr_Time_GetCurTimeInMSec = ScanModuleSignature(g_State.GameModule, "83 EC 08 56 6A 08 8D 44 24 08 50 FF 15", "Time_GetCurTimeInMSec");
+	DWORD addr_SoundProviderRWAC2_IsReadyForFrame = GetAddress(Addr::SoundProviderRWAC2_IsReadyForFrame);
+	DWORD addr_Time_GetCurTimeInMSec = GetAddress(Addr::Time_GetCurTimeInMSec);
 
-	if (addr_IsAudioReadyForFrame == 0 ||
-		addr_SoundProviderRWAC2_IsReadyForFrame == 0 ||
-		addr_Time_GetCurTimeInMSec == 0) {
-		return;
-	}
-
-	g_Addresses.SoundProviderPtr = MemoryHelper::ReadMemory<int>(addr_IsAudioReadyForFrame + 0x2);
+	g_Addresses.SoundProviderPtr = GetAddress(Addr::SoundProviderPtr);
 
 	timeBeginPeriod(1);
 	g_State.mainLoopTimer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);

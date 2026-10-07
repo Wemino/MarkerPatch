@@ -19,9 +19,7 @@ static void ApplyHighCoreCPUFix()
 {
 	if (!HighCoreCPUFix) return;
 
-	DWORD CPUFix = ScanModuleSignature(g_State.GameModule, "8B 5D D8 83 C4 18 33 FF", "CPUFix");
-
-	if (CPUFix == 0) return;
+	DWORD CPUFix = GetAddress(Addr::CPUFix);
 
 	CPUCrashFix = safetyhook::create_mid(reinterpret_cast<void*>(CPUFix), OnCPUCrashFix);
 }

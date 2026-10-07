@@ -252,9 +252,7 @@ static void ApplyArchiveStreamHook()
 {
 	if (!DumpArchiveAssets && !LoadModFiles) return;
 
-	DWORD addr_UStreamer_DispatchChunk = ScanModuleSignature(g_State.GameModule, "51 53 57 8B 7C 24 14 8B 07 8B D9 C6 44 24 0B 01 ", "UStreamer_DispatchChunk");
-
-	if (addr_UStreamer_DispatchChunk == 0) return;
+	DWORD addr_UStreamer_DispatchChunk = GetAddress(Addr::UStreamer_DispatchChunk);
 
 	ArchiveStream::UStreamer_DispatchChunk = HookHelper::CreateHook(reinterpret_cast<void*>(addr_UStreamer_DispatchChunk), &ArchiveStream::UStreamer_DispatchChunk_Hook);
 }

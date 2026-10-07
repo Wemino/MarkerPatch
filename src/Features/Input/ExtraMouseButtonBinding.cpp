@@ -100,7 +100,7 @@ static void OnMouseDeviceUpdate(safetyhook::Context& ctx)
 
 static int __fastcall ApplyActionBinding_Hook(uintptr_t remapper, int, const uint8_t* binding, const ActionMappingList* mappings)
 {
-	int result = ApplyActionBinding.thiscall<int>(remapper, binding, mappings);
+	int result = ApplyActionBinding.unsafe_thiscall<int>(remapper, binding, mappings);
 
 	if (!binding) return result;
 
@@ -136,7 +136,7 @@ static int __fastcall ApplyActionBinding_Hook(uintptr_t remapper, int, const uin
 
 static int __stdcall EvaluateKeyboardKeys_Hook(uintptr_t keyboardState, uint32_t keys, uint32_t keyFlags)
 {
-	int result = EvaluateKeyboardKeys.stdcall<int>(keyboardState, keys, keyFlags);
+	int result = EvaluateKeyboardKeys.unsafe_stdcall<int>(keyboardState, keys, keyFlags);
 
 	for (int i = 0; i < 4 && result == 0; i++)
 	{
@@ -155,20 +155,13 @@ static void ApplyExtraMouseButtonBinding()
 {
 	if (!ExtraMouseButtonBinding) return;
 
-	DWORD addr_RemapVisitMapping = ScanModuleSignature(g_State.GameModule, "83 EC 0C 55 8B 6C 24 18 56 8B F1 3B 6E 08 0F 85 ?? ?? ?? ?? 8B 44 24 18 53 50", "RemapVisitMapping");
-	DWORD addr_ApplyActionBinding = ScanModuleSignature(g_State.GameModule, "83 EC 0C 56 57 8B 7C 24 1C 8B 37 8B 47 04 8D 0C C6 3B F1 74", "ApplyActionBinding");
-	DWORD addr_EvaluateKeyboardKeys = ScanModuleSignature(g_State.GameModule, "83 EC 08 8B 4C 24 10 8B 54 24 14 56 57 8B 7C 24 14 33 C0", "EvaluateKeyboardKeys");
-	DWORD addr_MouseDeviceUpdate = ScanModuleSignature(g_State.GameModule, "83 EC 18 8B 44 24 20 53 55 8B 6C 24 24 56 57 8B 7C 24 34 57 50 55 8B F1", "MouseDeviceUpdate");
-
-	if (addr_RemapVisitMapping == 0 ||
-		addr_ApplyActionBinding == 0 ||
-		addr_EvaluateKeyboardKeys == 0 ||
-		addr_MouseDeviceUpdate == 0) {
-		return;
-	}
+	DWORD addr_RemapVisitMapping = GetAddress(Addr::RemapVisitMapping);
+	DWORD addr_ApplyActionBinding = GetAddress(Addr::ApplyActionBinding);
+	DWORD addr_EvaluateKeyboardKeys = GetAddress(Addr::EvaluateKeyboardKeys);
+	DWORD addr_MouseDeviceUpdate = GetAddress(Addr::MouseDeviceUpdate);
 
 	// Version 1.0 only reads the first three mouse buttons and numbers the wheel right after them
-	if (MemoryHelper::ReadMemory<uint8_t>(addr_MouseDeviceUpdate + 0x17F) < 8) return;
+	if (Addresses::GetBuild() == GameBuild::V1_0) return;
 
 	RemapVisitMappingHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_RemapVisitMapping), OnRemapVisitMapping);
 	MouseDeviceUpdateHook = safetyhook::create_mid(reinterpret_cast<void*>(addr_MouseDeviceUpdate), OnMouseDeviceUpdate);

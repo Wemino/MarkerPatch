@@ -77,23 +77,13 @@ static void ApplyFOVScaling()
 {
 	if (FOVScale == 1.0f) return;
 
-	DWORD addr_CameraManager_SetRenderCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC 8C 00 00 00 83 B9 64 01 00 00 00", "CameraManager_SetRenderCamera");
-	DWORD addr_CameraManager_GetActiveCamFov = ScanModuleSignature(g_State.GameModule, "80 B9 E4 00 00 00 00 74 0F D9 81 50 01 00 00 D8 0D", "CameraManager_GetActiveCamFov");
-	DWORD addr_PlayerFallSM_PushTrapCam = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 64 53 56 57 33 F6 56 56 8B F9 E8 ?? ?? ?? ?? 50 56 E8 ?? ?? ?? ?? 8B D8 A1", "PlayerFallSM_PushTrapCam");
-	DWORD addr_PlayerTransitionToGravitySM_PushLandingCam = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 68 56 8B F1 83 7E 78 00", "PlayerTransitionToGravitySM_PushLandingCam");
-	DWORD addr_Sentient_SpawnObserverPoleCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 83 EC 64 53 56 57 33 F6 56 56 8B F9 E8 ?? ?? ?? ?? 50 56 E8 ?? ?? ?? ?? 8B D8 83 C4 10", "Sentient_SpawnObserverPoleCamera");
-	DWORD addr_PairedAttackCoordinatorSM_PushCamera = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 81 EC D4 01 00 00 53 8B D9 8B 43 40", "PairedAttackCoordinatorSM_PushCamera");
-	DWORD addr_PoleCamera_Init = ScanModuleSignature(g_State.GameModule, "55 8B EC 83 E4 F0 8B 45 0C 83 EC 14 53 8B 5D 08", "PoleCamera_Init");
-
-	if (addr_CameraManager_SetRenderCamera == 0 ||
-		addr_CameraManager_GetActiveCamFov == 0 ||
-		addr_PlayerFallSM_PushTrapCam == 0 ||
-		addr_PlayerTransitionToGravitySM_PushLandingCam == 0 ||
-		addr_Sentient_SpawnObserverPoleCamera == 0 ||
-		addr_PairedAttackCoordinatorSM_PushCamera == 0 ||
-		addr_PoleCamera_Init == 0) {
-		return;
-	}
+	DWORD addr_CameraManager_SetRenderCamera = GetAddress(Addr::CameraManager_SetRenderCamera);
+	DWORD addr_CameraManager_GetActiveCamFov = GetAddress(Addr::CameraManager_GetActiveCamFov);
+	DWORD addr_PlayerFallSM_PushTrapCam = GetAddress(Addr::PlayerFallSM_PushTrapCam);
+	DWORD addr_PlayerTransitionToGravitySM_PushLandingCam = GetAddress(Addr::PlayerTransitionToGravitySM_PushLandingCam);
+	DWORD addr_Sentient_SpawnObserverPoleCamera = GetAddress(Addr::Sentient_SpawnObserverPoleCamera);
+	DWORD addr_PairedAttackCoordinatorSM_PushCamera = GetAddress(Addr::PairedAttackCoordinatorSM_PushCamera);
+	DWORD addr_PoleCamera_Init = GetAddress(Addr::PoleCamera_Init);
 
 	CameraManager_SetRenderCamera = HookHelper::CreateHook((void*)addr_CameraManager_SetRenderCamera, &CameraManager_SetRenderCamera_Hook);
 	CameraManager_GetActiveCamFov = HookHelper::CreateHook((void*)addr_CameraManager_GetActiveCamFov, &CameraManager_GetActiveCamFov_Hook);

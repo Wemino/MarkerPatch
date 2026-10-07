@@ -40,13 +40,8 @@ static void ApplyResolutionHook()
 {
 	if (!FixBlurResolution && !FixShadowBlur && !VSyncRefreshRateFix && !g_State.isSupersampling) return;
 
-	DWORD addr_UpdateDisplaySettings = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 B2 01 66 39 05", "UpdateDisplaySettings");
-	DWORD addr_SetResolution = ScanModuleSignature(g_State.GameModule, "66 8B 44 24 04 66 8B 4C 24 08 66 A3", "SetResolution");
-
-	if (addr_UpdateDisplaySettings == 0 ||
-		addr_SetResolution == 0) {
-		return;
-	}
+	DWORD addr_UpdateDisplaySettings = GetAddress(Addr::UpdateDisplaySettings);
+	DWORD addr_SetResolution = GetAddress(Addr::SetResolution);
 
 	UpdateDisplaySettings = HookHelper::CreateHook((void*)addr_UpdateDisplaySettings, &UpdateDisplaySettings_Hook);
 	SetResolution = HookHelper::CreateHook((void*)addr_SetResolution, &SetResolution_Hook);
