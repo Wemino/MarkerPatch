@@ -23,6 +23,7 @@ namespace AchievementOverlay
     inline constexpr bool kBlockGameInputWhileVisible = true;
     inline constexpr unsigned long long kCursorIdleHideMs = 3000;
     inline constexpr WORD kToggleButtons = XINPUT_GAMEPAD_LEFT_THUMB | XINPUT_GAMEPAD_DPAD_UP;
+    inline int g_toggleKey = VK_HOME;
 
     // State
     inline IDirect3DDevice9* g_pDevice = nullptr;
@@ -1522,7 +1523,7 @@ namespace AchievementOverlay
         static bool s_comboPrev = false;
         bool comboNow = g_padConnected && (g_padState.Gamepad.wButtons & kToggleButtons) == kToggleButtons;
 
-        if ((GetAsyncKeyState(VK_HOME) & 1) || (comboNow && !s_comboPrev))
+        if ((GetAsyncKeyState(g_toggleKey) & 1) || (comboNow && !s_comboPrev))
         {
             Toggle();
         }
