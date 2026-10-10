@@ -75,6 +75,10 @@ static void ReadConfig()
 	// Modding
 	DumpArchiveAssets = IniHelper::ReadInteger("Modding", "DumpArchiveAssets", 0) == 1;
 	LoadModFiles = IniHelper::ReadInteger("Modding", "LoadModFiles", 1) == 1;
+	LooseFileThreads = IniHelper::ReadInteger("Modding", "LooseFileThreads", 4);
+	LooseFilePrefetchMB = IniHelper::ReadInteger("Modding", "LooseFilePrefetchMB", 32);
+	SkipReplacedArchiveData = IniHelper::ReadInteger("Modding", "SkipReplacedArchiveData", 1) == 1;
+	StreamReadAheadMB = IniHelper::ReadInteger("Modding", "StreamReadAheadMB", 8);
 
 	// DLC
 	EnableHazardPack = IniHelper::ReadInteger("DLC", "EnableHazardPack", 0) == 1;
@@ -100,6 +104,9 @@ static void ReadConfig()
 	FOVScale = std::clamp(FOVScale, 0.5f, 2.0f);
 	ImprovedAntiAliasingMode = std::clamp(ImprovedAntiAliasingMode, 0, 3);
 	SSAAScale = std::clamp(SSAAScale, 1.0f, 4.0f);
+	LooseFileThreads = std::clamp(LooseFileThreads, 0, 16);
+	LooseFilePrefetchMB = std::clamp(LooseFilePrefetchMB, 0, 512);
+	StreamReadAheadMB = std::clamp(StreamReadAheadMB, 0, 64);
 
 	// Set a maximum so that the game doesn't crash
 	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 35);

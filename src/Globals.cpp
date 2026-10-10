@@ -8,11 +8,16 @@
 #include <d3d9.h>
 
 #include <atomic>
+#include <condition_variable>
+#include <cstring>
 #include <deque>
 #include <intrin.h>
+#include <list>
+#include <memory>
 #include <mutex>
 #include <stacktrace>
 #include <system_error>
+#include <unordered_map>
 #include <unordered_set>
 #include "ini.hpp"
 #include "Controller.hpp"
@@ -238,6 +243,10 @@ float SSAAScale = 0.0f;
 // Modding
 bool DumpArchiveAssets = false;
 bool LoadModFiles = false;
+int LooseFileThreads = 0;
+int LooseFilePrefetchMB = 0;
+bool SkipReplacedArchiveData = false;
+int StreamReadAheadMB = 0;
 
 // DLC
 bool EnableHazardPack = false;

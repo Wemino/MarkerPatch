@@ -179,6 +179,9 @@
     <ClInclude Include="..\src\Features\Modding\ModFiles.cpp">
       <Filter>src\Features\Modding</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Modding\StreamMap.cpp">
+      <Filter>src\Features\Modding</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\Modding\ArchiveStreamHook.cpp">
       <Filter>src\Features\Modding</Filter>
     </ClInclude>

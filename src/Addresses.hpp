@@ -251,6 +251,19 @@ enum class Addr
 
 	// ArchiveStreamHook
 	UStreamer_DispatchChunk,
+	UStreamer_Dispatch,
+	UStreamer_Load,
+	UStreamer_Init,
+	UStreamer_DequeueFreeBuffer,
+	UStreamBufferRing_Enqueue,
+	UStream_ReadCallback,
+	UStream_AttemptContinue,
+	UStream_AsyncClose,
+	UStream_Reset,
+	CResourceManager_Dispatch,
+	CResource_Destructor,
+	UStreamerPtr,
+	GameOperatorNew,
 
 	// BonusUnlocks
 	SaveManagerBootCheck,
@@ -530,6 +543,19 @@ namespace Addresses
 
 		// ArchiveStreamHook
 		/* UStreamer_DispatchChunk                                    */ { 0x858950, 0x8590D0 },
+		/* UStreamer_Dispatch                                         */ { 0x8591B0, 0x859930 },
+		/* UStreamer_Load                                             */ { 0x8597A0, 0x859F20 },
+		/* UStreamer_Init                                             */ { 0x858DC0, 0x859540 },
+		/* UStreamer_DequeueFreeBuffer                                */ { 0x858260, 0x8589E0 },
+		/* UStreamBufferRing_Enqueue                                  */ { 0x857F90, 0x858710 },
+		/* UStream_ReadCallback                                       */ { 0x858C80, 0x859400 },
+		/* UStream_AttemptContinue                                    */ { 0x858D60, 0x8594E0 },
+		/* UStream_AsyncClose                                         */ { 0x8585A0, 0x858D20 },
+		/* UStream_Reset                                              */ { 0x857990, 0x858110 },
+		/* CResourceManager_Dispatch                                  */ { 0x78F0C0, 0x78F760 },
+		/* CResource_Destructor                                       */ { 0x84A430, 0x84ABB0 },
+		/* UStreamerPtr                                               */ { 0x205A880, 0x205B880 },
+		/* GameOperatorNew                                            */ { 0x401A96, 0x401A9B },
 
 		// BonusUnlocks
 		/* SaveManagerBootCheck                                       */ { 0xA72A27, 0xA73177 },

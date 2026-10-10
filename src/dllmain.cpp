@@ -53,6 +53,7 @@
 
 #include "Features/Modding/ArchiveDump.cpp"
 #include "Features/Modding/ModFiles.cpp"
+#include "Features/Modding/StreamMap.cpp"
 #include "Features/Modding/ArchiveStreamHook.cpp"
 
 #include "Features/DLC/BonusUnlocks.cpp"

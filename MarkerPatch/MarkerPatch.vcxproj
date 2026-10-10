@@ -193,6 +193,7 @@
     <ClInclude Include="..\src\Features\Graphics\ImprovedAntiAliasing.cpp" />
     <ClInclude Include="..\src\Features\Modding\ArchiveDump.cpp" />
     <ClInclude Include="..\src\Features\Modding\ModFiles.cpp" />
+    <ClInclude Include="..\src\Features\Modding\StreamMap.cpp" />
     <ClInclude Include="..\src\Features\Modding\ArchiveStreamHook.cpp" />
     <ClInclude Include="..\src\Features\DLC\BonusUnlocks.cpp" />
     <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp" />
