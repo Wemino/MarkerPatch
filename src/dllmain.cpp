@@ -27,6 +27,7 @@
 #include "Features/Fixes/FixImpalingProjectiles.cpp"
 #include "Features/Fixes/FixExplosionDamage.cpp"
 #include "Features/Fixes/FixOffscreenEffects.cpp"
+#include "Features/Fixes/FixSuitChangeTiming.cpp"
 
 #include "Features/General/AchievementSupport.cpp"
 #include "Features/General/DisableOnlineFeatures.cpp"

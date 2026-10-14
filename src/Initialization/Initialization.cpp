@@ -32,6 +32,7 @@ static void ReadConfig()
 	FixImpalingProjectiles = IniHelper::ReadInteger("Fixes", "FixImpalingProjectiles", 1) == 1;
 	FixExplosionDamage = IniHelper::ReadInteger("Fixes", "FixExplosionDamage", 1) == 1;
 	FixOffscreenEffects = IniHelper::ReadInteger("Fixes", "FixOffscreenEffects", 1) == 1;
+	FixSuitChangeTiming = IniHelper::ReadInteger("Fixes", "FixSuitChangeTiming", 1) == 1;
 
 	// General
 	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
@@ -154,6 +155,7 @@ static void Init()
 	ApplyFixImpalingProjectiles();
 	ApplyFixExplosionDamage();
 	ApplyFixOffscreenEffects();
+	ApplyFixSuitChangeTiming();
 
 	// General
 	ApplyAchievementSupport();

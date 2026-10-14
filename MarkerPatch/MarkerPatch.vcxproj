@@ -173,6 +173,7 @@
     <ClInclude Include="..\src\Features\Fixes\FixImpalingProjectiles.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixExplosionDamage.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixOffscreenEffects.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixSuitChangeTiming.cpp" />
     <ClInclude Include="..\src\Features\General\AchievementSupport.cpp" />
     <ClInclude Include="..\src\Features\General\DisableOnlineFeatures.cpp" />
     <ClInclude Include="..\src\Features\General\IncreasedEntityPersistence.cpp" />

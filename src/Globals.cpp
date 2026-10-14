@@ -152,6 +152,7 @@ struct GameAddresses
 	DWORD SoundProviderPtr = 0;
 	DWORD PresentModePtr = 0;
 	DWORD PresentIntervalsPtr = 0;
+	DWORD PlayerStoreSMVtablePtr = 0;
 };
 
 // Memory addresses
@@ -201,6 +202,7 @@ bool FixInputHistory = false;
 bool FixImpalingProjectiles = false;
 bool FixExplosionDamage = false;
 bool FixOffscreenEffects = false;
+bool FixSuitChangeTiming = false;
 
 // General
 bool AchievementSupport = false;

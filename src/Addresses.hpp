@@ -131,6 +131,12 @@ enum class Addr
 	// FixOffscreenEffects
 	TFXSequencer_Simulate,
 
+	// FixSuitChangeTiming
+	PlayerStoreSM_UniformChangeMinTime,
+	PlayerStoreSM_UniformChangeStart,
+	PlayerUniformManager_AttachUniformToPlayer,
+	PlayerStoreSMVtablePtr,
+
 	// AchievementSupport
 	GetGameLanguage,
 	AchievementImpl_HandleEvents,
@@ -422,6 +428,12 @@ namespace Addresses
 
 		// FixOffscreenEffects
 		/* TFXSequencer_Simulate                                      */ { 0x6D8E70, 0x6D9510 },
+
+		// FixSuitChangeTiming
+		/* PlayerStoreSM_UniformChangeMinTime                         */ { 0xED4477, 0xED4BC7 },
+		/* PlayerStoreSM_UniformChangeStart                           */ { 0xEE29A0, 0xEE30F0 },
+		/* PlayerUniformManager_AttachUniformToPlayer                 */ { 0xEB46C0, 0xEB4E10 },
+		/* PlayerStoreSMVtablePtr                                     */ { 0x1B5D340, 0x1B5E360 },
 
 		// AchievementSupport
 		/* GetGameLanguage                                            */ { 0x4445D0, 0x444C50 },
