@@ -66,14 +66,8 @@ struct GlobalState
 	float mouseAimPitch = 0.0f;
 	float mouseAimYaw = 0.0f;
 
-	// Flare fix
+	// D3D9 device
 	IDirect3DDevice9* device = nullptr;
-	bool inFlareDraw = false;
-	IDirect3DBaseTexture9* sourceTex = nullptr;
-	IDirect3DTexture9* proxyTex = nullptr;
-	IDirect3DSurface9* proxySurf = nullptr;
-	bool resourcesValid = false;
-	bool snapshotValid = false;
 
 	// Fire rate fix
 	DWORD lastShotTime = 0;
@@ -153,6 +147,8 @@ struct GameAddresses
 	DWORD PresentModePtr = 0;
 	DWORD PresentIntervalsPtr = 0;
 	DWORD PlayerStoreSMVtablePtr = 0;
+	DWORD FlareVisibilityTexturePtr = 0;
+	DWORD TextureTablePtr = 0;
 };
 
 // Memory addresses

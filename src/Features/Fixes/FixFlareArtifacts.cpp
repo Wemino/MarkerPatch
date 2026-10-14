@@ -2,145 +2,100 @@
 
 #include "../../Globals.cpp"
 
-static void ReleaseFlareFixResources()
-{
-	if (g_State.proxySurf)
-	{
-		g_State.proxySurf->Release();
-		g_State.proxySurf = nullptr;
-	}
-
-	if (g_State.proxyTex)
-	{
-		g_State.proxyTex->Release();
-		g_State.proxyTex = nullptr;
-	}
-
-	g_State.sourceTex = nullptr;
-
-	g_State.resourcesValid = false;
-	g_State.snapshotValid = false;
-}
-
-static bool TrackSourceTexture(IDirect3DBaseTexture9* src)
-{
-	IDirect3DDevice9* dev = GetD3D9Device();
-	if (!src || !dev) return false;
-	if (src->GetType() != D3DRTYPE_TEXTURE) return false;
-	if (g_State.resourcesValid && g_State.sourceTex == src) return true;
-
-	IDirect3DTexture9* src2d = static_cast<IDirect3DTexture9*>(src);
-	D3DSURFACE_DESC desc{};
-	if (FAILED(src2d->GetLevelDesc(0, &desc))) return false;
-
-	ReleaseFlareFixResources();
-
-	HRESULT hr = dev->CreateTexture(desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &g_State.proxyTex, nullptr);
-	if (FAILED(hr)) return false;
-
-	hr = g_State.proxyTex->GetSurfaceLevel(0, &g_State.proxySurf);
-	if (FAILED(hr))
-	{
-		ReleaseFlareFixResources(); return false;
-	}
-
-	g_State.sourceTex = src;
-	g_State.resourcesValid = true;
-	g_State.snapshotValid = false;
-	return true;
-}
-
 // =========================
 // FixFlareArtifacts
 // =========================
 
-static safetyhook::InlineHook AddCoronaModulatedQuad;
-static uintptr_t AddCoronaModulatedQuad_Trampoline = 0;
+static safetyhook::MidHook FlareOcclusionResolve{};
+static safetyhook::MidHook FlareOcclusionInitResolve{};
+static safetyhook::MidHook FlareOcclusionClearResolve{};
 
-static safetyhook::MidHook FlareSnapshot{};
-static safetyhook::MidHook FlareTextureSubst{};
-static safetyhook::MidHook DeviceCleanupPre{};
+static DWORD(__cdecl* TX_AllocTexture)(DWORD format, DWORD flags, int width, int height, int mipLevels, DWORD handle) = nullptr;
 
-__declspec(naked) static int __cdecl AddCoronaModulatedQuad_Hook(DWORD* ci, const float* color, float x, float y, float z, float w, float angle, float sx, float sy, unsigned int pTexture, bool cutCorners)
+static constexpr uintptr_t TEXTURE_ENTRY_SIZE = 60;
+static constexpr DWORD TEXTURE_HANDLE_COUNT = 0x1000;
+
+// What the flare vertex shaders read instead of vfx_visibility, a copy made by the game's texture manager
+static DWORD g_flareVisibilityCopy = 0;
+
+static uintptr_t GetTextureEntry(DWORD handle)
 {
-	__asm
-	{
-		mov byte ptr[g_State.inFlareDraw], 1
-
-		// Forward stack args, offset stays 0x28 as ESP drops
-		push dword ptr[esp + 0x28] // cutCorners
-		push dword ptr[esp + 0x28] // pTexture
-		push dword ptr[esp + 0x28] // sy
-		push dword ptr[esp + 0x28] // sx
-		push dword ptr[esp + 0x28] // angle
-		push dword ptr[esp + 0x28] // w
-		push dword ptr[esp + 0x28] // z
-		push dword ptr[esp + 0x28] // y
-		push dword ptr[esp + 0x28] // x
-		push dword ptr[esp + 0x28] // color
-
-		// Call original function
-		mov edx, [AddCoronaModulatedQuad_Trampoline]
-		call edx
-
-		// Balance stack
-		add esp, 0x28
-
-		mov byte ptr[g_State.inFlareDraw], 0
-		ret
-	}
+	return g_Addresses.TextureTablePtr + handle * TEXTURE_ENTRY_SIZE;
 }
 
-static void OnFlareSnapshot(safetyhook::Context&)
+static IDirect3DTexture9* GetTexture(DWORD handle)
 {
-	if (!g_State.resourcesValid || !g_State.sourceTex || !g_State.proxySurf) return;
-
-	IDirect3DDevice9* dev = GetD3D9Device();
-	if (!dev) return;
-
-	IDirect3DTexture9* src2d = static_cast<IDirect3DTexture9*>(g_State.sourceTex);
-	IDirect3DSurface9* srcSurf = nullptr;
-	if (FAILED(src2d->GetSurfaceLevel(0, &srcSurf)) || !srcSurf) return;
-
-	HRESULT hr = dev->StretchRect(srcSurf, nullptr, g_State.proxySurf, nullptr, D3DTEXF_NONE);
-	srcSurf->Release();
-
-	g_State.snapshotValid = SUCCEEDED(hr);
+	return *reinterpret_cast<IDirect3DTexture9**>(GetTextureEntry(handle) + 0x18);
 }
 
-static void OnFlareTextureSubst(safetyhook::Context& ctx)
+static bool IsFlareVisibilityCopyValid(uintptr_t source)
 {
-	if (ctx.ebx != 258) return;
-	if (!g_State.inFlareDraw) return;
+	if (g_flareVisibilityCopy == 0 || g_flareVisibilityCopy >= TEXTURE_HANDLE_COUNT) return false;
 
-	IDirect3DBaseTexture9* tex = reinterpret_cast<IDirect3DBaseTexture9*>(ctx.ecx);
-	if (!tex) return;
+	// Still allocated, and still a texture like vfx_visibility (size, format, flags)
+	uintptr_t copy = GetTextureEntry(g_flareVisibilityCopy);
+	return (*reinterpret_cast<uint8_t*>(copy) & 7) >= 2 &&
+		*reinterpret_cast<uint32_t*>(copy + 0x2) == *reinterpret_cast<uint32_t*>(source + 0x2) &&
+		*reinterpret_cast<uint32_t*>(copy + 0xC) == *reinterpret_cast<uint32_t*>(source + 0xC) &&
+		*reinterpret_cast<uint32_t*>(copy + 0x10) == *reinterpret_cast<uint32_t*>(source + 0x10);
+}
 
-	if (!g_State.resourcesValid || g_State.sourceTex != tex)
+static void CopyFlareVisibility()
+{
+	DWORD visibility = MemoryHelper::ReadMemory<DWORD>(g_Addresses.FlareVisibilityTexturePtr);
+	if (visibility == 0 || visibility >= TEXTURE_HANDLE_COUNT) return;
+
+	uintptr_t source = GetTextureEntry(visibility);
+
+	if (!IsFlareVisibilityCopyValid(source))
 	{
-		TrackSourceTexture(tex);
+		DWORD copy = TX_AllocTexture(*reinterpret_cast<DWORD*>(source + 0xC), *reinterpret_cast<DWORD*>(source + 0x10), *reinterpret_cast<uint16_t*>(source + 0x2), *reinterpret_cast<uint16_t*>(source + 0x4), *reinterpret_cast<uint8_t*>(source + 0x1), 0xFFFFFFFF);
+
+		// Without a copy the shaders read vfx_visibility as before
+		g_flareVisibilityCopy = copy < TEXTURE_HANDLE_COUNT ? copy : visibility;
 	}
 
-	if (!g_State.snapshotValid) return;
-	if (g_State.sourceTex != tex) return;
+	if (g_flareVisibilityCopy == visibility) return;
 
-	ctx.ecx = reinterpret_cast<uintptr_t>(g_State.proxyTex);
+	IDirect3DDevice9* device = GetD3D9Device();
+	IDirect3DTexture9* sourceTexture = GetTexture(visibility);
+	IDirect3DTexture9* copyTexture = GetTexture(g_flareVisibilityCopy);
+	if (!device || !sourceTexture || !copyTexture) return;
+
+	// Nvidia's driver returns garbage to vertex shaders reading a texture that was just rendered to, read a copy like the console's resolve made
+	IDirect3DSurface9* sourceSurface = nullptr;
+	IDirect3DSurface9* copySurface = nullptr;
+
+	if (SUCCEEDED(sourceTexture->GetSurfaceLevel(0, &sourceSurface)) && SUCCEEDED(copyTexture->GetSurfaceLevel(0, &copySurface)))
+	{
+		device->StretchRect(sourceSurface, nullptr, copySurface, nullptr, D3DTEXF_NONE);
+	}
+
+	if (sourceSurface) sourceSurface->Release();
+	if (copySurface) copySurface->Release();
 }
 
-static void OnDeviceCleanupPre(safetyhook::Context&)
+static void OnFlareOcclusionResolve(safetyhook::Context&)
 {
-	ReleaseFlareFixResources();
-	g_State.device = nullptr;
+	CopyFlareVisibility();
 }
 
 static void ApplyFixFlareArtifacts()
 {
 	if (!FixFlareArtifacts) return;
 
-	AddCoronaModulatedQuad = HookHelper::CreateHook((void*)GetAddress(Addr::AddCoronaModulatedQuad), &AddCoronaModulatedQuad_Hook);
-	AddCoronaModulatedQuad_Trampoline = AddCoronaModulatedQuad.trampoline().address();
+	g_Addresses.FlareVisibilityTexturePtr = GetAddress(Addr::FlareVisibilityTexturePtr);
+	g_Addresses.TextureTablePtr = GetAddress(Addr::TextureTablePtr);
+	TX_AllocTexture = reinterpret_cast<decltype(TX_AllocTexture)>(GetAddress(Addr::TX_AllocTexture));
 
-	FlareSnapshot = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareSnapshot)), OnFlareSnapshot);
-	FlareTextureSubst = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareTextureSubst)), OnFlareTextureSubst);
-	DeviceCleanupPre = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::DeviceCleanupPre)), OnDeviceCleanupPre);
+	// The corona and the two glow paths set vfx_visibility as the vertex shader's modulate texture, read the copy's handle instead
+	const Addr readers[] = { Addr::CoronaModulateTexture, Addr::FlareRenderBeginModulateTexture, Addr::FlareRenderModulateTexture };
+	for (Addr reader : readers)
+	{
+		MemoryHelper::WriteMemory<uintptr_t>(GetAddress(reader), reinterpret_cast<uintptr_t>(&g_flareVisibilityCopy));
+	}
+
+	FlareOcclusionResolve = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareOcclusionResolve)), OnFlareOcclusionResolve);
+	FlareOcclusionInitResolve = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareOcclusionInitResolve)), OnFlareOcclusionResolve);
+	FlareOcclusionClearResolve = safetyhook::create_mid(reinterpret_cast<void*>(GetAddress(Addr::FlareOcclusionClearResolve)), OnFlareOcclusionResolve);
 }

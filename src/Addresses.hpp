@@ -76,10 +76,15 @@ enum class Addr
 	BlurAttenuationBuffer,
 
 	// FixFlareArtifacts
-	AddCoronaModulatedQuad,
-	FlareSnapshot,
-	FlareTextureSubst,
-	DeviceCleanupPre,
+	FlareVisibilityTexturePtr,
+	TextureTablePtr,
+	TX_AllocTexture,
+	FlareOcclusionResolve,
+	FlareOcclusionInitResolve,
+	FlareOcclusionClearResolve,
+	CoronaModulateTexture,
+	FlareRenderBeginModulateTexture,
+	FlareRenderModulateTexture,
 
 	// FixVertexNormals
 	ShaderTable,
@@ -374,10 +379,15 @@ namespace Addresses
 		/* BlurAttenuationBuffer                                      */ { 0x796720, 0x796DC0 },
 
 		// FixFlareArtifacts
-		/* AddCoronaModulatedQuad                                     */ { 0x6A7620, 0x6A7CC0 },
-		/* FlareSnapshot                                              */ { 0x6AAEFD, 0x6AB59D },
-		/* FlareTextureSubst                                          */ { 0x13D7E54, 0x13D86F4 },
-		/* DeviceCleanupPre                                           */ { 0x13C9280, 0x13C9B20 },
+		/* FlareVisibilityTexturePtr                                  */ { 0x2032350, 0x2033350 },
+		/* TextureTablePtr                                            */ { 0x20DF4B8, 0x20E04D8 },
+		/* TX_AllocTexture                                            */ { 0x13C8820, 0x13C90C0 },
+		/* FlareOcclusionResolve                                      */ { 0x6AAEFD, 0x6AB59D },
+		/* FlareOcclusionInitResolve                                  */ { 0x6AB0AA, 0x6AB74A },
+		/* FlareOcclusionClearResolve                                 */ { 0x6A19D7, 0x6A2077 },
+		/* CoronaModulateTexture                                      */ { 0x6A766E, 0x6A7D0E },
+		/* FlareRenderBeginModulateTexture                            */ { 0x6A7A40, 0x6A80E0 },
+		/* FlareRenderModulateTexture                                 */ { 0x6A9ADF, 0x6AA17F },
 
 		// FixVertexNormals
 		/* ShaderTable                                                */ { 0x1C59240, 0x1C5A240 },

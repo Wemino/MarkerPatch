@@ -11,11 +11,7 @@ static safetyhook::MidHook Present2{};
 
 static void OnResetSitePre(safetyhook::Context&)
 {
-	if (FixFlareArtifacts)
-	{
-		ReleaseFlareFixResources();
-		g_State.device = nullptr;
-	}
+	g_State.device = nullptr;
 
 	if (ImprovedAntiAliasingMode == AA_SMAA)
 	{
