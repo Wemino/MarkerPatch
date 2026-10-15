@@ -122,6 +122,7 @@ enum class Addr
 	// FixAudioSyncStall
 	System_IsCommandComplete,
 	Dac_GetSamplesToMix,
+	Dac_UpdateLatency,
 	DacThread_Sleep,
 
 	// FixInputHistory
@@ -427,6 +428,7 @@ namespace Addresses
 		// FixAudioSyncStall
 		/* System_IsCommandComplete                                   */ { 0x536670, 0x536D10 },
 		/* Dac_GetSamplesToMix                                        */ { 0x519FA0, 0x51A640 },
+		/* Dac_UpdateLatency                                          */ { 0x50DA90, 0x50E130 },
 		/* DacThread_Sleep                                            */ { 0x52447F, 0x524B1F },
 
 		// FixInputHistory

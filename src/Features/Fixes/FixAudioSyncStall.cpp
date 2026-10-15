@@ -8,6 +8,7 @@
 
 safetyhook::InlineHook System_IsCommandComplete;
 safetyhook::InlineHook Dac_GetSamplesToMix;
+safetyhook::InlineHook Dac_UpdateLatency;
 
 static thread_local bool t_isPollingCommand = false;
 static thread_local unsigned int t_polledTimeStamp = 0;
@@ -48,9 +49,9 @@ static int __fastcall Dac_GetSamplesToMix_Hook(uintptr_t thisp)
 	int chunks = g_State.extraMixChunks;
 	if (chunks <= 0 || sampleRate <= 0.0f) return Dac_GetSamplesToMix.unsafe_thiscall<int>(thisp);
 
-	if (timeGetTime() - g_State.lastCommandWaitTime > 200)
+	if (timeGetTime() - g_State.lastCommandWaitTime > 200 && g_State.extraMixChunks.compare_exchange_strong(chunks, chunks - 1) && chunks == 1)
 	{
-		g_State.extraMixChunks.compare_exchange_strong(chunks, chunks - 1);
+		g_State.extraMixEndTime = timeGetTime();
 	}
 
 	float originalLatencyMs = latencyMs;
@@ -59,6 +60,19 @@ static int __fastcall Dac_GetSamplesToMix_Hook(uintptr_t thisp)
 	latencyMs = originalLatencyMs;
 
 	return result;
+}
+
+static void __fastcall Dac_UpdateLatency_Hook(uintptr_t thisp, int, int writeCursor)
+{
+	float& latencyMs = *reinterpret_cast<float*>(thisp + 0x5C);
+	float previousLatencyMs = latencyMs;
+
+	Dac_UpdateLatency.unsafe_thiscall<void>(thisp, writeCursor);
+
+	if (latencyMs < previousLatencyMs && (g_State.extraMixChunks > 0 || timeGetTime() - g_State.extraMixEndTime < 100))
+	{
+		latencyMs = previousLatencyMs;
+	}
 }
 
 static void __stdcall DacThread_Sleep_Hook(DWORD dwMilliseconds)
@@ -83,5 +97,6 @@ static void ApplyFixAudioSyncStall()
 	MemoryHelper::MakeNOP(addr_DacThread_Sleep + 0xC, 1);
 
 	Dac_GetSamplesToMix = HookHelper::CreateHook((void*)GetAddress(Addr::Dac_GetSamplesToMix), &Dac_GetSamplesToMix_Hook);
+	Dac_UpdateLatency = HookHelper::CreateHook((void*)GetAddress(Addr::Dac_UpdateLatency), &Dac_UpdateLatency_Hook);
 	System_IsCommandComplete = HookHelper::CreateHook((void*)GetAddress(Addr::System_IsCommandComplete), &System_IsCommandComplete_Hook);
 }

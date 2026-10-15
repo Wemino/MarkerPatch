@@ -93,6 +93,7 @@ struct GlobalState
 	std::atomic<int> extraMixChunks{ 0 };
 	std::atomic<int> maxExtraMixChunks{ -1 };
 	std::atomic<DWORD> lastCommandWaitTime{ 0 };
+	std::atomic<DWORD> extraMixEndTime{ 0 };
 
 	// Menu speed fix
 	double aptTime = 0.0;
