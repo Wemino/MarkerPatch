@@ -7,6 +7,7 @@
 // =========================
 
 safetyhook::InlineHook TimeSlicer_GetTimeRemainingBeforeVBlank;
+safetyhook::InlineHook EntityPartSpawner_Spawn;
 
 static uint64_t __fastcall TimeSlicer_GetTimeRemainingBeforeVBlank_Hook(uintptr_t thisp)
 {
@@ -28,6 +29,24 @@ static uint64_t __fastcall TimeSlicer_GetTimeRemainingBeforeVBlank_Hook(uintptr_
 	return static_cast<uint64_t>(std::max(timeLeftMs, 1.0) * ticksPerMs);
 }
 
+static void __fastcall EntityPartSpawner_Spawn_Hook(uintptr_t thisp, int, uintptr_t entityPart)
+{
+	EntityPartSpawner_Spawn.unsafe_thiscall<void>(thisp, entityPart);
+
+	int queueSize = *reinterpret_cast<int*>(thisp + 0x28);
+	if (queueSize == 0) return;
+
+	int last = *reinterpret_cast<int*>(thisp + 0x24) + queueSize - 1;
+	int maxSize = *reinterpret_cast<int*>(thisp + 0x20);
+	if (last >= maxSize) last -= maxSize;
+
+	uint32_t* scheduledPart = reinterpret_cast<uint32_t*>(*reinterpret_cast<uintptr_t*>(thisp + 0x1C) + last * 8);
+	if (scheduledPart[0] == entityPart)
+	{
+		scheduledPart[1] = MemoryHelper::ReadMemory<DWORD>(g_Addresses.ElapsedTimeMSecPtr);
+	}
+}
+
 static void ApplyFixStreamingBudget()
 {
 	if (!FixStreamingBudget) return;
@@ -43,4 +62,7 @@ static void ApplyFixStreamingBudget()
 	QueryPerformanceFrequency(&g_State.qpcFrequency);
 
 	TimeSlicer_GetTimeRemainingBeforeVBlank = HookHelper::CreateHook((void*)GetAddress(Addr::TimeSlicer_GetTimeRemainingBeforeVBlank), &TimeSlicer_GetTimeRemainingBeforeVBlank_Hook);
+
+	g_Addresses.ElapsedTimeMSecPtr = GetAddress(Addr::ElapsedTimeMSecPtr);
+	EntityPartSpawner_Spawn = HookHelper::CreateHook((void*)GetAddress(Addr::EntityPartSpawner_Spawn), &EntityPartSpawner_Spawn_Hook);
 }

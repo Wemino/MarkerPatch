@@ -149,6 +149,7 @@ struct GameAddresses
 	DWORD PlayerStoreSMVtablePtr = 0;
 	DWORD FlareVisibilityTexturePtr = 0;
 	DWORD TextureTablePtr = 0;
+	DWORD ElapsedTimeMSecPtr = 0;
 };
 
 // Memory addresses

@@ -114,6 +114,8 @@ enum class Addr
 
 	// FixStreamingBudget
 	TimeSlicer_GetTimeRemainingBeforeVBlank,
+	EntityPartSpawner_Spawn,
+	ElapsedTimeMSecPtr,
 	PresentModePtr,
 	PresentIntervalsPtr,
 
@@ -417,6 +419,8 @@ namespace Addresses
 
 		// FixStreamingBudget
 		/* TimeSlicer_GetTimeRemainingBeforeVBlank                    */ { 0x825DD0, 0x826470 },
+		/* EntityPartSpawner_Spawn                                    */ { 0x7BA060, 0x7BA700 },
+		/* ElapsedTimeMSecPtr                                         */ { 0x204C3AC, 0x204D3AC },
 		/* PresentModePtr                                             */ { 0x1F629FC, 0x1F639FC },
 		/* PresentIntervalsPtr                                        */ { 0x211C178, 0x211D198 },
 
