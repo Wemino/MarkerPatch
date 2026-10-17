@@ -11,8 +11,17 @@ safetyhook::InlineHook XInputSetStateHook;
 
 static DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
+	static bool s_inHook = false;
+	if (s_inHook)
+	{
+		return XInputGetStateHook.stdcall<DWORD>(dwUserIndex, pState);
+	}
+
 	if (dwUserIndex != 0) return ERROR_DEVICE_NOT_CONNECTED;
+
+	s_inHook = true;
 	DWORD result = ControllerHelper::PollController(pState, InvertABXYButtons);
+	s_inHook = false;
 
 	if (AchievementSupport && pState)
 	{
@@ -29,8 +38,18 @@ static DWORD WINAPI XInputGetState_Hook(DWORD dwUserIndex, XINPUT_STATE* pState)
 
 static DWORD WINAPI XInputSetState_Hook(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
 {
+	static bool s_inHook = false;
+	if (s_inHook)
+	{
+		return XInputSetStateHook.stdcall<DWORD>(dwUserIndex, pVibration);
+	}
+
 	if (dwUserIndex != 0) return ERROR_DEVICE_NOT_CONNECTED;
-	return ControllerHelper::SetVibration(pVibration);
+
+	s_inHook = true;
+	DWORD result = ControllerHelper::SetVibration(pVibration);
+	s_inHook = false;
+	return result;
 }
 
 static void ApplyUseSDLControllerInput()
