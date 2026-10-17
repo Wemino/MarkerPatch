@@ -665,7 +665,7 @@ namespace AchievementOverlay
         SetupStyle(style);
         style.ScaleAllSizes(g_uiScale);
         style.FontScaleDpi = g_uiScale; // scales the font to the render resolution
-        style.AntiAliasedLinesUseTex = false; // we render with point sampling, which the textured-line path can't use
+        style.AntiAliasedLineEnds = true;
 
         if (g_uiScale < 1.15f)
         {
@@ -739,10 +739,10 @@ namespace AchievementOverlay
             int vtx = dl->VtxBuffer.Size;
             dl->AddConvexPolyFilled(band, 6, ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 1.0f)));
             ImGui::ShadeVertsLinearColorGradientKeepAlpha(dl, vtx, dl->VtxBuffer.Size, a, ImVec2(b.x, a.y), IM_COL32(88, 152, 192, 255), IM_COL32(20, 44, 64, 255));
-            dl->AddLine(ImVec2(a.x, a.y + headerH), ImVec2(b.x, a.y + headerH), ImGui::GetColorU32(ImGuiCol_Border));
+            dl->AddLineH(a.x, b.x, a.y + headerH, ImGui::GetColorU32(ImGuiCol_Border));
         }
 
-        dl->AddPolyline(pts, 8, ImGui::GetColorU32(ImVec4(0.45f, 0.66f, 0.78f, 0.90f)), ImDrawFlags_Closed, 1.5f * g_uiScale);
+        dl->AddPolyline(pts, 8, ImGui::GetColorU32(ImVec4(0.45f, 0.66f, 0.78f, 0.90f)), 1.5f * g_uiScale, ImDrawFlags_Closed | ImDrawFlags_StrokeInside);
         ImGui::PopClipRect();
     }
 
@@ -859,8 +859,8 @@ namespace AchievementOverlay
                     ImVec2 p = ImGui::GetCursorScreenPos();
                     ImVec2 p2(p.x + iconSize, p.y + iconSize);
                     ImDrawList* dl = ImGui::GetWindowDrawList();
-                    dl->AddRectFilled(p, p2, IM_COL32(70, 104, 124, 255));
-                    dl->AddRectFilled(ImVec2(p.x + 1, p.y + 1), ImVec2(p2.x - 1, p2.y - 1), IM_COL32(12, 26, 38, 255));
+                    dl->AddRectFilled(p, p2, IM_COL32(12, 26, 38, 255));
+                    dl->AddRect(p, p2, IM_COL32(70, 104, 124, 255), 0.0f, 1.0f); // same look as before, 1px border stroked inside
                     ImVec2 ts = ImGui::CalcTextSize("?");
                     dl->AddText(ImVec2(p.x + (iconSize - ts.x) * 0.5f, p.y + (iconSize - ts.y) * 0.5f), IM_COL32(130, 160, 180, 255), "?");
                     ImGui::Dummy(ImVec2(iconSize, iconSize));
@@ -1113,8 +1113,8 @@ namespace AchievementOverlay
 
         pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
         pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-        pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-        pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+        pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+        pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
         pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
         pDevice->SetSamplerState(0, D3DSAMP_SRGBTEXTURE, FALSE);
     }
