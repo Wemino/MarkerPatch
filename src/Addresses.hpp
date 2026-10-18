@@ -4,6 +4,7 @@ enum class GameBuild
 {
 	Unknown = 0,
 	V1_0,
+	V1_1,
 	Current
 };
 
@@ -629,7 +630,9 @@ inline uintptr_t GetAddress(Addr id)
 	if (Addresses::g_build == GameBuild::Unknown)
 		return 0;
 
-	uintptr_t raw = Addresses::kAddressTable[static_cast<size_t>(id)][static_cast<int>(Addresses::g_build) - 1];
+	const int column = (Addresses::g_build == GameBuild::V1_0) ? 0 : 1;
+
+	uintptr_t raw = Addresses::kAddressTable[static_cast<size_t>(id)][column];
 	if (raw == 0) return 0;
 
 	return Addresses::g_moduleBase + (raw - 0x400000);

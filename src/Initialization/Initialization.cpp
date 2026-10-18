@@ -228,7 +228,11 @@ static LSTATUS WINAPI RegOpenKeyExW_Hook(HKEY hKey, LPCWSTR lpSubKey, DWORD ulOp
 		{
 			build = GameBuild::Current;
 		}
-		else if (IsBuildDate(base, 0x1B91040, "Dec 14 2010"))
+		else if (IsBuildDate(base, 0x1B92078, "Feb 16 2011")) // 1.1.0, same address layout as the current version
+		{
+			build = GameBuild::V1_1;
+		}
+		else if (IsBuildDate(base, 0x1B91040, "Dec 14 2010")) // 1.0
 		{
 			build = GameBuild::V1_0;
 		}
