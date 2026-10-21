@@ -146,6 +146,9 @@ enum class Addr
 	PlayerUniformManager_AttachUniformToPlayer,
 	PlayerStoreSMVtablePtr,
 
+	// FixHazardSuitIcon
+	VFXManager_LoadInit,
+
 	// AchievementSupport
 	GetGameLanguage,
 	AchievementImpl_HandleEvents,
@@ -451,6 +454,9 @@ namespace Addresses
 		/* PlayerStoreSM_UniformChangeStart                           */ { 0xEE29A0, 0xEE30F0 },
 		/* PlayerUniformManager_AttachUniformToPlayer                 */ { 0xEB46C0, 0xEB4E10 },
 		/* PlayerStoreSMVtablePtr                                     */ { 0x1B5D340, 0x1B5E360 },
+
+		// FixHazardSuitIcon
+		/* VFXManager_LoadInit                                        */ { 0x6A04C0, 0x6A0B60 },
 
 		// AchievementSupport
 		/* GetGameLanguage                                            */ { 0x4445D0, 0x444C50 },

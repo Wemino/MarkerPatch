@@ -201,6 +201,7 @@ bool FixImpalingProjectiles = false;
 bool FixExplosionDamage = false;
 bool FixOffscreenEffects = false;
 bool FixSuitChangeTiming = false;
+bool FixHazardSuitIcon = false;
 
 // General
 bool AchievementSupport = false;

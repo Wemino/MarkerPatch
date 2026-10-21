@@ -33,6 +33,7 @@ static void ReadConfig()
 	FixExplosionDamage = IniHelper::ReadInteger("Fixes", "FixExplosionDamage", 1) == 1;
 	FixOffscreenEffects = IniHelper::ReadInteger("Fixes", "FixOffscreenEffects", 1) == 1;
 	FixSuitChangeTiming = IniHelper::ReadInteger("Fixes", "FixSuitChangeTiming", 1) == 1;
+	FixHazardSuitIcon = IniHelper::ReadInteger("Fixes", "FixHazardSuitIcon", 1) == 1;
 
 	// General
 	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
@@ -156,6 +157,7 @@ static void Init()
 	ApplyFixExplosionDamage();
 	ApplyFixOffscreenEffects();
 	ApplyFixSuitChangeTiming();
+	ApplyFixHazardSuitIcon();
 
 	// General
 	ApplyAchievementSupport();
