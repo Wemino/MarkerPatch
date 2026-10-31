@@ -37,6 +37,13 @@ static void ReadConfig()
 
 	// General
 	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
+
+	if (AchievementSupport)
+	{
+		std::error_code ec;
+		AchievementSupport = std::filesystem::is_directory(std::filesystem::path(SystemHelper::GetModulePath()) / "achievements", ec);
+	}
+
 	AchievementOverlay::g_toggleKey = IniHelper::ReadInteger("General", "AchievementOverlayKey", VK_HOME);
 	DisableOnlineFeatures = IniHelper::ReadInteger("General", "DisableOnlineFeatures", 1) == 1;
 	IncreasedEntityPersistence = IniHelper::ReadInteger("General", "IncreasedEntityPersistence", 1) == 1;
