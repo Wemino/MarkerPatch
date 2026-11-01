@@ -49,3 +49,11 @@ Taglio netto|Taglia i 3 tentacoli di un infante con il fuoco prim. della pistola
 Bruto smembrato|Uccidi un bruto senza farti danneggiare
 Spara agli arti!|Smembra 25 arti di necromorfi (solo giocatore singolo)
 Mina rimbalzina|Uccidi una ciste afferrando una delle sue mine e ritirandogliela
+Il tradimento|Severed: completa il capitolo 1
+Il sacrificio|Severed: completa il capitolo 2
+Navetta di fretta|Severed: elimina la navetta armata di Bartlett entro 30 secondi
+Il veterano|Severed: completalo a difficoltà Fanatico
+Fort Alamo|Severed: uccidi almeno 16 nemici nella sequenza del combattimento finale
+Sempre più Peng|Severed: trova il tesoro di Peng in Severed
+Re della collina|Severed: difendi la piattaforma della cava fino allo sblocco della porta
+Trituratore|Severed: nella sala trituratore, fai in modo che un nemico muoia nei trituratori

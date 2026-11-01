@@ -49,3 +49,11 @@ Clean Cut|Sever all three tentacles of a Lurker with one Line Gun Primary Fire s
 Brute Juke|Kill a Brute without taking damage
 Shoot the Limbs!|Dismember 25 Necromorph Limbs (single player only)
 Bouncing Betty|Kill a Cyst by catching its Mine and throwing it back
+The Betrayal|Severed: Complete Chapter 1
+The Sacrifice|Severed: Complete Chapter 2
+Ship Shape|Severed: Take out the gunship within 30 seconds
+The Veteran|Severed: Complete on Zealot difficulty
+Remember the Alamo|Severed: Kill 16 or more enemies in the final last stand combat sequence
+Peng Me Again|Severed: Find the Peng treasure in Severed
+King of the Hill|Severed: Defend the quarry platform until the door unlocks
+Grind House|Severed: In the grinder room, cause an enemy to die in the grinders

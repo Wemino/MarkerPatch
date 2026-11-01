@@ -49,3 +49,11 @@ Ein sauberer Schnitt|Trenne einem Lurker alle drei Tentakel mit dem Primärf.-Sc
 Auch du, Brutus?|Erledige einen Brute, ohne selbst Schaden zu nehmen
 Schieß auf die Gliedmaßen!|Trenne 25 Nekromorph-Gliedmaßen ab (Einzelspieler)
 Bumerang|Erledige eine Zyste, indem du ihre Mine auffängst und sie zurückwirfst
+Der Verrat|Severed: Schließe Kapitel 1 ab
+Das Opfer|Severed: Schließe Kapitel 2 ab
+Schiffsgestalt|Severed: Zerstöre das Schiff innerhalb von 30 Sekunden
+Der Veteran|Severed: Schließe Severed auf Schwierigkeit "Fanatiker" ab
+Rache für Alamo|Severed: Erledige in der letzten Kampfsequenz mindestens 16 Gegner
+Peng mich nochmal|Severed: Finde den Peng-Schatz in Severed
+Der Größte|Severed: Verteidige die Steinbruch-Plattform, bis die Tür sich öffnet
+Fleischwolf|Severed: Verursache im Häckslerraum, dass ein Gegner im Häckselwerk stirbt

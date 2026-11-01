@@ -155,6 +155,7 @@ enum class Addr
 	AchievementManager_UnlockAchievement,
 	UpdateObtainedTrophy,
 	AchievementImpl_PersistableRestore,
+	AchievementManager_AddAchievement,
 
 	// DisableOnlineFeatures
 	UIComponentManager_ShowScreen_Nucleus_Connecting,
@@ -464,6 +465,7 @@ namespace Addresses
 		/* AchievementManager_UnlockAchievement                       */ { 0x1398900, 0x13991A0 },
 		/* UpdateObtainedTrophy                                       */ { 0x1398640, 0x1398EE0 },
 		/* AchievementImpl_PersistableRestore                         */ { 0xB70B70, 0xB712C0 },
+		/* AchievementManager_AddAchievement                          */ { 0x13985E0, 0x1398E80 },
 
 		// DisableOnlineFeatures
 		/* UIComponentManager_ShowScreen_Nucleus_Connecting           */ { 0xA4EC00, 0xA4F3D0 },

@@ -92,8 +92,12 @@ namespace AchievementOverlay
     inline bool g_showSecrets = false;
     inline bool g_progressInitialized = false;
 
+    // Indices 0-50 are the base game, the platinum (index 0) only counts 1-50
+    // Indices 51-58 are the Severed DLC
+    inline constexpr int kBaseAchievementCount = 51;
+
     // Story achievements hidden until unlocked
-    inline constexpr int kSecretIndices[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    inline constexpr int kSecretIndices[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 51, 52, 53 };
 
     inline bool IsSecret(int index)
     {
@@ -108,12 +112,13 @@ namespace AchievementOverlay
     }
 
     // Target count per achievement. Cumulative ones use their real total, single-event ones are 1,
-    // index 0 (platinum) is the 50 other trophies
+    // index 0 (platinum) is the 50 other base trophies
     inline constexpr int kAchievementMax[] =
     {
         50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         10, 20, 25, 30, 30, 50, 10, 2500, 1, 1, 1, 4, 10, 1, 1,
-        100, 10, 10, 1, 1, 1, 20, 50, 1, 1, 1, 1, 1, 1, 1, 1, 25, 1
+        100, 10, 10, 1, 1, 1, 20, 50, 1, 1, 1, 1, 1, 1, 1, 1, 25, 1,
+        1, 1, 1, 1, 1, 1, 1, 1 // Severed
     };
 
     // "The Sampler Platter": kill a Necromorph with every weapon (single player)
@@ -178,6 +183,11 @@ namespace AchievementOverlay
         }
 
         int total = (int)g_achievements.size();
+        if (total > kBaseAchievementCount)
+        {
+            total = kBaseAchievementCount; // DLC achievements don't count toward the platinum
+        }
+
         if (total <= 1 || (!g_unlocked.empty() && g_unlocked[0]))
         {
             return false;
@@ -377,10 +387,11 @@ namespace AchievementOverlay
         }
     }
 
-    // Platinum (index 0): progress is the number of other achievements unlocked
+    // Platinum (index 0): progress is the number of other base achievements unlocked
     inline void UpdatePlatinum()
     {
         int total = (int)g_achievements.size();
+        if (total > kBaseAchievementCount) total = kBaseAchievementCount;
         if (total <= 1) return;
 
         int unlockedCount = 0;
@@ -469,14 +480,23 @@ namespace AchievementOverlay
         IWICBitmapDecoder* decoder = nullptr;
         IWICBitmapFrameDecode* frame = nullptr;
         IWICBitmapScaler* scaler = nullptr;
+        IWICFormatConverter* preConv = nullptr;
         IWICFormatConverter* conv = nullptr;
         IDirect3DTexture9* tex = nullptr;
 
         if (SUCCEEDED(factory->CreateDecoderFromFilename(wpath, nullptr, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &decoder)) && SUCCEEDED(decoder->GetFrame(0, &frame)) && SUCCEEDED(factory->CreateFormatConverter(&conv)))
         {
-            // Scale first, then convert to BGRA
             IWICBitmapSource* src = frame;
-            if (targetSize > 0 && SUCCEEDED(factory->CreateBitmapScaler(&scaler)) && SUCCEEDED(scaler->Initialize(frame, targetSize, targetSize, WICBitmapInterpolationModeFant)))
+            if (SUCCEEDED(factory->CreateFormatConverter(&preConv)) && SUCCEEDED(preConv->Initialize(frame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom)))
+            {
+                src = preConv;
+            }
+
+            UINT srcW = 0, srcH = 0;
+            src->GetSize(&srcW, &srcH);
+            const bool needsScale = targetSize > 0 && (srcW != (UINT)targetSize || srcH != (UINT)targetSize);
+
+            if (needsScale && SUCCEEDED(factory->CreateBitmapScaler(&scaler)) && SUCCEEDED(scaler->Initialize(src, targetSize, targetSize, WICBitmapInterpolationModeFant)))
             {
                 src = scaler;
             }
@@ -508,6 +528,7 @@ namespace AchievementOverlay
         if (!ok && tex) tex->Release();
         if (conv) conv->Release();
         if (scaler) scaler->Release();
+        if (preConv) preConv->Release();
         if (frame) frame->Release();
         if (decoder) decoder->Release();
         factory->Release();

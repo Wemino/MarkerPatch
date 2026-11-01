@@ -49,3 +49,11 @@ Corte limpio|Corta los 3 tentáculos de un merodeador con el disparo ppal. del c
 El cazador|Mata a una bestia sin recibir daño
 ¡A las extremidades!|Cercena 25 extremidades de necromorfos (solo en Un jugador)
 Mina saltarina|Mata a un quiste atrapando su mina y devolviéndosela
+La traición|Severed: completa el capítulo 1
+El sacrificio|Severed: completa el capítulo 2
+Nave en apuros|Severed: acaba con la nave de Bartlett en 30 segundos
+El veterano|Severed: complétalo en dificultad Extrema
+Recuerdo de El Álamo|Severed: mata a 16 o más enemigos en la última secuencia de combate
+Tesoro de Peng|Severed: encuentra el tesoro de Peng
+Rey de la colina|Severed: defiende la plataforma hasta que la puerta se abra
+Casquería|Severed: utiliza los trituradores para matar a un enemigo en la sala trituradora

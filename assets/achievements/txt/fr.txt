@@ -49,3 +49,11 @@ Dégagé derrière les oreilles|Coupez les trois tentacules d'un Rôdeur avec un
 Dompteur|Tuez une Brute sans subir de dégâts.
 Visez les membres !|Démembrez 25 membres de Necromorphs (mode solo).
 Retour à l'envoyeur|Tuez un Antipersonnel en lui renvoyant sa mine.
+Trahison|Terminez Severed : Épisode 1.
+Sacrifice|Terminez Severed : Épisode 2.
+Un hélico, ça ?|Severed : Venez à bout du vaisseau de Bartlett en moins de 30 secondes.
+Vétéran|Severed : Terminez en mode Fanatique.
+Baroud d'honneur|Severed : Tuez 16 ennemis ou plus lors de la dernière séquence.
+Peng-moi encore|Severed : Trouvez le trésor de Peng dans Severed.
+Roi de la colline|Severed : Défendez la plateforme jusqu'à l'ouverture des portes.
+Correction|Severed : Dans la salle de rectification, tuez un ennemi en utilisant les rectifieuses.
