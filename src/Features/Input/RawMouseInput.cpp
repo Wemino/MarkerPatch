@@ -96,8 +96,6 @@ static int __stdcall ApplyControlConfiguration_Hook(int a1)
 	g_State.isXInverted = *(BYTE*)(a1);
 	g_State.isYInverted = *(BYTE*)(a1 + 1);
 	g_State.mouseSens = *(float*)(a1 + 12) * 1.8f + 0.1f;
-	ControllerHelper::SetGyroInvertX(g_State.isXInverted);
-	ControllerHelper::SetGyroInvertY(g_State.isYInverted);
 	return ApplyControlConfiguration.stdcall<int>(a1);
 }
 

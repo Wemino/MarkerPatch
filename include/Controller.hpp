@@ -96,6 +96,19 @@ namespace ControllerHelper
 		bool isSurfaceMode = false;
 	};
 
+	struct GyroSamples
+	{
+		float sumX = 0.0f;
+		float sumY = 0.0f;
+		float sumZ = 0.0f;
+		int count = 0;
+
+		float averageX = 0.0f;
+		float averageY = 0.0f;
+		float averageZ = 0.0f;
+		bool hasAverage = false;
+	};
+
 	struct TouchpadConfig
 	{
 		bool isEnabled = true;
@@ -128,6 +141,7 @@ namespace ControllerHelper
 	inline GyroConfig s_gyroConfig;
 	inline GyroProcessingState s_gyroProcessing;
 	inline GyroAutoOffset s_gyroOffset;
+	inline GyroSamples s_gyroSamples;
 
 	inline TouchpadConfig s_touchpadConfig;
 	static constexpr int MAX_TOUCHPADS = 2;
@@ -344,6 +358,7 @@ namespace ControllerHelper
 		s_gyroState = GyroState();
 		s_gyroProcessing = GyroProcessingState();
 		s_gyroOffset = GyroAutoOffset();
+		s_gyroSamples = GyroSamples();
 		s_gyroCalibrationSavedThisSession = false;
 		s_currentControllerSerial.clear();
 
@@ -377,12 +392,13 @@ namespace ControllerHelper
 			SDL_EVENT_JOYSTICK_BUTTON_DOWN, SDL_EVENT_JOYSTICK_BUTTON_UP,
 			SDL_EVENT_GAMEPAD_AXIS_MOTION, SDL_EVENT_GAMEPAD_BUTTON_DOWN, SDL_EVENT_GAMEPAD_BUTTON_UP,
 			SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN, SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION, SDL_EVENT_GAMEPAD_TOUCHPAD_UP,
-			SDL_EVENT_GAMEPAD_SENSOR_UPDATE,
 		};
 		for (SDL_EventType eventType : unusedEvents)
 		{
 			SDL_SetEventEnabled(eventType, false);
 		}
+
+		SDL_SetEventEnabled(SDL_EVENT_GAMEPAD_SENSOR_UPDATE, s_gyroConfig.isEnabled);
 
 		QueryPerformanceFrequency(&s_frameTiming.frequency);
 		QueryPerformanceCounter(&s_frameTiming.lastFrameTime);
@@ -463,6 +479,11 @@ namespace ControllerHelper
 	inline void SetGyroEnabled(bool enabled)
 	{
 		s_gyroConfig.isEnabled = enabled;
+
+		if (SDL_WasInit(SDL_INIT_GAMEPAD))
+		{
+			SDL_SetEventEnabled(SDL_EVENT_GAMEPAD_SENSOR_UPDATE, enabled);
+		}
 	}
 
 	inline void SetGyroSensitivity(float sensitivity)
@@ -902,18 +923,34 @@ namespace ControllerHelper
 		s_gyroState.isValid = false;
 
 		if (!s_pGamepad || !s_gyroConfig.isEnabled || !s_capabilities.hasGyro)
+		{
+			s_gyroSamples = GyroSamples();
 			return;
+		}
 
-		float gyro[3] = { 0.0f, 0.0f, 0.0f };
+		// Average every sample received since the last frame, the previous average is kept if none arrived
+		if (s_gyroSamples.count > 0)
+		{
+			s_gyroSamples.averageX = s_gyroSamples.sumX / s_gyroSamples.count;
+			s_gyroSamples.averageY = s_gyroSamples.sumY / s_gyroSamples.count;
+			s_gyroSamples.averageZ = s_gyroSamples.sumZ / s_gyroSamples.count;
+			s_gyroSamples.hasAverage = true;
+
+			s_gyroSamples.sumX = 0.0f;
+			s_gyroSamples.sumY = 0.0f;
+			s_gyroSamples.sumZ = 0.0f;
+			s_gyroSamples.count = 0;
+		}
+
 		float accel[3] = { 0.0f, 0.0f, 0.0f };
 
-		if (SDL_GetGamepadSensorData(s_pGamepad, SDL_SENSOR_GYRO, gyro, 3) && SDL_GetGamepadSensorData(s_pGamepad, SDL_SENSOR_ACCEL, accel, 3))
+		if (s_gyroSamples.hasAverage && SDL_GetGamepadSensorData(s_pGamepad, SDL_SENSOR_ACCEL, accel, 3))
 		{
-			UpdateGyroOffset(gyro[0], gyro[1], gyro[2], accel[0], accel[1], accel[2], s_frameTiming.deltaTime);
+			UpdateGyroOffset(s_gyroSamples.averageX, s_gyroSamples.averageY, s_gyroSamples.averageZ, accel[0], accel[1], accel[2], s_frameTiming.deltaTime);
 
-			s_gyroState.x = gyro[0] - s_gyroOffset.offsetX;
-			s_gyroState.y = gyro[1] - s_gyroOffset.offsetY;
-			s_gyroState.z = gyro[2] - s_gyroOffset.offsetZ;
+			s_gyroState.x = s_gyroSamples.averageX - s_gyroOffset.offsetX;
+			s_gyroState.y = s_gyroSamples.averageY - s_gyroOffset.offsetY;
+			s_gyroState.z = s_gyroSamples.averageZ - s_gyroOffset.offsetZ;
 			s_gyroState.isValid = true;
 		}
 	}
@@ -951,12 +988,21 @@ namespace ControllerHelper
 		if (s_gyroConfig.invertX) rawYaw = -rawYaw;
 		if (s_gyroConfig.invertY) rawPitch = -rawPitch;
 
-		float smoothFactor = expf(-deltaTime / fmaxf(s_gyroConfig.smoothing, 0.001f));
-		s_gyroProcessing.smoothedYaw = rawYaw + (s_gyroProcessing.smoothedYaw - rawYaw) * smoothFactor;
-		s_gyroProcessing.smoothedPitch = rawPitch + (s_gyroProcessing.smoothedPitch - rawPitch) * smoothFactor;
+		// Soft tiered smoothing, slow movements are smoothed while fast movements stay responsive
+		const float SMOOTH_THRESH_LOW = 0.087f;  // 5 deg/s
+		const float SMOOTH_THRESH_HIGH = 0.175f; // 10 deg/s
 
-		outYaw = s_gyroProcessing.smoothedYaw * deltaTime * s_gyroConfig.sensitivity;
-		outPitch = s_gyroProcessing.smoothedPitch * deltaTime * s_gyroConfig.sensitivity;
+		float magnitude = sqrtf(rawYaw * rawYaw + rawPitch * rawPitch);
+		float directWeight = std::clamp((magnitude - SMOOTH_THRESH_LOW) / (SMOOTH_THRESH_HIGH - SMOOTH_THRESH_LOW), 0.0f, 1.0f);
+		float smoothInputYaw = rawYaw * (1.0f - directWeight);
+		float smoothInputPitch = rawPitch * (1.0f - directWeight);
+
+		float smoothFactor = expf(-deltaTime / fmaxf(s_gyroConfig.smoothing, 0.001f));
+		s_gyroProcessing.smoothedYaw = smoothInputYaw + (s_gyroProcessing.smoothedYaw - smoothInputYaw) * smoothFactor;
+		s_gyroProcessing.smoothedPitch = smoothInputPitch + (s_gyroProcessing.smoothedPitch - smoothInputPitch) * smoothFactor;
+
+		outYaw = (rawYaw * directWeight + s_gyroProcessing.smoothedYaw) * deltaTime * s_gyroConfig.sensitivity;
+		outPitch = (rawPitch * directWeight + s_gyroProcessing.smoothedPitch) * deltaTime * s_gyroConfig.sensitivity;
 	}
 
 	// ==========================================================
@@ -1102,6 +1148,17 @@ namespace ControllerHelper
 		}
 	}
 
+	inline void OnGamepadSensorUpdate(const SDL_GamepadSensorEvent& sensorEvent)
+	{
+		if (!s_pGamepad || sensorEvent.sensor != SDL_SENSOR_GYRO || sensorEvent.which != SDL_GetGamepadID(s_pGamepad))
+			return;
+
+		s_gyroSamples.sumX += sensorEvent.data[0];
+		s_gyroSamples.sumY += sensorEvent.data[1];
+		s_gyroSamples.sumZ += sensorEvent.data[2];
+		s_gyroSamples.count++;
+	}
+
 	inline void ProcessSDLEvents()
 	{
 		SDL_Event event;
@@ -1115,6 +1172,10 @@ namespace ControllerHelper
 
 				case SDL_EVENT_GAMEPAD_REMOVED:
 					OnGamepadDisconnected(event.gdevice.which);
+					break;
+
+				case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+					OnGamepadSensorUpdate(event.gsensor);
 					break;
 			}
 		}

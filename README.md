@@ -248,7 +248,7 @@ Adds support for PlayStation and Nintendo Switch controllers via SDL3.
 
 Enables motion-controlled aiming using the controller's gyroscope for supported controllers (DualShock 4, DualSense, Switch Pro Controller).
 
-Enable with `GyroEnabled = 1` in `MarkerPatch.ini`.
+Enable with `GyroEnabled = 1` in `MarkerPatch.ini`. The gyro direction is set separately from the in-game invert options with `GyroInvertX` and `GyroInvertY`.
 
 > **Note**: If you experience gyro drift, place the controller on a stable surface for a few seconds to calibrate.
 

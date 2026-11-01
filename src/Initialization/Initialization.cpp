@@ -71,6 +71,8 @@ static void ReadConfig()
 	GyroEnabled = IniHelper::ReadInteger("Input", "GyroEnabled", 0) == 1;
 	GyroSensitivity = IniHelper::ReadFloat("Input", "GyroSensitivity", 1.0f);
 	GyroSmoothing = IniHelper::ReadFloat("Input", "GyroSmoothing", 0.016f);
+	GyroInvertX = IniHelper::ReadInteger("Input", "GyroInvertX", 0) == 1;
+	GyroInvertY = IniHelper::ReadInteger("Input", "GyroInvertY", 0) == 1;
 	GyroCalibrationPersistence = IniHelper::ReadInteger("Input", "GyroCalibrationPersistence", 1) == 1;
 	TouchpadEnabled = IniHelper::ReadInteger("Input", "TouchpadEnabled", 1) == 1;
 	InvertABXYButtons = IniHelper::ReadInteger("Input", "InvertABXYButtons", 1) == 1;
@@ -125,6 +127,8 @@ static void ReadConfig()
 	ControllerHelper::SetGyroEnabled(GyroEnabled);
 	ControllerHelper::SetGyroSensitivity(GyroSensitivity);
 	ControllerHelper::SetGyroSmoothing(GyroSmoothing);
+	ControllerHelper::SetGyroInvertX(GyroInvertX);
+	ControllerHelper::SetGyroInvertY(GyroInvertY);
 	ControllerHelper::SetTouchpadEnabled(TouchpadEnabled);
 	ControllerHelper::SetGyroCalibrationPersistence(GyroCalibrationPersistence);
 }
