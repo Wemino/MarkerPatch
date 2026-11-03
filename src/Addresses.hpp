@@ -179,6 +179,21 @@ enum class Addr
 	// SkipArtificialLoadingDelay
 	SkipArtificialLoadingDelay,
 
+	// AlwaysSucceedQTE
+	PairedAttackCoordinator_Update,
+	TestInputEvent_TestInput,
+	InputContextSystem_Update,
+	PlayerSwarmShakeoffSM_HandleStateMessage,
+	PlayerSwarmShakeoffSM_TryToDetach,
+	AttachmentComponent_GetNumberOfSlots,
+
+	// SkipHackingMinigame
+	PlayerHackingStationSM_CheckTransition,
+	PlayerHackingStationSM_MiniGameSolved,
+	PlayerHackingStationSM_PlayMiniGameSuccessfulVFX,
+	HackingStationMiniGame_OnSuccessfulSelection,
+	HackingStationMiniGame_OnExitMessage,
+
 	// AutoResolution
 	GetConfigInt,
 
@@ -234,6 +249,11 @@ enum class Addr
 
 	// AutoHideMouseCursor
 	UpdateMenuCursorCall,
+
+	// DisableControllerAimAcceleration
+	ControllerVelocity_Update,
+	PlayerZGJumpSM_SampleControllerData,
+	ZeroGAimGainMaxPtr,
 
 	// TextureFiltering
 	TX_ChangeOptions_d3d,
@@ -489,6 +509,21 @@ namespace Addresses
 		// SkipArtificialLoadingDelay
 		/* SkipArtificialLoadingDelay                                 */ { 0xA412D9, 0xA41A89 },
 
+		// AlwaysSucceedQTE
+		/* PairedAttackCoordinator_Update                             */ { 0x10C2EC0, 0x10C36E0 },
+		/* TestInputEvent_TestInput                                   */ { 0x10AE560, 0x10AED20 },
+		/* InputContextSystem_Update                                  */ { 0xED1D20, 0xED2470 },
+		/* PlayerSwarmShakeoffSM_HandleStateMessage                   */ { 0x87D7D0, 0x87DF80 },
+		/* PlayerSwarmShakeoffSM_TryToDetach                          */ { 0x86D690, 0x86DE30 },
+		/* AttachmentComponent_GetNumberOfSlots                       */ { 0xF52980, 0xF530D0 },
+
+		// SkipHackingMinigame
+		/* PlayerHackingStationSM_CheckTransition                     */ { 0xB96CF0, 0xB97440 },
+		/* PlayerHackingStationSM_MiniGameSolved                      */ { 0xBA48B0, 0xBA5000 },
+		/* PlayerHackingStationSM_PlayMiniGameSuccessfulVFX           */ { 0xB974B0, 0xB97C00 },
+		/* HackingStationMiniGame_OnSuccessfulSelection               */ { 0xB88B00, 0xB89250 },
+		/* HackingStationMiniGame_OnExitMessage                       */ { 0xB966B0, 0xB96E00 },
+
 		// AutoResolution
 		/* GetConfigInt                                               */ { 0x40602D, 0x406037 },
 
@@ -544,6 +579,11 @@ namespace Addresses
 
 		// AutoHideMouseCursor
 		/* UpdateMenuCursorCall                                       */ { 0xA78039, 0xA78789 },
+
+		// DisableControllerAimAcceleration
+		/* ControllerVelocity_Update                                  */ { 0x86F5E0, 0x86FD80 },
+		/* PlayerZGJumpSM_SampleControllerData                        */ { 0x8A2100, 0x8A28B0 },
+		/* ZeroGAimGainMaxPtr                                         */ { 0x1F5D3B0, 0x1F5E3B0 },
 
 		// TextureFiltering
 		/* TX_ChangeOptions_d3d                                       */ { 0x13D7880, 0x13D8120 },

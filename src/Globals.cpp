@@ -151,6 +151,7 @@ struct GameAddresses
 	DWORD FlareVisibilityTexturePtr = 0;
 	DWORD TextureTablePtr = 0;
 	DWORD ElapsedTimeMSecPtr = 0;
+	DWORD ZeroGAimGainMaxPtr = 0;
 };
 
 // Memory addresses
@@ -212,6 +213,8 @@ int IncreasedEntityPersistenceLimbs = 0;
 bool IncreasedDecalPersistence = false;
 bool SkipIntro = false;
 bool SkipArtificialLoadingDelay = false;
+bool AlwaysSucceedQTE = false;
+bool SkipHackingMinigame = false;
 bool LoadASIPlugins = false;
 int CheckLAAPatch = 0;
 
@@ -236,6 +239,7 @@ bool GyroInvertY = false;
 bool GyroCalibrationPersistence = false;
 bool TouchpadEnabled = false;
 bool InvertABXYButtons = false;
+bool DisableControllerAimAcceleration = false;
 
 // Graphics
 int MaxAnisotropy = 0;

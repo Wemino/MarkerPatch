@@ -240,6 +240,12 @@ The fix decouples mouse sensitivity from the game's framerate, providing consist
 
 Allows the extra mouse buttons (Mouse 4 to Mouse 8) to be assigned to any action in the controls menu. The game only accepts mouse buttons for a few actions and refuses them for all the others, such as reloading, with an "unable to assign that input" message, even though the side buttons make great replacements for keyboard keys.
 
+## Disable Controller Aim Acceleration
+
+Removes the acceleration applied to controller aiming. Normally the camera starts turning slowly and speeds up the longer the stick is held, which makes aiming harder to control. With this option, the turn speed only depends on how far the stick is pushed.
+
+> **Note**: This is an optional feature, disabled by default. Set `DisableControllerAimAcceleration = 1` in `MarkerPatch.ini` to enable it.
+
 ## SDL Controller Support
 
 Adds support for PlayStation and Nintendo Switch controllers via SDL3.
@@ -359,6 +365,18 @@ Available DLC options (configurable in the `[DLC]` section of `MarkerPatch.ini`)
 > **Note**: All DLC options are disabled by default because automatically granting all DLC items at the first shop of your first playthrough would be poor game design. You can selectively enable the DLC items you want through the configuration file to maintain better pacing. Since the EA servers are offline, ownership verification can no longer be performed for certain DLC items that previously required it.
 
 > **Important**: This only works if the DLC items haven't already been added to the shop, as shop inventory is tied to save data. Items already in your save cannot be removed, so configuring DLC requires starting a new save file if you want different items available.
+
+## Always Succeed QTE
+
+Makes every button-mashing QTE succeed on its own, without having to press anything.
+
+> **Note**: This is an optional feature, disabled by default. Set `AlwaysSucceedQTE = 1` in `MarkerPatch.ini` to enable it.
+
+## Skip Hacking Minigame
+
+Skips the hacking minigame. Panels are hacked as soon as Isaac opens them, with the same result as solving the minigame.
+
+> **Note**: This is an optional feature, disabled by default. Set `SkipHackingMinigame = 1` in `MarkerPatch.ini` to enable it.
 
 ## ASI Plugin Loading
 

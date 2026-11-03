@@ -111,6 +111,7 @@
     <ClCompile Include="..\include\safetyhook\Zydis.c" />
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp" />
+    <ClInclude Include="..\src\Features\Input\DisableControllerAimAcceleration.cpp" />
     <ClInclude Include="..\src\Shaders\FlashlightOverlayVS.hpp" />
     <ClInclude Include="..\src\Shaders\FXAAPS.hpp" />
     <ClInclude Include="..\src\Shaders\GlassReflectionVS.hpp" />
@@ -180,6 +181,8 @@
     <ClInclude Include="..\src\Features\General\IncreasedEntityPersistence.cpp" />
     <ClInclude Include="..\src\Features\General\IncreasedDecalPersistence.cpp" />
     <ClInclude Include="..\src\Features\General\SkipIntro.cpp" />
+    <ClInclude Include="..\src\Features\General\AlwaysSucceedQTE.cpp" />
+    <ClInclude Include="..\src\Features\General\SkipHackingMinigame.cpp" />
     <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp" />
     <ClInclude Include="..\src\Features\General\ASILoader.cpp" />
     <ClInclude Include="..\src\Features\Display\AutoResolution.cpp" />

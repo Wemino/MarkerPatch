@@ -36,6 +36,8 @@
 #include "Features/General/IncreasedDecalPersistence.cpp"
 #include "Features/General/SkipIntro.cpp"
 #include "Features/General/SkipArtificialLoadingDelay.cpp"
+#include "Features/General/AlwaysSucceedQTE.cpp"
+#include "Features/General/SkipHackingMinigame.cpp"
 #include "Features/General/ASILoader.cpp"
 
 #include "Features/Display/AutoResolution.cpp"
@@ -48,6 +50,7 @@
 #include "Features/Input/RawMouseInput.cpp"
 #include "Features/Input/FilterInputDevices.cpp"
 #include "Features/Input/UseSDLControllerInput.cpp"
+#include "Features/Input/DisableControllerAimAcceleration.cpp"
 
 #include "Features/Graphics/TextureFiltering.cpp"
 #include "Features/Graphics/DynamicShadowResolution.cpp"

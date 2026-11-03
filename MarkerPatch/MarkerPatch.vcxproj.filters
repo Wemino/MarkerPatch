@@ -137,6 +137,12 @@
     <ClInclude Include="..\src\Features\General\SkipIntro.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\General\AlwaysSucceedQTE.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\General\SkipHackingMinigame.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>
@@ -246,6 +252,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Features\Input\DisableControllerAimAcceleration.cpp">
       <Filter>src\Features\Input</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Shaders\FXAAPS.hpp">

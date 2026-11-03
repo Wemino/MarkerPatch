@@ -52,6 +52,8 @@ static void ReadConfig()
 	IncreasedDecalPersistence = IniHelper::ReadInteger("General", "IncreasedDecalPersistence", 1) == 1;
 	SkipIntro = IniHelper::ReadInteger("General", "SkipIntro", 0) == 1;
 	SkipArtificialLoadingDelay = IniHelper::ReadInteger("General", "SkipArtificialLoadingDelay", 1) == 1;
+	AlwaysSucceedQTE = IniHelper::ReadInteger("General", "AlwaysSucceedQTE", 0) == 1;
+	SkipHackingMinigame = IniHelper::ReadInteger("General", "SkipHackingMinigame", 0) == 1;
 	LoadASIPlugins = IniHelper::ReadInteger("General", "LoadASIPlugins", 1) == 1;
 	CheckLAAPatch = IniHelper::ReadInteger("General", "CheckLAAPatch", 0);
 
@@ -76,6 +78,7 @@ static void ReadConfig()
 	GyroCalibrationPersistence = IniHelper::ReadInteger("Input", "GyroCalibrationPersistence", 1) == 1;
 	TouchpadEnabled = IniHelper::ReadInteger("Input", "TouchpadEnabled", 1) == 1;
 	InvertABXYButtons = IniHelper::ReadInteger("Input", "InvertABXYButtons", 1) == 1;
+	DisableControllerAimAcceleration = IniHelper::ReadInteger("Input", "DisableControllerAimAcceleration", 0) == 1;
 
 	// Graphics
 	MaxAnisotropy = IniHelper::ReadInteger("Graphics", "MaxAnisotropy", 16);
@@ -177,6 +180,8 @@ static void Init()
 	ApplyIncreasedDecalPersistence();
 	ApplySkipIntro();
 	ApplySkipArtificialLoadingDelay();
+	ApplyAlwaysSucceedQTE();
+	ApplySkipHackingMinigame();
 
 	// Display
 	ApplyAutoResolution();
@@ -190,6 +195,7 @@ static void Init()
 	ApplyExtraMouseButtonBinding();
 	ApplyAutoHideMouseCursor();
 	ApplyUseSDLControllerInput();
+	ApplyDisableControllerAimAcceleration();
 
 	// Graphics
 	ApplyTextureFiltering();
