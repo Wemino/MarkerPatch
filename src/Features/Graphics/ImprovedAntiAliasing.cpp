@@ -480,11 +480,13 @@ static void ApplyImprovedAntiAliasing()
 		g_Addresses.RenderStatesPtr = GetAddress(Addr::RenderStatesPtr);
 	}
 
-	if (ImprovedAntiAliasingMode == AA_SSAA)
+	if (ImprovedAntiAliasingMode == AA_SSAA || ImprovedAntiAliasingMode == AA_SMAA_SSAA)
 	{
 		ApplySupersampling();
-		return;
 	}
+
+	// With SSAA, SMAA runs on the supersampled frame before it is scaled down
+	if (ImprovedAntiAliasingMode == AA_SSAA) return;
 
 	if (ImprovedAntiAliasingMode == AA_FXAA)
 	{

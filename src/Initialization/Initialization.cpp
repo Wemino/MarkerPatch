@@ -117,7 +117,7 @@ static void ReadConfig()
 
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
 	FOVScale = std::clamp(FOVScale, 0.5f, 2.0f);
-	ImprovedAntiAliasingMode = std::clamp(ImprovedAntiAliasingMode, 0, 3);
+	ImprovedAntiAliasingMode = std::clamp(ImprovedAntiAliasingMode, 0, 4);
 	MultiplayerSuit = std::clamp(MultiplayerSuit, 0, 36);
 	SSAAScale = std::clamp(SSAAScale, 1.0f, 4.0f);
 	LooseFileThreads = std::clamp(LooseFileThreads, 0, 16);

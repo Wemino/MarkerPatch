@@ -13,7 +13,7 @@ static void OnResetSitePre(safetyhook::Context&)
 {
 	g_State.device = nullptr;
 
-	if (ImprovedAntiAliasingMode == AA_SMAA)
+	if (ImprovedAntiAliasingMode == AA_SMAA || ImprovedAntiAliasingMode == AA_SMAA_SSAA)
 	{
 		ReleaseSMAATargets();
 	}
@@ -36,7 +36,7 @@ static void OnPresentSite(safetyhook::Context&)
 
 static void ApplyD3D9ApiMidHook()
 {
-	if (!FixFlareArtifacts && !AchievementSupport && ImprovedAntiAliasingMode != AA_SMAA && !PreloadStreamedTextures) return;
+	if (!FixFlareArtifacts && !AchievementSupport && ImprovedAntiAliasingMode != AA_SMAA && ImprovedAntiAliasingMode != AA_SMAA_SSAA && !PreloadStreamedTextures) return;
 
 	DWORD addr_ResetSite1 = GetAddress(Addr::ResetSite1);
 	DWORD addr_ResetSite2 = GetAddress(Addr::ResetSite2);

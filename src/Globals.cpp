@@ -171,7 +171,8 @@ enum AntiAliasingMode
 	AA_DISABLED,
 	AA_FXAA,
 	AA_SMAA,
-	AA_SSAA
+	AA_SSAA,
+	AA_SMAA_SSAA
 };
 
 // =============================

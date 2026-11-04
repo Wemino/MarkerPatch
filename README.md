@@ -167,6 +167,7 @@ Makes the in-game Anti-Aliasing option work. The option only controls "EdgeAA", 
 - **FXAA**: Fast edge smoothing, applied to every frame while Anti-Aliasing is enabled in the game's settings.
 - **SMAA**: Sharper and more accurate edge smoothing than FXAA ([SMAA](https://github.com/iryoku/smaa) 1x, Ultra preset), applied to every frame while Anti-Aliasing is enabled in the game's settings.
 - **SSAA**: Renders the game at a higher resolution and scales it down to the display resolution, which also smooths thin details and shimmering that edge smoothing can't fix. The resolution multiplier is set with `SSAAScale`, 2.0 renders 1920x1080 at 3840x2160 for example. This is very demanding on the GPU.
+- **SMAA + SSAA**: SSAA with SMAA applied at the higher resolution before scaling down, which smooths the edges that SSAA alone leaves slightly stepped. SMAA is applied while Anti-Aliasing is enabled in the game's settings, with it disabled only SSAA is used.
 
 ## Dynamic Shadow Resolution
 
