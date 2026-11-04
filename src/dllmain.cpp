@@ -79,6 +79,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 			// Prevents DLL from receiving thread notifications
 			DisableThreadLibraryCalls(hModule);
 
+			// Wait for the previous instance to exit if the game was restarted by the LAA patcher
+			LAAPatcher::WaitForPreviousInstance();
+
 			g_State.isUALPresent = IsUALPresent();
 
 			// Skip wrapper initialization when loaded as .asi
