@@ -62,6 +62,7 @@
 #include "Features/Modding/ArchiveStreamHook.cpp"
 
 #include "Features/DLC/BonusUnlocks.cpp"
+#include "Features/DLC/MultiplayerSuit.cpp"
 
 #include "Features/Misc/MainLoopHook.cpp"
 #include "Features/Misc/ResolutionHook.cpp"

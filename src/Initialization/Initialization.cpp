@@ -104,6 +104,7 @@ static void ReadConfig()
 	EnableRivetGunDLC = IniHelper::ReadInteger("DLC", "EnableRivetGunDLC", 0) == 1;
 	EnableIgnitionRooms = IniHelper::ReadInteger("DLC", "EnableIgnitionRooms", 0) == 1;
 	EnableOriginalPlasmaCutter = IniHelper::ReadInteger("DLC", "EnableOriginalPlasmaCutter", 0) == 1;
+	MultiplayerSuit = IniHelper::ReadInteger("DLC", "MultiplayerSuit", 0);
 
 	if (AutoResolution || UseSDLControllerInput)
 	{
@@ -117,6 +118,7 @@ static void ReadConfig()
 	MaxAnisotropy = std::clamp(MaxAnisotropy, 0, 16);
 	FOVScale = std::clamp(FOVScale, 0.5f, 2.0f);
 	ImprovedAntiAliasingMode = std::clamp(ImprovedAntiAliasingMode, 0, 3);
+	MultiplayerSuit = std::clamp(MultiplayerSuit, 0, 36);
 	SSAAScale = std::clamp(SSAAScale, 1.0f, 4.0f);
 	LooseFileThreads = std::clamp(LooseFileThreads, 0, 16);
 	LooseFilePrefetchMB = std::clamp(LooseFilePrefetchMB, 0, 512);
@@ -209,6 +211,7 @@ static void Init()
 
 	// DLC
 	ApplyBonusUnlocks();
+	ApplyMultiplayerSuit();
 
 	// Misc
 	ApplyMainLoopHook();

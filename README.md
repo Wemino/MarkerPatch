@@ -366,6 +366,12 @@ Available DLC options (configurable in the `[DLC]` section of `MarkerPatch.ini`)
 
 > **Important**: This only works if the DLC items haven't already been added to the shop, as shop inventory is tied to save data. Items already in your save cannot be removed, so configuring DLC requires starting a new save file if you want different items available.
 
+## Multiplayer Suits
+
+Lets Isaac wear any of the multiplayer suits. Only the look changes, the equipped suit keeps its armor and inventory slots.
+
+> **Note**: This is an optional feature, disabled by default. Set `MultiplayerSuit` to the number of a suit listed in `MarkerPatch.ini` to enable it.
+
 ## Always Succeed QTE
 
 Makes every button-mashing QTE succeed on its own, without having to press anything.

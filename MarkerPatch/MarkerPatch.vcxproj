@@ -201,6 +201,7 @@
     <ClInclude Include="..\src\Features\Modding\StreamMap.cpp" />
     <ClInclude Include="..\src\Features\Modding\ArchiveStreamHook.cpp" />
     <ClInclude Include="..\src\Features\DLC\BonusUnlocks.cpp" />
+    <ClInclude Include="..\src\Features\DLC\MultiplayerSuit.cpp" />
     <ClInclude Include="..\src\Features\Misc\MainLoopHook.cpp" />
     <ClInclude Include="..\src\Features\Misc\ResolutionHook.cpp" />
     <ClInclude Include="..\src\Features\Misc\D3D9ApiMidHook.cpp" />

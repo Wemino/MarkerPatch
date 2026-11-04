@@ -316,6 +316,19 @@ enum class Addr
 	UnlockedContent_IsUnlocked,
 	AchievementManager_IsAchievementCompleteByPlatformId,
 
+	// MultiplayerSuit
+	Player_AttachModel,
+	Player_AttachHelmet,
+	PlayerUniformManager_LoadUniformStream,
+	Base_GetComponent,
+	MaterialSwapComponentIDPtr,
+	ShaderTintComponentIDPtr,
+	MaterialSwapComponent_AddHelper,
+	MaterialManager_FindMaterialByName,
+	CResourceManager_FindResourceById,
+	StreamManager_Load,
+	StreamManagerPtr,
+
 	// MainLoopHook
 	MainLoop,
 
@@ -645,6 +658,19 @@ namespace Addresses
 		/* PlayerStore_AddItem                                        */ { 0xBB51D0, 0xBB5920 },
 		/* UnlockedContent_IsUnlocked                                 */ { 0x1353800, 0x1354020 },
 		/* AchievementManager_IsAchievementCompleteByPlatformId       */ { 0x1398960, 0x1399200 },
+
+		// MultiplayerSuit
+		/* Player_AttachModel                                          */ { 0x891CE0, 0x892490 },
+		/* Player_AttachHelmet                                         */ { 0x87CA60, 0x87D210 },
+		/* PlayerUniformManager_LoadUniformStream                      */ { 0xEC5BC0, 0xEC6310 },
+		/* Base_GetComponent                                           */ { 0x7CE9E0, 0x7CF080 },
+		/* MaterialSwapComponentIDPtr                                  */ { 0x209DF62, 0x209EF62 },
+		/* ShaderTintComponentIDPtr                                    */ { 0x209E5E2, 0x209F5E2 },
+		/* MaterialSwapComponent_AddHelper                             */ { 0xE9AEF0, 0xE9B640 },
+		/* MaterialManager_FindMaterialByName                          */ { 0x856C10, 0x857390 },
+		/* CResourceManager_FindResourceById                           */ { 0x78FFB0, 0x790650 },
+		/* StreamManager_Load                                          */ { 0x74B730, 0x74BDD0 },
+		/* StreamManagerPtr                                            */ { 0x201B098, 0x201C098 },
 
 		// MainLoopHook
 		/* MainLoop                                                   */ { 0x44A220, 0x44A8A0 },

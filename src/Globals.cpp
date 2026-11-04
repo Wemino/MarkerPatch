@@ -152,6 +152,9 @@ struct GameAddresses
 	DWORD TextureTablePtr = 0;
 	DWORD ElapsedTimeMSecPtr = 0;
 	DWORD ZeroGAimGainMaxPtr = 0;
+	DWORD StreamManagerPtr = 0;
+	DWORD MaterialSwapComponentIDPtr = 0;
+	DWORD ShaderTintComponentIDPtr = 0;
 };
 
 // Memory addresses
@@ -265,6 +268,7 @@ bool EnableZealotDLC = false;
 bool EnableRivetGunDLC = false;
 bool EnableIgnitionRooms = false;
 bool EnableOriginalPlasmaCutter = false;
+int MultiplayerSuit = 0;
 
 static std::filesystem::path BuildLongPath(const std::string& root, const std::string& relativePath)
 {
