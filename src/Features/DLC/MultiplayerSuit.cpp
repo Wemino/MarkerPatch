@@ -125,7 +125,9 @@ static void __fastcall Player_AttachModel_Hook(uintptr_t thisp, int, const uint3
 {
 	uintptr_t uniform = *reinterpret_cast<uintptr_t*>(thisp + 0x1688);
 
-	if (uniform == 0 || modelGUID != reinterpret_cast<const uint32_t*>(*reinterpret_cast<uintptr_t*>(uniform + 0xC) + 0x398))
+	// Keep the straitjacket
+	if (uniform == 0 || modelGUID != reinterpret_cast<const uint32_t*>(*reinterpret_cast<uintptr_t*>(uniform + 0xC) + 0x398) ||
+		MatchId(reinterpret_cast<const DWORD*>(uniform + 0x24), 0x30C9FF4E, 0x44D00498, 0x54544950, 0x32303153)) // Straitjacket id
 	{
 		Player_AttachModel.unsafe_thiscall<void>(thisp, modelGUID);
 		return;
