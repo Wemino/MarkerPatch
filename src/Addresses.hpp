@@ -149,6 +149,12 @@ enum class Addr
 	// FixHazardSuitIcon
 	VFXManager_LoadInit,
 
+	// FixStuckChaseCamera
+	ChaseCameraUpdater_HandleEvents,
+	Player_GetPlayerFromPlayerManager,
+	Player_UpdateChaseCamera,
+	RE4ChaseCameraInfoVtablePtr,
+
 	// AchievementSupport
 	GetGameLanguage,
 	AchievementImpl_HandleEvents,
@@ -491,6 +497,12 @@ namespace Addresses
 
 		// FixHazardSuitIcon
 		/* VFXManager_LoadInit                                        */ { 0x6A04C0, 0x6A0B60 },
+
+		// FixStuckChaseCamera
+		/* ChaseCameraUpdater_HandleEvents                            */ { 0xF4E250, 0xF4E9A0 },
+		/* Player_GetPlayerFromPlayerManager                          */ { 0x8696E0, 0x869E60 },
+		/* Player_UpdateChaseCamera                                   */ { 0x879720, 0x879ED0 },
+		/* RE4ChaseCameraInfoVtablePtr                                */ { 0x1B63634, 0x1B64654 },
 
 		// AchievementSupport
 		/* GetGameLanguage                                            */ { 0x4445D0, 0x444C50 },

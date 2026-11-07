@@ -29,6 +29,7 @@
 #include "Features/Fixes/FixOffscreenEffects.cpp"
 #include "Features/Fixes/FixSuitChangeTiming.cpp"
 #include "Features/Fixes/FixHazardSuitIcon.cpp"
+#include "Features/Fixes/FixStuckChaseCamera.cpp"
 
 #include "Features/General/AchievementSupport.cpp"
 #include "Features/General/DisableOnlineFeatures.cpp"

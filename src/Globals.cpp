@@ -155,6 +155,7 @@ struct GameAddresses
 	DWORD StreamManagerPtr = 0;
 	DWORD MaterialSwapComponentIDPtr = 0;
 	DWORD ShaderTintComponentIDPtr = 0;
+	DWORD RE4ChaseCameraInfoVtablePtr = 0;
 };
 
 // Memory addresses
@@ -207,6 +208,7 @@ bool FixExplosionDamage = false;
 bool FixOffscreenEffects = false;
 bool FixSuitChangeTiming = false;
 bool FixHazardSuitIcon = false;
+bool FixStuckChaseCamera = false;
 
 // General
 bool AchievementSupport = false;
