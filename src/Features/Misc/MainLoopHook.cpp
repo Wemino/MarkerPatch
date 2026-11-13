@@ -44,12 +44,17 @@ static int __cdecl MainLoop_Hook()
 		PreloadQueuedTextures();
 	}
 
+	if (MarkerPatchMenu)
+	{
+		UpdateMarkerPatchMenu();
+	}
+
 	return result;
 }
 
 static void ApplyMainLoopHook()
 {
-	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport && !FixMainLoopSpin && !PreloadStreamedTextures) return;
+	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport && !FixMainLoopSpin && !PreloadStreamedTextures && !MarkerPatchMenu) return;
 
 	MainLoop = HookHelper::CreateHook((void*)GetAddress(Addr::MainLoop), &MainLoop_Hook);
 }

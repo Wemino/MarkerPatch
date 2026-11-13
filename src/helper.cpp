@@ -278,6 +278,11 @@ namespace IniHelper
 		iniFile.write(iniReader);
 	}
 
+	void WriteString(const char* sectionName, const char* valueName, const std::string& value)
+	{
+		iniReader[sectionName][valueName] = value;
+	}
+
 	char* ReadString(const char* sectionName, const char* valueName, const char* defaultValue)
 	{
 		char* result = new char[255];

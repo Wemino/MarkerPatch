@@ -397,6 +397,23 @@ Writes the game's assets into an `archive_dump` folder as they are loaded, using
 
 Replaces game assets with loose files from `mods\<mod name>`, laid out the same way as the dump.
 
+## In-Game Settings Menu
+
+Adds a `markerpatch` entry to the Extras menu to change some of MarkerPatch's settings directly from the game, without editing `MarkerPatch.ini`. It has the DLC, graphics, controller and miscellaneous settings, and can apply the 4GB/LAA patch. 
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="100%"><img style="width:100%" src="https://raw.githubusercontent.com/Wemino/MarkerPatch/main/assets/markerpatch_menu.png"></td>
+    </tr>
+    <tr>
+      <td align="center">MarkerPatch Menu</td>
+    </tr>
+  </table>
+</div>
+
+> **Note**: Can be disabled by setting `MarkerPatchMenu = 0` in `MarkerPatch.ini` if wanted.
+
 ## Configuration
 
 All features can be customized via the `MarkerPatch.ini` file. Each setting includes detailed comments explaining its function and acceptable values. The patch uses sensible defaults that work for most users, but allows fine-tuning of every aspect.

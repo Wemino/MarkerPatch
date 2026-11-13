@@ -55,6 +55,7 @@ static void ReadConfig()
 	SkipArtificialLoadingDelay = IniHelper::ReadInteger("General", "SkipArtificialLoadingDelay", 1) == 1;
 	AlwaysSucceedQTE = IniHelper::ReadInteger("General", "AlwaysSucceedQTE", 0) == 1;
 	SkipHackingMinigame = IniHelper::ReadInteger("General", "SkipHackingMinigame", 0) == 1;
+	MarkerPatchMenu = IniHelper::ReadInteger("General", "MarkerPatchMenu", 1) == 1;
 	LoadASIPlugins = IniHelper::ReadInteger("General", "LoadASIPlugins", 1) == 1;
 	CheckLAAPatch = IniHelper::ReadInteger("General", "CheckLAAPatch", 0);
 
@@ -186,6 +187,7 @@ static void Init()
 	ApplySkipArtificialLoadingDelay();
 	ApplyAlwaysSucceedQTE();
 	ApplySkipHackingMinigame();
+	ApplyMarkerPatchMenu();
 
 	// Display
 	ApplyAutoResolution();

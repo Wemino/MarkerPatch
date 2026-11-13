@@ -65,6 +65,8 @@
 #include "Features/DLC/BonusUnlocks.cpp"
 #include "Features/DLC/MultiplayerSuit.cpp"
 
+#include "Features/General/MarkerPatchMenu.cpp"
+
 #include "Features/Misc/MainLoopHook.cpp"
 #include "Features/Misc/ResolutionHook.cpp"
 #include "Features/Misc/D3D9ApiMidHook.cpp"

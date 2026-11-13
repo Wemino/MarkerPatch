@@ -156,6 +156,9 @@ struct GameAddresses
 	DWORD MaterialSwapComponentIDPtr = 0;
 	DWORD ShaderTintComponentIDPtr = 0;
 	DWORD RE4ChaseCameraInfoVtablePtr = 0;
+	DWORD GPOPManagerPtr = 0;
+	DWORD iMsgPlaySoundMenuNavigatePtr = 0;
+	DWORD iMsgPlaySoundMenuSelectPtr = 0;
 };
 
 // Memory addresses
@@ -221,6 +224,7 @@ bool SkipIntro = false;
 bool SkipArtificialLoadingDelay = false;
 bool AlwaysSucceedQTE = false;
 bool SkipHackingMinigame = false;
+bool MarkerPatchMenu = false;
 bool LoadASIPlugins = false;
 int CheckLAAPatch = 0;
 

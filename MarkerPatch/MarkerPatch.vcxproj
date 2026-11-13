@@ -121,6 +121,7 @@
     <ClInclude Include="..\src\Shaders\SMAAShaders.hpp" />
     <ClInclude Include="..\src\Shaders\SMAATextures.hpp" />
     <ClInclude Include="..\src\Shaders\SupersamplingShaders.hpp" />
+    <ClInclude Include="..\src\Movies\FE08Locker.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini">
@@ -184,6 +185,7 @@
     <ClInclude Include="..\src\Features\General\SkipIntro.cpp" />
     <ClInclude Include="..\src\Features\General\AlwaysSucceedQTE.cpp" />
     <ClInclude Include="..\src\Features\General\SkipHackingMinigame.cpp" />
+    <ClInclude Include="..\src\Features\General\MarkerPatchMenu.cpp" />
     <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp" />
     <ClInclude Include="..\src\Features\General\ASILoader.cpp" />
     <ClInclude Include="..\src\Features\Display\AutoResolution.cpp" />

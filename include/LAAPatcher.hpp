@@ -16,13 +16,27 @@ namespace LAAPatcher
     // Error Handling
     // ========================
 
+    inline std::wstring* g_errorOutput = nullptr;
+
     inline void ShowError(const char* message)
     {
+        if (g_errorOutput)
+        {
+            *g_errorOutput = std::wstring(message, message + strlen(message));
+            return;
+        }
+
         MessageBoxA(NULL, message, "MarkerPatch - LAAPatcher Error", MB_ICONERROR);
     }
 
     inline void ShowError(const wchar_t* message)
     {
+        if (g_errorOutput)
+        {
+            *g_errorOutput = message;
+            return;
+        }
+
         MessageBoxW(NULL, message, L"MarkerPatch - LAAPatcher Error", MB_ICONERROR);
     }
 
@@ -365,11 +379,33 @@ namespace LAAPatcher
         }
     }
 
+    // Restart with the same command line, the new instance waits for this one to exit
+    inline bool RestartGame(const fs::path& exePath)
+    {
+        SetEnvironmentVariableW(RESTART_ENV_VAR, std::to_wstring(GetCurrentProcessId()).c_str());
+
+        std::wstring commandLine = GetCommandLineW();
+        STARTUPINFOW si = { sizeof(si) };
+        PROCESS_INFORMATION pi = {};
+
+        if (CreateProcessW(exePath.wstring().c_str(), commandLine.data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+        {
+            CloseHandle(pi.hThread);
+            CloseHandle(pi.hProcess);
+            ExitProcess(0);
+        }
+
+        DWORD err = GetLastError();
+        SetEnvironmentVariableW(RESTART_ENV_VAR, NULL);
+        SetLastError(err);
+        return false;
+    }
+
     // ========================
     // Main Patching Logic
     // ========================
 
-    inline bool PerformLAAPatch(HMODULE hModule, bool showConfirmation)
+    inline bool GetExecutablePath(HMODULE hModule, fs::path& exePath)
     {
         wchar_t error[512];
 
@@ -396,8 +432,7 @@ namespace LAAPatcher
 
         modulePathBuf.resize(pathLen);
 
-        fs::path exePath = modulePathBuf;
-        fs::path exeName = exePath.filename();
+        exePath = modulePathBuf;
 
         std::error_code ec;
         if (!fs::exists(exePath, ec))
@@ -407,7 +442,13 @@ namespace LAAPatcher
             return false;
         }
 
-        std::vector<uint8_t> buffer;
+        return true;
+    }
+
+    inline bool ReadExecutable(const fs::path& exePath, std::vector<uint8_t>& buffer)
+    {
+        wchar_t error[512];
+
         if (!ReadFile(exePath, buffer))
         {
             swprintf_s(error, L"Could not read executable file.\nPath: %s\nError: %d", exePath.wstring().c_str(), GetLastError());
@@ -422,13 +463,18 @@ namespace LAAPatcher
             return false;
         }
 
-        if (pe.IsLAAEnabled())
-            return true;
+        return true;
+    }
+
+    inline bool HasSpaceForPatch(const fs::path& exePath, size_t exeSize)
+    {
+        wchar_t error[512];
+        std::error_code ec;
 
         auto spaceInfo = fs::space(exePath.parent_path(), ec);
         if (!ec)
         {
-            uintmax_t requiredSpace = buffer.size() * 2;
+            uintmax_t requiredSpace = exeSize * 2;
             if (spaceInfo.available < requiredSpace)
             {
                 swprintf_s(error, L"Not enough disk space to create backup and patched files.\n\nRequired: %llu MB\nAvailable: %llu MB", (requiredSpace / (1024 * 1024)) + 1, spaceInfo.available / (1024 * 1024));
@@ -437,11 +483,38 @@ namespace LAAPatcher
             }
         }
 
+        return true;
+    }
+
+    inline bool PatchExecutable(const fs::path& exePath, std::vector<uint8_t>& buffer)
+    {
+        PEFile pe(buffer);
+        pe.EnableLAA();
+        pe.ClearChecksum();
+
+        return ReplaceExecutable(exePath, buffer);
+    }
+
+    inline bool PerformLAAPatch(HMODULE hModule, bool showConfirmation)
+    {
+        wchar_t error[512];
+        fs::path exePath;
+        std::vector<uint8_t> buffer;
+
+        if (!GetExecutablePath(hModule, exePath) || !ReadExecutable(exePath, buffer))
+            return false;
+
+        if (PEFile(buffer).IsLAAEnabled())
+            return true;
+
+        if (!HasSpaceForPatch(exePath, buffer.size()))
+            return false;
+
         if (showConfirmation)
         {
             std::wstring msg = L"Your game executable is missing the 4GB/LAA patch. "
                 L"This allows the game to use 4GB of memory instead of 2GB.\n\n"
-                L"MarkerPatch will patch " + exeName.wstring() + L" and create a backup.\n\n"
+                L"MarkerPatch will patch " + exePath.filename().wstring() + L" and create a backup.\n\n"
                 L"Apply patch and restart the game?\n\n"
                 L"(This check can be disabled by setting CheckLAAPatch=0 in the [General] section of MarkerPatch.ini)";
 
@@ -449,30 +522,15 @@ namespace LAAPatcher
                 return false;
         }
 
-        pe.EnableLAA();
-        pe.ClearChecksum();
-
-        if (!ReplaceExecutable(exePath, buffer))
+        if (!PatchExecutable(exePath, buffer))
             return false;
 
-        // Restart with the same command line, the new instance waits for this one to exit
-        SetEnvironmentVariableW(RESTART_ENV_VAR, std::to_wstring(GetCurrentProcessId()).c_str());
-
-        std::wstring commandLine = GetCommandLineW();
-        STARTUPINFOW si = { sizeof(si) };
-        PROCESS_INFORMATION pi = {};
-
-        if (CreateProcessW(exePath.wstring().c_str(), commandLine.data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+        if (!RestartGame(exePath))
         {
-            CloseHandle(pi.hThread);
-            CloseHandle(pi.hProcess);
-            ExitProcess(0);
+            swprintf_s(error, L"Patching completed successfully, but failed to restart the application.\nError: %d\n\nPlease restart the game manually.", GetLastError());
+            MessageBoxW(NULL, error, L"MarkerPatch - LAAPatcher Warning", MB_ICONWARNING);
         }
 
-        DWORD err = GetLastError();
-        SetEnvironmentVariableW(RESTART_ENV_VAR, NULL);
-        swprintf_s(error, L"Patching completed successfully, but failed to restart the application.\nError: %d\n\nPlease restart the game manually.", err);
-        MessageBoxW(NULL, error, L"MarkerPatch - LAAPatcher Warning", MB_ICONWARNING);
         return true;
     }
 }

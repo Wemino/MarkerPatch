@@ -146,6 +146,9 @@
     <ClInclude Include="..\src\Features\General\SkipHackingMinigame.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\General\MarkerPatchMenu.cpp">
+      <Filter>src\Features\General</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\General\SkipArtificialLoadingDelay.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>
@@ -278,6 +281,9 @@
     <ClInclude Include="..\src\Shaders\SupersamplingShaders.hpp">
       <Filter>src\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Movies\FE08Locker.hpp">
+      <Filter>src\Movies</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Shaders\FlashlightOverlayVS.hpp">
       <Filter>src\Shaders</Filter>
     </ClInclude>
@@ -339,6 +345,9 @@
     </Filter>
     <Filter Include="src\Shaders">
       <UniqueIdentifier>{26f31c42-ad1b-48dc-8f81-ceaec790d273}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Movies">
+      <UniqueIdentifier>{8c1e6a3d-4f2b-4b7e-9d61-3a5c7e2f90b4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

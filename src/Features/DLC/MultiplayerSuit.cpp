@@ -126,7 +126,7 @@ static void __fastcall Player_AttachModel_Hook(uintptr_t thisp, int, const uint3
 	uintptr_t uniform = *reinterpret_cast<uintptr_t*>(thisp + 0x1688);
 
 	// Keep the straitjacket
-	if (uniform == 0 || modelGUID != reinterpret_cast<const uint32_t*>(*reinterpret_cast<uintptr_t*>(uniform + 0xC) + 0x398) ||
+	if (MultiplayerSuit == 0 || uniform == 0 || modelGUID != reinterpret_cast<const uint32_t*>(*reinterpret_cast<uintptr_t*>(uniform + 0xC) + 0x398) ||
 		MatchId(reinterpret_cast<const DWORD*>(uniform + 0x24), 0x30C9FF4E, 0x44D00498, 0x54544950, 0x32303153)) // Straitjacket id
 	{
 		Player_AttachModel.unsafe_thiscall<void>(thisp, modelGUID);
@@ -181,11 +181,14 @@ static bool __fastcall PlayerUniformManager_LoadUniformStream_Hook(uintptr_t thi
 	uintptr_t streamManager = *reinterpret_cast<uintptr_t*>(g_Addresses.StreamManagerPtr);
 
 	// Queued before the suit's own stream so they are loaded by the time it is put on
-	StreamManager_Load(streamManager, SOLDIER_UNIFORM_STREAM, 0.0f, 0, nullptr, nullptr);
-
-	if (GetMultiplayerSuitPattern().stream)
+	if (MultiplayerSuit != 0)
 	{
-		StreamManager_Load(streamManager, GetMultiplayerSuitPattern().stream, 0.0f, 0, nullptr, nullptr);
+		StreamManager_Load(streamManager, SOLDIER_UNIFORM_STREAM, 0.0f, 0, nullptr, nullptr);
+
+		if (GetMultiplayerSuitPattern().stream)
+		{
+			StreamManager_Load(streamManager, GetMultiplayerSuitPattern().stream, 0.0f, 0, nullptr, nullptr);
+		}
 	}
 
 	return PlayerUniformManager_LoadUniformStream.unsafe_thiscall<bool>(thisp, uniformEntry);

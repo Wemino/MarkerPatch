@@ -34,6 +34,26 @@ static const ContentPack ContentPacks[] =
 	{ 0x9954AE8F, &EnableRivetGunDLC, false },
 };
 
+static void UpdateContentPack(const bool* enabled)
+{
+	uintptr_t unlockHandler = *reinterpret_cast<uintptr_t*>(g_Addresses.UnlockHandlerPtr);
+	if (!unlockHandler) return;
+
+	for (const ContentPack& pack : ContentPacks)
+	{
+		if (pack.enabled != enabled) continue;
+
+		if (*pack.enabled)
+		{
+			UnlockedContent_ForceUnlocked(unlockHandler, pack.key);
+		}
+		else
+		{
+			UnlockedContent_ClearUnlocked(unlockHandler, pack.key);
+		}
+	}
+}
+
 static void OnSaveManagerBootCheck(safetyhook::Context& ctx)
 {
 	if (EnableIgnitionRooms)
@@ -96,7 +116,7 @@ static char __fastcall AchievementManager_IsAchievementCompleteByPlatformId_Hook
 
 static int __fastcall PlayerStore_AddItem_Hook(int thisPtr, int, DWORD* entry)
 {
-	if (g_State.isLoadingShopItems && IsHackerItem(entry))
+	if (EnableHackerDLC && g_State.isLoadingShopItems && IsHackerItem(entry))
 	{
 		// The entry skips the chapter and round the item requires
 		*reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(entry) + 0x19) = true;
