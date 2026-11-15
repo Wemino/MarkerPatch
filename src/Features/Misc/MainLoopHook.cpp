@@ -49,12 +49,14 @@ static int __cdecl MainLoop_Hook()
 		UpdateMarkerPatchMenu();
 	}
 
+	UpdatePlayStationButtonIcons();
+
 	return result;
 }
 
 static void ApplyMainLoopHook()
 {
-	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport && !FixMainLoopSpin && !PreloadStreamedTextures && !MarkerPatchMenu) return;
+	if (!HavokPhysicsFix && !RawMouseInput && !AchievementSupport && !FixMainLoopSpin && !PreloadStreamedTextures && !MarkerPatchMenu && !PlayStationButtonIcons) return;
 
 	MainLoop = HookHelper::CreateHook((void*)GetAddress(Addr::MainLoop), &MainLoop_Hook);
 }

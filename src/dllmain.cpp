@@ -52,6 +52,7 @@
 #include "Features/Input/FilterInputDevices.cpp"
 #include "Features/Input/UseSDLControllerInput.cpp"
 #include "Features/Input/DisableControllerAimAcceleration.cpp"
+#include "Features/Input/PlayStationButtonIcons.cpp"
 
 #include "Features/Graphics/TextureFiltering.cpp"
 #include "Features/Graphics/DynamicShadowResolution.cpp"

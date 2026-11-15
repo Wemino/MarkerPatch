@@ -286,6 +286,15 @@ enum class Addr
 	PlayerZGJumpSM_SampleControllerData,
 	ZeroGAimGainMaxPtr,
 
+	// PlayStationButtonIcons
+	TM_DownloadTextureData,
+	TH_GetEntry,
+	TM_FindTexture_Deprecated,
+	TM_GetTextureFormat,
+	TX_FormatSize,
+	FFNFont_Init,
+	FontManager_UnloadResource,
+
 	// TextureFiltering
 	TX_ChangeOptions_d3d,
 
@@ -659,6 +668,15 @@ namespace Addresses
 		/* ControllerVelocity_Update                                  */ { 0x86F5E0, 0x86FD80 },
 		/* PlayerZGJumpSM_SampleControllerData                        */ { 0x8A2100, 0x8A28B0 },
 		/* ZeroGAimGainMaxPtr                                         */ { 0x1F5D3B0, 0x1F5E3B0 },
+
+		// PlayStationButtonIcons
+		/* TM_DownloadTextureData                                     */ { 0x13DB700, 0x13DBFA0 },
+		/* TH_GetEntry                                                */ { 0x13D3070, 0x13D3910 },
+		/* TM_FindTexture_Deprecated                                  */ { 0x13D4000, 0x13D48A0 },
+		/* TM_GetTextureFormat                                        */ { 0x13DB040, 0x13DB8E0 },
+		/* TX_FormatSize                                              */ { 0x13DC8D0, 0x13DD170 },
+		/* FFNFont_Init                                               */ { 0x8564A0, 0x856C20 },
+		/* FontManager_UnloadResource                                 */ { 0x8234A0, 0x823B40 },
 
 		// TextureFiltering
 		/* TX_ChangeOptions_d3d                                       */ { 0x13D7880, 0x13D8120 },

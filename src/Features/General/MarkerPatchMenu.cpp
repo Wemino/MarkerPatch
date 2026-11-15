@@ -204,6 +204,7 @@ static void OnGyroChanged(const MenuOption&)
 
 static const char* const ToggleNames[] = { "off", "on" };
 static const char* const AimAccelerationNames[] = { "on", "off" };
+static const char* const PlayStationButtonIconsNames[] = { "off", "on", "auto" };
 static const char* const AntiAliasingNames[] = { "off", "fxaa", "smaa", "ssaa", "smaa + ssaa" };
 static const int ShadowResolutions[] = { 1920, 2560, 3072, 4096 };
 static const int GyroSensitivityRange[] = { 10, 400, 10 };
@@ -249,6 +250,7 @@ static MenuOption ControllerOptions[] =
 	{ "gyro invert x", "Input", "GyroInvertX", OptionType::Toggle, &GyroInvertX, 0, OptionApply::Live, OnGyroChanged, ToggleNames },
 	{ "gyro invert y", "Input", "GyroInvertY", OptionType::Toggle, &GyroInvertY, 0, OptionApply::Live, OnGyroChanged, ToggleNames },
 	{ "aim acceleration", "Input", "DisableControllerAimAcceleration", OptionType::Toggle, &DisableControllerAimAcceleration, 0, OptionApply::HookedAtLaunch, nullptr, AimAccelerationNames },
+	{ "playstation icons", "Input", "PlayStationButtonIcons", OptionType::Choice, &PlayStationButtonIcons, 2, OptionApply::HookedAtLaunch, nullptr, PlayStationButtonIconsNames, nullptr, static_cast<int>(std::size(PlayStationButtonIconsNames)) },
 };
 
 static MenuOption MiscOptions[] =

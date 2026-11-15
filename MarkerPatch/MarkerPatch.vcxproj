@@ -112,6 +112,7 @@
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClInclude Include="..\src\Features\Input\DisableKeyboardHook.cpp" />
     <ClInclude Include="..\src\Features\Input\DisableControllerAimAcceleration.cpp" />
+    <ClInclude Include="..\src\Features\Input\PlayStationButtonIcons.cpp" />
     <ClInclude Include="..\src\Shaders\FlashlightOverlayVS.hpp" />
     <ClInclude Include="..\src\Shaders\FXAAPS.hpp" />
     <ClInclude Include="..\src\Shaders\GlassReflectionVS.hpp" />
@@ -122,6 +123,7 @@
     <ClInclude Include="..\src\Shaders\SMAATextures.hpp" />
     <ClInclude Include="..\src\Shaders\SupersamplingShaders.hpp" />
     <ClInclude Include="..\src\Movies\FE08Locker.hpp" />
+    <ClInclude Include="..\src\Fonts\PlayStationButtons.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MarkerPatch.ini">

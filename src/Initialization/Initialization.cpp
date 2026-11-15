@@ -81,6 +81,7 @@ static void ReadConfig()
 	TouchpadEnabled = IniHelper::ReadInteger("Input", "TouchpadEnabled", 1) == 1;
 	InvertABXYButtons = IniHelper::ReadInteger("Input", "InvertABXYButtons", 1) == 1;
 	DisableControllerAimAcceleration = IniHelper::ReadInteger("Input", "DisableControllerAimAcceleration", 0) == 1;
+	PlayStationButtonIcons = IniHelper::ReadInteger("Input", "PlayStationButtonIcons", 2);
 
 	// Graphics
 	MaxAnisotropy = IniHelper::ReadInteger("Graphics", "MaxAnisotropy", 16);
@@ -125,6 +126,7 @@ static void ReadConfig()
 	LooseFileThreads = std::clamp(LooseFileThreads, 0, 16);
 	LooseFilePrefetchMB = std::clamp(LooseFilePrefetchMB, 0, 512);
 	StreamReadAheadMB = std::clamp(StreamReadAheadMB, 0, 64);
+	PlayStationButtonIcons = std::clamp(PlayStationButtonIcons, 0, 2);
 
 	// Set a maximum so that the game doesn't crash
 	IncreasedEntityPersistenceBodies = std::clamp(IncreasedEntityPersistenceBodies, 0, 35);
@@ -202,6 +204,7 @@ static void Init()
 	ApplyAutoHideMouseCursor();
 	ApplyUseSDLControllerInput();
 	ApplyDisableControllerAimAcceleration();
+	ApplyPlayStationButtonIcons();
 
 	// Graphics
 	ApplyTextureFiltering();

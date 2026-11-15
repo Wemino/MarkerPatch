@@ -29,9 +29,6 @@ namespace ControllerHelper
 		bool hasTouchpad = false;
 		bool hasGyro = false;
 		bool hasAccel = false;
-		const char* name = nullptr;
-		Uint16 vendorId = 0;
-		Uint16 productId = 0;
 	};
 
 	struct GyroState
@@ -320,9 +317,6 @@ namespace ControllerHelper
 		s_capabilities.hasTouchpad = SDL_GetNumGamepadTouchpads(pGamepad) > 0;
 		s_capabilities.hasGyro = SDL_GamepadHasSensor(pGamepad, SDL_SENSOR_GYRO);
 		s_capabilities.hasAccel = SDL_GamepadHasSensor(pGamepad, SDL_SENSOR_ACCEL);
-		s_capabilities.name = SDL_GetGamepadName(pGamepad);
-		s_capabilities.vendorId = SDL_GetGamepadVendor(pGamepad);
-		s_capabilities.productId = SDL_GetGamepadProduct(pGamepad);
 
 		if (s_capabilities.hasGyro)
 		{

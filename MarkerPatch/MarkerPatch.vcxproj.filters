@@ -266,6 +266,9 @@
     <ClInclude Include="..\src\Features\Input\DisableControllerAimAcceleration.cpp">
       <Filter>src\Features\Input</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Input\PlayStationButtonIcons.cpp">
+      <Filter>src\Features\Input</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Shaders\FXAAPS.hpp">
       <Filter>src\Shaders</Filter>
     </ClInclude>
@@ -283,6 +286,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Movies\FE08Locker.hpp">
       <Filter>src\Movies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Fonts\PlayStationButtons.hpp">
+      <Filter>src\Fonts</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Shaders\FlashlightOverlayVS.hpp">
       <Filter>src\Shaders</Filter>
@@ -348,6 +354,9 @@
     </Filter>
     <Filter Include="src\Movies">
       <UniqueIdentifier>{8c1e6a3d-4f2b-4b7e-9d61-3a5c7e2f90b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Fonts">
+      <UniqueIdentifier>{5b2d9e41-7c3a-4f86-a1e0-6d8c2b947f15}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

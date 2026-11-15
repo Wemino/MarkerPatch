@@ -250,6 +250,7 @@ bool GyroCalibrationPersistence = false;
 bool TouchpadEnabled = false;
 bool InvertABXYButtons = false;
 bool DisableControllerAimAcceleration = false;
+int PlayStationButtonIcons = 0;
 
 // Graphics
 int MaxAnisotropy = 0;
