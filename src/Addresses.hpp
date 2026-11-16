@@ -155,6 +155,9 @@ enum class Addr
 	Player_UpdateChaseCamera,
 	RE4ChaseCameraInfoVtablePtr,
 
+	// FixSaveSlotDateTime
+	FormatSaveSlotDateTime,
+
 	// AchievementSupport
 	GetGameLanguage,
 	AchievementImpl_HandleEvents,
@@ -537,6 +540,9 @@ namespace Addresses
 		/* Player_GetPlayerFromPlayerManager                          */ { 0x8696E0, 0x869E60 },
 		/* Player_UpdateChaseCamera                                   */ { 0x879720, 0x879ED0 },
 		/* RE4ChaseCameraInfoVtablePtr                                */ { 0x1B63634, 0x1B64654 },
+
+		// FixSaveSlotDateTime
+		/* FormatSaveSlotDateTime                                     */ { 0xA375ED, 0xA37D9D },
 
 		// AchievementSupport
 		/* GetGameLanguage                                            */ { 0x4445D0, 0x444C50 },

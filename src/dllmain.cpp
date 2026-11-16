@@ -30,6 +30,7 @@
 #include "Features/Fixes/FixSuitChangeTiming.cpp"
 #include "Features/Fixes/FixHazardSuitIcon.cpp"
 #include "Features/Fixes/FixStuckChaseCamera.cpp"
+#include "Features/Fixes/FixSaveSlotDateTime.cpp"
 
 #include "Features/General/AchievementSupport.cpp"
 #include "Features/General/DisableOnlineFeatures.cpp"

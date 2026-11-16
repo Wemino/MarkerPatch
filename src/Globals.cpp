@@ -212,6 +212,7 @@ bool FixOffscreenEffects = false;
 bool FixSuitChangeTiming = false;
 bool FixHazardSuitIcon = false;
 bool FixStuckChaseCamera = false;
+bool FixSaveSlotDateTime = false;
 
 // General
 bool AchievementSupport = false;

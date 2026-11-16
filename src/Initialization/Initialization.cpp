@@ -35,6 +35,7 @@ static void ReadConfig()
 	FixSuitChangeTiming = IniHelper::ReadInteger("Fixes", "FixSuitChangeTiming", 1) == 1;
 	FixHazardSuitIcon = IniHelper::ReadInteger("Fixes", "FixHazardSuitIcon", 1) == 1;
 	FixStuckChaseCamera = IniHelper::ReadInteger("Fixes", "FixStuckChaseCamera", 1) == 1;
+	FixSaveSlotDateTime = IniHelper::ReadInteger("Fixes", "FixSaveSlotDateTime", 1) == 1;
 
 	// General
 	AchievementSupport = IniHelper::ReadInteger("General", "AchievementSupport", 1) == 1;
@@ -179,6 +180,7 @@ static void Init()
 	ApplyFixSuitChangeTiming();
 	ApplyFixHazardSuitIcon();
 	ApplyFixStuckChaseCamera();
+	ApplyFixSaveSlotDateTime();
 
 	// General
 	ApplyAchievementSupport();

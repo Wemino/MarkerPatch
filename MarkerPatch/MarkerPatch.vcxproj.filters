@@ -125,6 +125,9 @@
     <ClInclude Include="..\src\Features\Fixes\FixStuckChaseCamera.cpp">
       <Filter>src\Features\Fixes</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Features\Fixes\FixSaveSlotDateTime.cpp">
+      <Filter>src\Features\Fixes</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Features\General\AchievementSupport.cpp">
       <Filter>src\Features\General</Filter>
     </ClInclude>

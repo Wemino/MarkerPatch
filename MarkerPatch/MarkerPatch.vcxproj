@@ -180,6 +180,7 @@
     <ClInclude Include="..\src\Features\Fixes\FixSuitChangeTiming.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixHazardSuitIcon.cpp" />
     <ClInclude Include="..\src\Features\Fixes\FixStuckChaseCamera.cpp" />
+    <ClInclude Include="..\src\Features\Fixes\FixSaveSlotDateTime.cpp" />
     <ClInclude Include="..\src\Features\General\AchievementSupport.cpp" />
     <ClInclude Include="..\src\Features\General\DisableOnlineFeatures.cpp" />
     <ClInclude Include="..\src\Features\General\IncreasedEntityPersistence.cpp" />
